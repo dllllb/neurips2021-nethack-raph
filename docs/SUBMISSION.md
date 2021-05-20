@@ -7,9 +7,7 @@ This file will help you in making your first submission.
 
 The evaluator will execute `run.sh` for generating predictions, so please remember to include it in your submission!
 
-The inline documentation of `test.py` will guide you with interfacing with the codebase properly. You can check TODOs inside it to learn about the functions you need to implement.
-
-You can modify the existing `test.py` OR copy it (to say `your_code.py`) and change it.
+You can modify the existing `rollout.py` OR copy it (to say `your_code.py`) and change it.
 
 
 ## IMPORTANT: Saving Models before submission!

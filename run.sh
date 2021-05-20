@@ -1,2 +1,3 @@
 #!/bin/bash
-python predict.py
+python rollout.py
+

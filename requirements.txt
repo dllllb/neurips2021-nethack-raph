@@ -1,2 +1,5 @@
 aicrowd_api
+aicrowd_gym
 nle
+numpy
+gym

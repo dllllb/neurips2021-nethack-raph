@@ -52,7 +52,7 @@ We are excited that this competition offers machine learning students, researche
 
 # How to run the environment
 
-To be added
+Install the environment from the [original nethack repository](https://github.com/facebookresearch/nle)
 
 # How to start participating
 
@@ -71,7 +71,7 @@ You can add your SSH Keys to your GitLab account by going to your profile settin
 3. **Install** competition specific dependencies!
     ```
     cd neurips-2021-nethack-starter-kit
-    pip3 install -r requirements.txt
+    pip install -r requirements.txt
     ```
 
 4. Try out random prediction codebase present in `test.py`.
@@ -136,7 +136,7 @@ To be added.
 
 ## Contributing
 
-🙏 You can share your solutions or any other baselines by contributing directly to this repository by opening merge request.
+You can share your solutions or any other baselines by contributing directly to this repository by opening merge request.
 
 - Add your implemntation as `test_<approach-name>.py`
 - Test it out using `python test_<approach-name>.py`
@@ -147,6 +147,8 @@ To be added.
 ## Contributors
 
 - [Shivam Khandelwal](https://www.aicrowd.com/participants/shivam)
+- [Jyotish Poonganam](https://www.aicrowd.com/participants/jyotish)
+- [Dipam chakraborty](https://www.aicrowd.com/participants/dipam)
 
 # 📎 Important links
 
