@@ -1,0 +1,11 @@
+name: nle
+
+dependencies:
+  - python=3.8
+  - cmake=3.14
+  - numpy
+  - pip:
+    - aicrowd_api
+    - aicrowd-gym
+    - nle
+    - gym
