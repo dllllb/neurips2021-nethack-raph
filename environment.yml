@@ -5,4 +5,5 @@ dependencies:
   - cmake=3.14
   - numpy
   - pip:
+    - aicrowd-gym
     - -r file:requirements.txt
