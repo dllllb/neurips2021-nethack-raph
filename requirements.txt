@@ -1,4 +1,4 @@
-aicrowd_api
-gym
+aicrowd-api
+aicrowd-gym
 nle --no-binary :all:
 
