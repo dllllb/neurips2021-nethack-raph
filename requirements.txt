@@ -1,4 +1,5 @@
 aicrowd-api
 aicrowd-gym
+numpy
 nle --no-binary :all:
 

@@ -51,7 +51,7 @@ RUN wget -nv -O miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py37
 ENV PATH ${CONDA_DIR}/bin:${PATH}
 
 RUN conda install cmake -y
-COPY --chown=${USER_NAME}:${USER_NAME} requirements.txt ${HOME_DIR}/requirements.txt
+COPY --chown=${HOST_UID}:${HOST_GID} requirements.txt ${HOME_DIR}/requirements.txt
 RUN pip install -r requirements.txt --no-cache-dir
 
-COPY --chown=${USER_NAME}:${USER_NAME} . ${HOME_DIR}
+COPY --chown=${HOST_UID}:${HOST_GID} . ${HOME_DIR}
