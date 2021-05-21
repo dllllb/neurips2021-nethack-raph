@@ -1,5 +1,4 @@
 aicrowd-api
 aicrowd-gym
 numpy
-nle --no-binary :all:
-
+nle --no-binary=nle

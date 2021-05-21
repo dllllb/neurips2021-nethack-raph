@@ -1,9 +1,0 @@
-name: nle
-
-dependencies:
-  - python=3.8
-  - cmake=3.14
-  - numpy
-  - pip:
-    - aicrowd-gym
-    - -r file:requirements.txt

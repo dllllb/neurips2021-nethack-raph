@@ -1,18 +1,9 @@
-FROM nvidia/cuda:10.1-cudnn7-runtime-ubuntu18.04
+FROM nvidia/cuda:10.2-cudnn7-runtime-ubuntu18.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt -qq update && apt -qq install -y --no-install-recommends \
-    wget \
-    ca-certificates \
-    locales \
-    libglib2.0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    xvfb \
-    ffmpeg \
-    freeglut3-dev \
+COPY apt.txt /tmp/apt.txt
+RUN apt -qq update && apt -qq install -y --no-install-recommends `cat /tmp/apt.txt` \
  && rm -rf /var/cache/*
 
 # Unicode support:
@@ -43,15 +34,16 @@ WORKDIR ${HOME_DIR}
 
 ENV CONDA_DIR ${HOME_DIR}/.conda
 
-RUN wget -nv -O miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.2-Linux-x86_64.sh \
+RUN wget -nv -O miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py38_4.9.2-Linux-x86_64.sh \
  && bash miniconda.sh -b -p ${CONDA_DIR} \
  && . ${CONDA_DIR}/etc/profile.d/conda.sh \
+ && conda clean -y -a \
  && rm -rf miniconda.sh
 
 ENV PATH ${CONDA_DIR}/bin:${PATH}
 
-RUN conda install cmake -y
-COPY --chown=${HOST_UID}:${HOST_GID} requirements.txt ${HOME_DIR}/requirements.txt
+RUN conda install cmake -y && conda clean -y -a
+COPY --chown=1001:1001 requirements.txt ${HOME_DIR}/requirements.txt
 RUN pip install -r requirements.txt --no-cache-dir
 
-COPY --chown=${HOST_UID}:${HOST_GID} . ${HOME_DIR}
+COPY --chown=1001:1001 . ${HOME_DIR}
