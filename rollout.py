@@ -14,7 +14,6 @@ def main():
     # that we don't want participants to use during the submission
     env = aicrowd_gym.make("NetHackScore-v0") 
 
-    env = aicrowd_gym.make("NetHackScore-v0")
     env.reset()
     done = False
     episode_count = 0

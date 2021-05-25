@@ -4,7 +4,8 @@
 
 👉 [Challenge page](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge)
 
-[![Discord](https://img.shields.io/discord/565639094860775436.svg)](https://discord.gg/fNRrSvZkry)
+
+💬 [Join the discord server](https://discord.gg/zkFWQmSWBA)
 
 
 This repository is the Nethack Challenge **Submission template and Starter kit**! 
@@ -47,8 +48,8 @@ We are excited that this competition offers machine learning students, researche
 
 1. **Sign up** to join the competition [on the AIcrowd website](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge).
 2. **Clone** this repo and start developing your solution.
-3. **Train** your models for audio seperation and write prediction code in `test.py`.
-4. [**Submit**](#how-to-submit-a-model) your trained models to [AIcrowd Gitlab](https://gitlab.aicrowd.com) for evaluation [(full instructions below)](#how-to-submit-a-model). The automated evaluation setup will evaluate the submissions against the test dataset to compute and report the metrics on the leaderboard of the competition.
+3. **Train** your models on NLE and write rollout code in `rollout.py`.
+4. [**Submit**](#how-to-submit-a-model) your trained models to [AIcrowd Gitlab](https://gitlab.aicrowd.com) for evaluation [(full instructions below)](#how-to-submit-a-model). The automated evaluation setup will evaluate the submissions against the NLE environment for a fixed number of rollouts to compute and report the metrics on the leaderboard of the competition.
 
 # How to run the environment
 
@@ -74,7 +75,7 @@ You can add your SSH Keys to your GitLab account by going to your profile settin
     pip install -r requirements.txt
     ```
 
-4. Try out random prediction codebase present in `test.py`.
+4. Try out random rollout script in `rollout.py`.
 
 
 ## How do I specify my software runtime / dependencies ?
@@ -94,9 +95,9 @@ The different files and directories have following meaning:
 .
 ├── aicrowd.json           # Submission meta information - like your username
 ├── apt.txt                # Packages to be installed inside docker image
-├── data                   # Your local dataset copy - you don't need to upload it (read DATASET.md)
 ├── requirements.txt       # Python packages to be installed
-├── test.py                # IMPORTANT: Your testing/prediction code, must be derived from NethackSubmission (example in test.py)
+├── rollout.py             # Your rollout code
+├── run.sh                 # Submission entrypoint   
 └── utility                # The utility scripts to provide smoother experience to you.
     ├── docker_build.sh
     ├── docker_run.sh
@@ -118,13 +119,20 @@ The `aicrowd.json` of each submission should contain the following content:
 
 This JSON is used to map your submission to the challenge - so please remember to use the correct `challenge_id` as specified above.
 
+## Can I use some other language instead of python?
+
+The submission entrypoint is a bash script `run.sh`, you can call any arbitrary code you like from here. However, the environment has to be setup using python as in `rollout.py`. Any other code will have to communicte with the envrironment created in python.
+
+**Note**: You need to install your dependencies for running your code by following the `How do I specify my software runtime/dependencies` section above.
+
+
 ## How to make submission
 
 👉 [SUBMISSION.md](/docs/SUBMISSION.md)
 
-**Best of Luck** :tada: :tada:
+**Best of Luck** 🎉 🎉
 
-# Other Concepts
+# Other Information
 
 ## Hardware and Time constraints
 
@@ -136,13 +144,7 @@ To be added.
 
 ## Contributing
 
-You can share your solutions or any other baselines by contributing directly to this repository by opening merge request.
-
-- Add your implemntation as `test_<approach-name>.py`
-- Test it out using `python test_<approach-name>.py`
-- Add any documentation for your approach at top of your file.
-- Import it in `predict.py`
-- Create merge request! 🎉🎉🎉 
+To be added
 
 ## Contributors
 

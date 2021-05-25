@@ -14,8 +14,8 @@ Few of the most common ways are as follows:
     * **Create your new conda environment**
 
         ```sh
-        conda create --name music_demixing_challenge
-        conda activate music_demixing_challenge
+        conda create --name nle
+        conda activate nle
         ```
 
   * **Your code specific dependencies**
