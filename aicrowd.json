@@ -3,6 +3,5 @@
   "authors": [
     "aicrowd-bot"
   ],
-  "external_dataset_used": false,
-  "gpu": true
+  "external_dataset_used": false
 }
