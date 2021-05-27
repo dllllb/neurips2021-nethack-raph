@@ -19,7 +19,6 @@ def main():
     episode_count = 0
     while episode_count < 20:
         _, _, done, _ = env.step(env.action_space.sample())
-        print("Completed a step")
         if done:
             episode_count += 1
             print(episode_count)
