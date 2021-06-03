@@ -84,7 +84,8 @@ if __name__ == '__main__':
     infos = [{} for _ in range(num_envs)]
 
     # Change this to your agent interface
-    num_actions = batched_env.envs[0].action_space.n
+    # num_actions = batched_env.envs[0].action_space.n
+    num_actions = 112
     agent = RandomBatchedAgent(num_envs, num_actions)
     
     # The evaluation setup will automatically stop after the requisite number of rollouts
