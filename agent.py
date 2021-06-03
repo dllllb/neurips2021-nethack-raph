@@ -63,9 +63,9 @@ if __name__ == '__main__':
                                           "tty_cursor",))
 
         # This wrapper will always be added on the aicrowd evaluator
-        env = EarlyTerminationNethack(env=env,
-                    minimum_score=1000,
-                    cutoff_timesteps=50000)
+        # env = EarlyTerminationNethack(env=env,
+                    # minimum_score=1000,
+                    # cutoff_timesteps=50000)
         
         # Add any wrappers you need
 
