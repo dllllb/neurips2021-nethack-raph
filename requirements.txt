@@ -3,3 +3,4 @@ aicrowd-gym
 numpy
 scipy
 git+https://github.com/facebookresearch/nle.git@eric/competition --no-binary=nle
+tqdm
