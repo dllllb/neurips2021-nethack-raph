@@ -1,59 +1,76 @@
 ![Nethack Banner](https://raw.githubusercontent.com/facebookresearch/nle/master/dat/nle/logo.png)
 
-# Nethack Challenge - Starter Kit
+# **NeurIPS 2021 - The NetHack Challenge** - Getting started
+* **Challenge page** - https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge
+* **IMPORTANT - [Accept the rules before you submit](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/challenge_rules)**
+* **Join the discord server** - https://discord.gg/zkFWQmSWBA
+* Clone the starter kit to start competing - TODO Add final starter kit link
 
-👉 [Challenge page](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge)
-
-
-💬 [Join the discord server](https://discord.gg/zkFWQmSWBA)
-
-
-This repository is the Nethack Challenge **Submission template and Starter kit**! 
-
-Clone the repository to compete now!
-
-**This repository contains**:
+This repository is the Nethack Challenge **Submission template and Starter kit**! It contains: 
 *  **Documentation** on how to submit your models to the leaderboard
 *  **The procedure** for best practices and information on how we evaluate your agent, etc.
-*  **Starter code** for you to get started!
+*  **Baselines** for you to get started with training easily
 
-
+<p style="text-align:center"><img style="text-align:center" src="https://raw.githubusercontent.com/facebookresearch/nle/master/dat/nle/example_run.gif"></p>
 
 # Table of Contents
 
 1. [Competition Procedure](#competition-procedure)
-2. [How to access and use dataset](#how-to-access-and-use-dataset)
-3. [How to start participating](#how-to-start-participating)
-4. [How do I specify my software runtime / dependencies?](#how-do-i-specify-my-software-runtime-dependencies-)
-5. [What should my code structure be like ?](#what-should-my-code-structure-be-like-)
-6. [How to make submission](#how-to-make-submission)
-7. [Other concepts](#other-concepts)
-8. [Important links](#-important-links)
-
-
-<p style="text-align:center"><img style="text-align:center" src="https://raw.githubusercontent.com/facebookresearch/nle/master/dat/nle/example_run.gif"></p>
 
 
 #  Competition Procedure
 
 The NetHack Learning Environment (NLE) is a Reinforcement Learning environment presented at NeurIPS 2020. NLE is based on NetHack 3.6.6 and designed to provide a standard RL interface to the game, and comes with tasks that function as a first step to evaluate agents on this new environment. You can read more about NLE in the NeurIPS 2020 paper.
 
-
 We are excited that this competition offers machine learning students, researchers and NetHack-bot builders the opportunity to participate in a grand challenge in AI without prohibitive computational costs—and we are eagerly looking forward to the wide variety of submissions.
 
 
 **The following is a high level description of how this process works**
-
-![](https://i.imgur.com/xzQkwKV.jpg)
 
 1. **Sign up** to join the competition [on the AIcrowd website](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge).
 2. **Clone** this repo and start developing your solution.
 3. **Train** your models on NLE and write rollout code in `rollout.py`.
 4. [**Submit**](#how-to-submit-a-model) your trained models to [AIcrowd Gitlab](https://gitlab.aicrowd.com) for evaluation [(full instructions below)](#how-to-submit-a-model). The automated evaluation setup will evaluate the submissions against the NLE environment for a fixed number of rollouts to compute and report the metrics on the leaderboard of the competition.
 
-# How to run the environment
+![](https://i.imgur.com/xzQkwKV.jpg)
 
-Install the environment from the [original nethack repository](https://github.com/facebookresearch/nle)
+# Installation - Nethack Learning Environment
+
+NLE requires `python>=3.5`, `cmake>=3.14` to be installed and available both when building the
+package, and at runtime.
+
+On **MacOS**, one can use `Homebrew` as follows:
+
+``` bash
+$ brew install cmake
+```
+
+On a plain **Ubuntu 18.04** distribution, `cmake` and other dependencies
+can be installed by doing:
+
+```bash
+# Python and most build deps
+$ sudo apt-get install -y build-essential autoconf libtool pkg-config \
+    python3-dev python3-pip python3-numpy git flex bison libbz2-dev
+
+# recent cmake version
+$ wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+$ sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+$ sudo apt-get update && apt-get --allow-unauthenticated install -y \
+    cmake \
+    kitware-archive-keyring
+```
+
+Afterwards it's a matter of setting up your environment. We advise using a conda
+environment for this:
+
+```bash
+$ conda create -n nle python=3.8
+$ conda activate nle
+$ pip install git+https://github.com/facebookresearch/nle.git@eric/competition --no-binary:nle
+```
+
+Find more details on the [original nethack repository](https://github.com/facebookresearch/nle)
 
 # How to start participating
 
@@ -63,7 +80,7 @@ Install the environment from the [original nethack repository](https://github.co
 
 You can add your SSH Keys to your GitLab account by going to your profile settings [here](https://gitlab.aicrowd.com/profile/keys). If you do not have SSH Keys, you will first need to [generate one](https://docs.gitlab.com/ee/ssh/README.html#generating-a-new-ssh-key-pair).
 
-2.  **Clone the repository**
+2.  **Clone the repository** - TODO
 
     ```
     git clone git@github.com:AIcrowd/neurips-2021-nethack-starter-kit.git
@@ -71,20 +88,22 @@ You can add your SSH Keys to your GitLab account by going to your profile settin
 
 3. **Install** competition specific dependencies!
     ```
-    cd neurips-2021-nethack-starter-kit
-    pip install -r requirements.txt
+    pip install aicrowd-api
+    pip install aicrowd-gym
+
+    ## Install NLE according to the instructions above
     ```
 
 4. Try out random rollout script in `rollout.py`.
 
 
-## How do I specify my software runtime / dependencies ?
+## How do I specify my software runtime / dependencies ? - TODO
 
 We accept submissions with custom runtime, so you don't need to worry about which libraries or framework to pick from.
 
-The configuration files typically include `requirements.txt` (pypi packages), `environment.yml` (conda environment), `apt.txt` (apt packages) or even your own `Dockerfile`.
+The configuration files typically include `requirements.txt` (pypi packages), `apt.txt` (apt packages) or even your own `Dockerfile`.
 
-You can check detailed information about the same in the 👉 [RUNTIME.md](/docs/RUNTIME.md) file.
+You can check detailed information about the same in the [RUNTIME.md](/docs/RUNTIME.md) file.
 
 ## What should my code structure be like ?
 
@@ -96,7 +115,7 @@ The different files and directories have following meaning:
 ├── aicrowd.json           # Submission meta information - like your username
 ├── apt.txt                # Packages to be installed inside docker image
 ├── requirements.txt       # Python packages to be installed
-├── rollout.py             # Your rollout code
+├── rollout.py             # Your rollout code - can use a batched agent
 ├── run.sh                 # Submission entrypoint   
 └── utility                # The utility scripts to provide smoother experience to you.
     ├── docker_build.sh
@@ -130,7 +149,7 @@ The submission entrypoint is a bash script `run.sh`, you can call any arbitrary 
 
 👉 [SUBMISSION.md](/docs/SUBMISSION.md)
 
-**Best of Luck** 🎉 🎉
+
 
 # Other Information
 
@@ -142,21 +161,23 @@ To be added.
 
 To be added.
 
-## Contributing
+## Contributing? - TODO
 
 To be added
 
-## Contributors
+## Contributors - TODO
 
-- [Shivam Khandelwal](https://www.aicrowd.com/participants/shivam)
 - [Jyotish Poonganam](https://www.aicrowd.com/participants/jyotish)
 - [Dipam chakraborty](https://www.aicrowd.com/participants/dipam)
+- [Shivam Khandelwal](https://www.aicrowd.com/participants/shivam)
 
-# 📎 Important links
 
+# 📎 Important links - TODO
 
 💪 &nbsp;Challenge Page: https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge
 
 🗣️ &nbsp;Discussion Forum: https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/discussion
 
 🏆 &nbsp;Leaderboard: https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/leaderboards
+
+**Best of Luck** 🎉 🎉

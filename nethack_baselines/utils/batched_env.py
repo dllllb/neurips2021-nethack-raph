@@ -1,5 +1,4 @@
 import gym
-import nle
 import numpy as np
 from tqdm import trange
 from collections.abc import Iterable
@@ -11,6 +10,7 @@ class BactchedEnv:
         """
         self.num_envs = num_envs
         self.envs = [env_make_fn() for _ in range(self.num_envs)]
+        self.num_actions = self.envs[0].action_space.n
         # TODO: Can have different settings for each env? Probably not needed for Nethack
 
     def batch_step(self, actions):
@@ -67,7 +67,7 @@ if __name__ == '__main__':
                                           "tty_colors",
                                           "tty_cursor",))
 
-    num_envs = 16
+    num_envs = 4
     batched_env = BactchedEnv(env_make_fn=nethack_make_fn, num_envs=num_envs)
     observations = batched_env.batch_reset()
     num_actions = batched_env.envs[0].action_space.n

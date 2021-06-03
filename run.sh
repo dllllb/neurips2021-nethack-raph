@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python agent.py
+python rollout.py
 
