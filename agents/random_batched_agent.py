@@ -1,6 +1,6 @@
 import numpy as np
 
-from nethack_baselines.utils.batched_agent import BatchedAgent
+from agents.batched_agent import BatchedAgent
 
 class RandomAgent(BatchedAgent):
     def __init__(self, num_envs, num_actions):

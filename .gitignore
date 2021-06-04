@@ -131,4 +131,4 @@ dmypy.json
 .pyre/
 
 nle_data/
-
+test_batched_env.py

@@ -6,8 +6,8 @@
 
 import numpy as np
 
-from nethack_baselines.utils.batched_env import BactchedEnv
-from submission_agent import SubmissionConfig
+from envs.batched_env import BactchedEnv
+from submission_config import SubmissionConfig
 
 def run_batched_rollout(batched_env, agent):
     """

@@ -1,8 +1,8 @@
-from nethack_baselines.random_submission_agent import RandomAgent
-# from nethack_baselines.torchbeast_submission_agent import TorchBeastAgent
-# from nethack_baselines.rllib_submission_agent import RLlibAgent
+from agents.random_batched_agent import RandomAgent
+# from agents.torchbeast_batched_agent import TorchBeastAgent
+# from agents.rllib_batched_agent import RLlibAgent
 
-from wrappers import addtimelimitwrapper_fn
+from submission_wrappers import addtimelimitwrapper_fn
 
 ################################################
 #         Import your own agent code           #

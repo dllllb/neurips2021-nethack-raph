@@ -1,6 +1,6 @@
 from gym.wrappers import TimeLimit
 
-from nethack_baselines.utils.nethack_env_creation import nethack_make_fn
+from envs.nethack_make_function import nethack_make_fn
 
 def addtimelimitwrapper_fn():
     """

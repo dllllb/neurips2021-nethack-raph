@@ -1,4 +1,4 @@
-import gym
+import aicrowd_gym
 import numpy as np
 from tqdm import trange
 from collections.abc import Iterable
@@ -11,7 +11,6 @@ class BactchedEnv:
         self.num_envs = num_envs
         self.envs = [env_make_fn() for _ in range(self.num_envs)]
         self.num_actions = self.envs[0].action_space.n
-        # TODO: Can have different settings for each env? Probably not needed for Nethack
 
     def batch_step(self, actions):
         """
@@ -51,12 +50,10 @@ class BactchedEnv:
         return observation
 
 
-# TODO: Add helper functions to format to tf or torch batching
-
 if __name__ == '__main__':
 
     def nethack_make_fn():
-        return gym.make('NetHackChallenge-v0',
+        return aicrowd_gym.make('NetHackChallenge-v0',
                          observation_keys=("glyphs",
                                           "chars",
                                           "colors",
