@@ -2,7 +2,7 @@ from agents.random_batched_agent import RandomAgent
 from agents.torchbeast_agent import TorchBeastAgent
 # from agents.rllib_batched_agent import RLlibAgent
 
-from submission_wrappers import addtimelimitwrapper_fn
+from envs.wrappers import addtimelimitwrapper_fn
 
 ################################################
 #         Import your own agent code           #
@@ -28,7 +28,7 @@ class SubmissionConfig:
 
     ## Add a function that creates your nethack env
     ## Mainly this is to add wrappers
-    ## Add your wrappers to wrappers.py and change the name here
+    ## Add your wrappers to envs/wrappers.py and change the name here
     ## IMPORTANT: Don't "call" the function, only provide the name
     submission_env_make_fn = addtimelimitwrapper_fn
 
