@@ -23,7 +23,7 @@ class SubmissionConfig:
     ## Change the NUM_PARALLEL_ENVIRONMENTS as you need
     ## for example reduce it if your GPU doesn't fit
     ## Increasing above 32 is not advisable for the Nethack Challenge 2021
-    NUM_PARALLEL_ENVIRONMENTS = 16
+    NUM_PARALLEL_ENVIRONMENTS = 32
 
 
     ## Add a function that creates your nethack env
