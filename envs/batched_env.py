@@ -42,13 +42,6 @@ class BatchedEnv:
         observation = [env.reset() for env in self.envs]
         return observation
 
-    def single_env_reset(self, index):
-        """
-        Resets the env at the index location
-        """
-        observation = self.envs[index].reset()
-        return observation
-
 
 if __name__ == '__main__':
 
