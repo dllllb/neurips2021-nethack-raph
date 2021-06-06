@@ -46,8 +46,6 @@ def run_batched_rollout(batched_env, agent):
             returns[i] += r
         
         for done_idx in np.where(dones)[0]:
-            observations[done_idx] = batched_env.single_env_reset(done_idx)
- 
             if active_envs[done_idx]:
                 # We were 'counting' this episode
                 all_returns.append(returns[done_idx])
