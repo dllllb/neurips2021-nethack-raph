@@ -10,11 +10,12 @@ from tqdm import tqdm
 import numpy as np
 
 from envs.batched_env import BatchedEnv
+from envs.wrappers import create_env
 from submission_config import SubmissionConfig
 
-NUM_ASSESSMENTS = 512
 
-def run_batched_rollout(batched_env, agent):
+
+def run_batched_rollout(num_episodes, batched_env, agent):
     """
     This function will generate a series of rollouts in a batched manner.
     """
@@ -28,16 +29,17 @@ def run_batched_rollout(batched_env, agent):
     infos = [{} for _ in range(num_envs)]
 
     # We mark at the start of each episode if we are 'counting it'
-    active_envs = [i < NUM_ASSESSMENTS for i in range(num_envs)]
-    num_remaining = NUM_ASSESSMENTS - sum(active_envs)
+    active_envs = [i < num_episodes for i in range(num_envs)]
+    num_remaining = num_episodes - sum(active_envs)
     
     episode_count = 0
-    pbar = tqdm(total=NUM_ASSESSMENTS)
+    pbar = tqdm(total=num_episodes)
 
+    ascension_count = 0
     all_returns = []
     returns = [0.0 for _ in range(num_envs)]
     # The evaluator will automatically stop after the episodes based on the development/test phase
-    while episode_count < NUM_ASSESSMENTS:
+    while episode_count < num_episodes:
         actions = agent.batched_step(observations, rewards, dones, infos)
 
         observations, rewards, dones, infos = batched_env.batch_step(actions)
@@ -54,23 +56,23 @@ def run_batched_rollout(batched_env, agent):
                 active_envs[done_idx] = (num_remaining > 0)
                 num_remaining -= 1
                 
+                ascension_count += int(infos[done_idx]["is_ascended"])
                 pbar.update(1)
             
             returns[done_idx] = 0.0
-    return all_returns
+    pbar.close()
+    return ascension_count, all_returns
 
 if __name__ == "__main__":
-    submission_env_make_fn = SubmissionConfig.submission_env_make_fn
-    NUM_PARALLEL_ENVIRONMENTS = SubmissionConfig.NUM_PARALLEL_ENVIRONMENTS
-    Agent = SubmissionConfig.Submision_Agent
+    # AIcrowd will cut the assessment early duing the dev phase
+    NUM_ASSESSMENTS = 4096
 
-    batched_env = BatchedEnv(
-        env_make_fn=submission_env_make_fn, num_envs=NUM_PARALLEL_ENVIRONMENTS
-    )
+    env_make_fn = SubmissionConfig.MAKE_ENV_FN
+    num_envs = SubmissionConfig.NUM_ENVIRONMENTS
+    Agent = SubmissionConfig.AGENT
 
-    num_envs = batched_env.num_envs
-    num_actions = batched_env.num_actions
 
-    agent = Agent(num_envs, num_actions)
+    batched_env = BatchedEnv(env_make_fn=env_make_fn, num_envs=num_envs)
+    agent = Agent(num_envs, batched_env.num_actions)
 
-    run_batched_rollout(batched_env, agent)
+    run_batched_rollout(NUM_ASSESSMENTS, batched_env, agent)
