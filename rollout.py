@@ -9,7 +9,7 @@
 from tqdm import tqdm
 import numpy as np
 
-from envs.batched_env import BactchedEnv
+from envs.batched_env import BatchedEnv
 from submission_config import SubmissionConfig
 
 NUM_ASSESSMENTS = 512
@@ -46,8 +46,6 @@ def run_batched_rollout(batched_env, agent):
             returns[i] += r
         
         for done_idx in np.where(dones)[0]:
-            observations[done_idx] = batched_env.single_env_reset(done_idx)
- 
             if active_envs[done_idx]:
                 # We were 'counting' this episode
                 all_returns.append(returns[done_idx])
@@ -66,7 +64,7 @@ if __name__ == "__main__":
     NUM_PARALLEL_ENVIRONMENTS = SubmissionConfig.NUM_PARALLEL_ENVIRONMENTS
     Agent = SubmissionConfig.Submision_Agent
 
-    batched_env = BactchedEnv(
+    batched_env = BatchedEnv(
         env_make_fn=submission_env_make_fn, num_envs=NUM_PARALLEL_ENVIRONMENTS
     )
 
