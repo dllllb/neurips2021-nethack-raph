@@ -1,6 +1,6 @@
-from agents.random_agent import RandomAgent
+from agents.random_batched_agent import RandomAgent
 # from agents.torchbeast_batched_agent import TorchBeastAgent
-# from agents.rllib_agent import RLlibAgent
+# from agents.rllib_batched_agent import RLlibAgent
 
 from submission_wrappers import addtimelimitwrapper_fn
 
