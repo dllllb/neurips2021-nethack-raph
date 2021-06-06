@@ -1,3 +1,7 @@
+torch
+einops
+hydra-core
+hydra_colorlog
 aicrowd-api
 aicrowd-gym
 numpy

@@ -32,6 +32,7 @@ def evaluate():
     agent = Agent(num_envs, num_actions)
 
     run_batched_rollout(batched_env, agent)
+    
 
 if __name__ == '__main__':
     evaluate()
