@@ -35,6 +35,7 @@ def run_batched_rollout(num_episodes, batched_env, agent):
     episode_count = 0
     pbar = tqdm(total=num_episodes)
 
+    ascension_count = 0
     all_returns = []
     returns = [0.0 for _ in range(num_envs)]
     # The evaluator will automatically stop after the episodes based on the development/test phase
@@ -55,11 +56,12 @@ def run_batched_rollout(num_episodes, batched_env, agent):
                 active_envs[done_idx] = (num_remaining > 0)
                 num_remaining -= 1
                 
+                ascension_count += int(infos[done_idx]["is_ascended"])
                 pbar.update(1)
             
             returns[done_idx] = 0.0
     pbar.close()
-    return all_returns
+    return ascension_count, all_returns
 
 if __name__ == "__main__":
     # AIcrowd will cut the assessment early duing the dev phase

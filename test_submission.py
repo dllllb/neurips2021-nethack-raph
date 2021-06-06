@@ -25,8 +25,12 @@ def evaluate():
 
     agent = Agent(num_envs, batched_env.num_actions)
 
-    scores = run_batched_rollout(num_episodes, batched_env, agent)
-    print(f"Median Score: {np.median(scores)}, Mean Score: {np.mean(scores)}")
+    ascensions, scores = run_batched_rollout(num_episodes, batched_env, agent)
+    print(
+        f"Ascensions: {ascensions} "
+        f"Median Score: {np.median(scores)}, "
+        f"Mean Score: {np.mean(scores)}"
+    )
 
 
 if __name__ == "__main__":
