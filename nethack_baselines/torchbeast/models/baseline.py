@@ -21,7 +21,7 @@ from einops import rearrange
 
 from nle import nethack
 
-from util.id_pairs import id_pairs_table
+from .util import id_pairs_table
 import numpy as np
 
 NUM_GLYPHS = nethack.MAX_GLYPH

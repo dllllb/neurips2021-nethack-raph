@@ -1,5 +1,5 @@
 from agents.random_batched_agent import RandomAgent
-# from agents.torchbeast_batched_agent import TorchBeastAgent
+from agents.torchbeast_batched_agent import TorchBeastAgent
 # from agents.rllib_batched_agent import RLlibAgent
 
 from submission_wrappers import addtimelimitwrapper_fn
@@ -15,9 +15,9 @@ from submission_wrappers import addtimelimitwrapper_fn
 
 class SubmissionConfig:
     ## Add your own agent class
-    # Submision_Agent = TorchBeastAgent
+    Submision_Agent = TorchBeastAgent
     # Submision_Agent = RLlibAgent
-    Submision_Agent = RandomAgent
+    # Submision_Agent = RandomAgent
 
 
     ## Change the NUM_PARALLEL_ENVIRONMENTS as you need
