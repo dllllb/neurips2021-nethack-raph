@@ -8,7 +8,7 @@
 from submission_agent import SubmissionConfig, LocalEvaluationConfig
                               
 from rollout import run_batched_rollout
-from nethack_baselines.utils.batched_env import BactchedEnv
+from nethack_baselines.utils.batched_env import BatchedEnv
 
 
 # Ideally you shouldn't need to change anything below
@@ -23,7 +23,7 @@ def evaluate():
     Agent = SubmissionConfig.Submision_Agent
 
     evaluation_env_fn = add_evaluation_wrappers_fn(submission_env_make_fn)
-    batched_env = BactchedEnv(env_make_fn=evaluation_env_fn,
+    batched_env = BatchedEnv(env_make_fn=evaluation_env_fn,
                                 num_envs=num_envs)
 
     num_envs = batched_env.num_envs

@@ -9,7 +9,7 @@
 from tqdm import tqdm
 import numpy as np
 
-from envs.batched_env import BactchedEnv
+from envs.batched_env import BatchedEnv
 from submission_config import SubmissionConfig
 
 NUM_ASSESSMENTS = 512
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     NUM_PARALLEL_ENVIRONMENTS = SubmissionConfig.NUM_PARALLEL_ENVIRONMENTS
     Agent = SubmissionConfig.Submision_Agent
 
-    batched_env = BactchedEnv(
+    batched_env = BatchedEnv(
         env_make_fn=submission_env_make_fn, num_envs=NUM_PARALLEL_ENVIRONMENTS
     )
 

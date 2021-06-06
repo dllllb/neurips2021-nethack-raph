@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import trange
 from collections.abc import Iterable
 
-class BactchedEnv:
+class BatchedEnv:
     def __init__(self, env_make_fn, num_envs=32):
         """
         Creates multiple copies of the environment with the same env_make_fn function
