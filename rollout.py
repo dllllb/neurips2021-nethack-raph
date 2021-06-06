@@ -26,7 +26,7 @@ def run_batched_rollout(batched_env, agent):
 
     # The evaluator will automatically stop after the episodes based on the development/test phase
     while episode_count < 10000:
-        actions = agent.batched_step(observations, rewards, dones, infos) 
+        actions = agent.batched_step(observations, rewards, dones, infos)
 
         observations, rewards, dones, infos = batched_env.batch_step(actions)
         for done_idx in np.where(dones)[0]:
@@ -37,15 +37,16 @@ def run_batched_rollout(batched_env, agent):
 if __name__ == "__main__":
 
     submission_env_make_fn = SubmissionConfig.submission_env_make_fn
-    NUM_PARALLEL_ENVIRONMENTS = SubmissionConfig.NUM_PARALLEL_ENVIRONMENTS 
+    NUM_PARALLEL_ENVIRONMENTS = SubmissionConfig.NUM_PARALLEL_ENVIRONMENTS
     Agent = SubmissionConfig.Submision_Agent
 
-    batched_env = BactchedEnv(env_make_fn=submission_env_make_fn, 
+    batched_env = BactchedEnv(env_make_fn=submission_env_make_fn,
                               num_envs=NUM_PARALLEL_ENVIRONMENTS)
 
     num_envs = batched_env.num_envs
     num_actions = batched_env.num_actions
-    
+
     agent = Agent(num_envs, num_actions)
 
     run_batched_rollout(batched_env, agent)
+
