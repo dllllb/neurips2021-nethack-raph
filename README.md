@@ -67,7 +67,7 @@ environment for this:
 ```bash
 $ conda create -n nle python=3.8
 $ conda activate nle
-$ pip install git+https://github.com/facebookresearch/nle.git@eric/competition --no-binary:nle
+$ pip install git+https://github.com/facebookresearch/nle.git@eric/competition
 ```
 
 Find more details on the [original nethack repository](https://github.com/facebookresearch/nle)
