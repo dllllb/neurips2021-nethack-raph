@@ -1,7 +1,7 @@
 # -*- mode: dockerfile -*-
 FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04
 
-ARG PYTHON_VERSION=3.8
+ARG PYTHON_VERSION=3.7
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -yq \
@@ -43,7 +43,7 @@ RUN python -c 'import torch'
 
 # Install TorchBeast
 WORKDIR /opt/
-RUN git clone https://github.com/condnsdmatters/torchbeast.git --branch eric/experimental-port  --recursive
+RUN git clone https://github.com/facebookresearch/torchbeast.git --recursive
 
 WORKDIR /opt/torchbeast
 RUN pip install -r requirements.txt
