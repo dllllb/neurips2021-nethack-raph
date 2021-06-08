@@ -94,8 +94,9 @@ You can add your SSH Keys to your GitLab account by going to your profile settin
     ## Install NLE according to the instructions above
     ```
 
-4. Try out random rollout script in `rollout.py`.
+4. Try out a random agent by setting `AGENT = RandomAgent` in `submission_config.py` and then running `rollout.py`.
 
+5. See [this](/nethack_baselines/torchbeast/README.md) for an example of how to train and submit an IMPALA agent. Check out `nethack_baselines` for more examples. 
 
 ## How do I specify my software runtime / dependencies ? - TODO
 
