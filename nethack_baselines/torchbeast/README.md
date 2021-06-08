@@ -14,9 +14,7 @@ batching.
 
 ## Installation
 
-To get this running all you need to do is follow the TorchBeast
-installation instructions, on the repo page, and then install the
-requirements.txt
+To get this running all you need to do is follow the TorchBeast installation instructions from the [TorchBeast repo](https://github.com/facebookresearch/torchbeast).
 
 A Dockerfile is also provided with installation of Torchbeast.
 
@@ -45,13 +43,9 @@ polybeast - just override the `actor_device` argument:
 
 ## Making a submission
 
-Take the output directory of your trained model, add the
-`checkpoint.tar` and `config.yaml` to the git repo. Then change the
-`SUBMISSION` variable in `rollout.py` in the base of this repository
-to point to that directory.
+In the output directory of your trained model, you should find two files, `checkpoint.tar` and `config.yaml`. Add both of them to your submission repo. Then change the `MODEL_DIR` variable in `agents/torchbeast_agent.py` to point to the directory where these files are located.
 
-After that tag the submission, and push the branch and tag to
-AIcrowd's gitlab!
+After that, follow [these instructions](https://gitlab.aicrowd.com/roberta_raileanu/neurips-2021-nethack-starter-kit/-/blob/master/docs/SUBMISSION.md) to submit your model to AIcrowd!
 
 
 ## Repo Structure
