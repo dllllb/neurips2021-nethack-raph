@@ -41,6 +41,8 @@ polybeast - just override the `actor_device` argument:
 
 `python polyhydra.py actor_device=cpu`
 
+NOTE: if you get a "Too many open files" error, try: `ulimit -Sn 10000`.
+
 ## Making a submission
 
 In the output directory of your trained model, you should find two files, `checkpoint.tar` and `config.yaml`. Add both of them to your submission repo. Then change the `MODEL_DIR` variable in `agents/torchbeast_agent.py` to point to the directory where these files are located.
