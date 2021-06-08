@@ -104,6 +104,17 @@ and you are ready to test with `python test_submission.py`
 
 **How do I actually make a submission?**
 
+First you need to fill in you `aicrowd.json`, to give AIcrowd some info so you can be scored.
+The `aicrowd.json` of each submission should contain the following content:
+
+```json
+{
+  "challenge_id": "evaluations-api-neurips-nethack",
+  "authors": ["your-aicrowd-username"],
+  "description": "(optional) description about your awesome agent",
+  "external_dataset_used": false
+}
+
 The submission is made by adding everything including the model to git,
 tagging the submission with a git tag that start `submission-`, and 
 pushing to AIcrowd's GitLab. The rest is done for you!
