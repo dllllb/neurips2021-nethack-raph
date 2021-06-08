@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from agents.batched_agent import BatchedAgent
+from agents.base import BatchedAgent
 
 from nethack_baselines.torchbeast.models import load_model
 
