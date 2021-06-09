@@ -1,4 +1,4 @@
-![Nethack Banner](https://images.aicrowd.com/raw_images/challenges/banner_file/423/05645091231d5b0610f4.jpg)
+![Nethack Banner](https://images.aicrowd.com/raw_images/challenges/banner_file/423/8e2ff972dcf73d5ce031.jpg)
 
 # **NeurIPS 2021 - The NetHack Challenge** - Starter Kit
 
