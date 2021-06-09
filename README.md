@@ -11,7 +11,7 @@ This repository is the Nethack Challenge **Starter kit**! It contains:
 
 Quick Links:
 
-* [The NetHack Challenge - Competition Page](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge)
+* [The NetHack Challenge - Competition Page](https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge)
 * [The NetHack Challenge - Discord Server](https://discord.gg/zkFWQmSWBA)
 * [The NetHack Challenge - Starter Kit](https://gitlab.aicrowd.com/nethack/neurips-2021-the-nethack-challenge)
 * [IMPORTANT - Accept the rules before you submit](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/challenge_rules)
@@ -255,10 +255,10 @@ More information on submissions can be found at our [SUBMISSION.md](/docs/SUBMIS
 
 # 📎 Important links
 
-💪 Challenge Page: https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge
+💪 Challenge Page: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge
 
-🗣️ Discussion Forum: https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/discussion
+🗣️ Discussion Forum: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge/discussion
 
-🏆 Leaderboard: https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/leaderboards
+🏆 Leaderboard: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge/leaderboards
 
 **Best of Luck** 🎉 🎉
