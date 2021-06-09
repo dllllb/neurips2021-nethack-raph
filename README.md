@@ -127,7 +127,7 @@ To then submit your saved model, simply set the `AGENT` in
 `submission config` to be `TorchBeastAgent`, and modify the 
 `agent/torchbeast_agent.py` to point to your saved directory.
 
-You can now test your saved model with `python test_baseline.py`
+You can now test your saved model with `python test_submission.py`
 
 **How can I get going with a completely new model?**
 

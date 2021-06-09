@@ -14,7 +14,7 @@ batching.
 
 ## Installation
 
-To get this running all you need to do is follow the TorchBeast installation instructions from the [TorchBeast repo](https://github.com/facebookresearch/torchbeast).
+To get this running you'll need to follow the TorchBeast installation instructions for PolyBeast from the [TorchBeast repo](https://github.com/facebookresearch/torchbeast#installing-polybeast).
 
 A Dockerfile is also provided with installation of Torchbeast.
 
@@ -45,10 +45,9 @@ NOTE: if you get a "Too many open files" error, try: `ulimit -Sn 10000`.
 
 ## Making a submission
 
-In the output directory of your trained model, you should find two files, `checkpoint.tar` and `config.yaml`. Add both of them to your submission repo. Then change the `MODEL_DIR` variable in `agents/torchbeast_agent.py` to point to the directory where these files are located.
+In the output directory of your trained model, you should find two files, `checkpoint.tar` and `config.yaml`. Add both of them to your submission repo. Then change the `MODEL_DIR` variable in `agents/torchbeast_agent.py` to point to the directory where these files are located. And finally, simply set the `AGENT` in `submission_config.py` to be 'TorchBeastAgent' so that your torchbeast agent variation is used for the submission.
 
-After that, follow [these instructions](https://gitlab.aicrowd.com/roberta_raileanu/neurips-2021-nethack-starter-kit/-/blob/master/docs/SUBMISSION.md) to submit your model to AIcrowd!
-
+After that, follow [these instructions](/docs/SUBMISSION.md) to submit your model to AIcrowd!
 
 ## Repo Structure
 
