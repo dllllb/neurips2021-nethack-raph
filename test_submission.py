@@ -7,7 +7,6 @@
 
 import numpy as np
 
-from agents.batched_agent import BatchedAgent
 from submission_config import SubmissionConfig, TestEvaluationConfig
 
 from rollout import run_batched_rollout

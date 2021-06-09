@@ -117,7 +117,6 @@ The different files and directories have following meaning:
 Finally, **you must specify an AIcrowd submission JSON in `aicrowd.json` to be scored!** See "How do I actually make a submission" below for more details.
 
 
-
 **How can I get going with an existing baseline?**
 
 The best current baseline is the torchbeast baseline. Follow the instructions 
@@ -175,64 +174,61 @@ The machine where the submission will run will have following specifications:
 
 1. **Add your SSH key** to AIcrowd GitLab
 
-You can add your SSH Keys to your GitLab account by going to your profile settings [here](https://gitlab.aicrowd.com/profile/keys). If you do not have SSH Keys, you will first need to [generate one](https://docs.gitlab.com/ee/ssh/README.html#generating-a-new-ssh-key-pair).
+    You can add your SSH Keys to your GitLab account by going to your profile settings [here](https://gitlab.aicrowd.com/profile/keys). If you do not have SSH Keys, you will first need to [generate one](https://docs.gitlab.com/ee/ssh/README.html#generating-a-new-ssh-key-pair).
 
-2.  **Clone the repository** - TODO
+2.  **Clone the repository**
 
     ```
     git clone git@gitlab.aicrowd.com:nethack/neurips-2021-the-nethack-challenge.git
     ```
+    
+3. **Verify you have dependencies** for the Nethack Learning Environment
 
-3. **Install** competition specific dependencies!
+    NLE requires `python>=3.5`, `cmake>=3.14` to be installed and available both when building the
+    package, and at runtime.
+    
+    On **MacOS**, one can use `Homebrew` as follows:
+    
+    ``` bash
+    $ brew install cmake
     ```
-    pip install -r requirements
+    
+    On a plain **Ubuntu 18.04** distribution, `cmake` and other dependencies
+    can be installed by doing:
+    
+    ```bash
+    # Python and most build deps
+    $ sudo apt-get install -y build-essential autoconf libtool pkg-config \
+        python3-dev python3-pip python3-numpy git flex bison libbz2-dev
+    
+    # recent cmake version
+    $ wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+    $ sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+    $ sudo apt-get update && apt-get --allow-unauthenticated install -y \
+        cmake \
+        kitware-archive-keyring
     ```
 
-4. Run rollouts with a random agent with `python test_submission.py`.
+4. **Install** competition specific dependencies!
 
-### For setting up the Nethack Learning Environment:
+    We advise using a conda environment for this:
+    ```bash
+    # Optional: Create a conda env
+    $ conda create -n nle_challenge python=3.8
+    $ conda activate nle_challenge
+    $ pip install -r requirements.txt
+    ```
 
-NLE requires `python>=3.5`, `cmake>=3.14` to be installed and available both when building the
-package, and at runtime.
+5. **Run rollouts** with a random agent with `python test_submission.py`.
 
-On **MacOS**, one can use `Homebrew` as follows:
-
-``` bash
-$ brew install cmake
-```
-
-On a plain **Ubuntu 18.04** distribution, `cmake` and other dependencies
-can be installed by doing:
-
-```bash
-# Python and most build deps
-$ sudo apt-get install -y build-essential autoconf libtool pkg-config \
-    python3-dev python3-pip python3-numpy git flex bison libbz2-dev
-
-# recent cmake version
-$ wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-$ sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-$ sudo apt-get update && apt-get --allow-unauthenticated install -y \
-    cmake \
-    kitware-archive-keyring
-```
-
-Afterwards it's a matter of setting up your environment. We advise using a conda
-environment for this:
-
-```bash
-$ conda create -n nle python=3.8
-$ conda activate nle
-$ pip install nle
-```
-
-Find more details on the [original nethack repository](https://github.com/facebookresearch/nle)
+    Find more details on the [original nethack repository](https://github.com/facebookresearch/nle)
 
 # Baselines
 
 Although we are looking to supply this repository with more baselines throughout the first month of the competition, this repository comes with a strong IMPALA-based baseline in the directory `./nethack_baselines/torchbeast`.
 
-More info on how to install, train and submit that repo are available [here](./nethack_baselines/torchbeast/README.md) - along with some suggestions on where to go next!
+Follow the instructions [here](/nethack_baselines/torchbeast/) to install and start training the model (there are even some suggestions for improvements).
+
 
 # How to Test and Debug Locally
 
