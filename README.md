@@ -6,14 +6,14 @@
 This repository is the Nethack Challenge **Starter kit**! It contains:
 * **Instructions** for setting up your codebase to make submissions easy.
 * **Baselines** for quickly getting started training your agent.
-* **Notebooks** for introducing you to NetHack and the NLE
+* **Notebooks** for introducing you to NetHack and the NLE.
 * **Documentation** for how to submit your model to the leaderboard.
 
 Quick Links:
 
-* [the NetHack Challenge - Competition Page](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge)
-* [the NetHack Challenge - Discord Server](https://discord.gg/zkFWQmSWBA)
-* [the NetHack Challenge - Starter Kit](https://gitlab.aicrowd.com/nethack/neurips-2021-the-nethack-challenge)
+* [The NetHack Challenge - Competition Page](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge)
+* [The NetHack Challenge - Discord Server](https://discord.gg/zkFWQmSWBA)
+* [The NetHack Challenge - Starter Kit](https://gitlab.aicrowd.com/nethack/neurips-2021-the-nethack-challenge)
 * [IMPORTANT - Accept the rules before you submit](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/challenge_rules)
 
 
@@ -22,14 +22,14 @@ Quick Links:
 2. [Setting up your codebase](setting-up-your-codebase)
 3. [Baselines](baselines)
 4. [How to test and debug locally](how-to-test-and-debug-locally)
-5. [How to submit](how-to-ssubmit)
+5. [How to submit](how-to-submit)
 
 # Intro to Nethack and the Nethack Challenge
 
 Your goal is to produce the best possible agent for navigating the depths
 of Nethack dungeons and emerging with the Amulet in hand! 
 You can approach this task however you please, but a good starting point 
-would be [this notebook](./notebooks/NetHackTutorial.ipynb) which provides
+would be [**this notebook**](./notebooks/NetHackTutorial.ipynb) which provides
 an overview of  (1) the many dynamics at play in the game and   (2) the 
 observation and action space with which your agent will interact. 
 
@@ -48,7 +48,7 @@ of the competition.
 # Setting Up Your Codebase
 
 AIcrowd provides great flexibility in the details of your submission!  
-Find the answers to FAQs about submissions structure below, followed by 
+Find the answers to FAQs about submission structure below, followed by 
 the guide for setting up this starter kit and linking it to the AIcrowd 
 GitLab.
 
@@ -69,8 +69,8 @@ code from this script.  However, to get you started, the environment is
 set up to generate rollouts in Python. 
 
 The repo gives you a template placeholder to load your model 
-(`agents/your_agent.py`), and a config to chose which agent to load 
-(`submission_config.py`). You can then test a submission, adding all 
+(`agents/your_agent.py`), and a config to choose which agent to load 
+(`submission_config.py`). You can then test a submission, adding all of 
 AIcrowd’s timeouts on the environment, with `python test_submission.py`
 
 **How do I specify my dependencies?**
@@ -81,13 +81,35 @@ favorite! The configuration files typically include `requirements.txt`
 
 You can check detailed information about the same in the `RUNTIME.md` file.
 
+**What should my code structure look like?**
+
+Please follow the example structure as it is in the starter kit for the code structure.
+The different files and directories have following meaning:
+
+```
+.
+├── aicrowd.json           # Submission meta information - like your username
+├── apt.txt                # Packages to be installed inside docker image
+├── requirements.txt       # Python packages to be installed
+├── rollout.py             # Your rollout code - can use a batched agent
+├── run.sh                 # Submission entrypoint   
+└── utility                # The utility scripts to provide smoother experience to you.
+    ├── docker_build.sh
+    ├── docker_run.sh
+    ├── environ.sh
+```
+
+Finally, **you must specify an AIcrowd submission JSON in `aicrowd.json` to be scored!** See "How do I actually make a submission" below for more details.
+
+
+
 **How can I get going with an existing baseline?**
 
-The best current baseline is torchbeast baseline. Follow the instructions 
+The best current baseline is the torchbeast baseline. Follow the instructions 
 [here](/nethack_baselines/torchbeast/) to install and start training 
 the model (there are even some suggestions for improvements).
 
-To then submit your saved model, simply replace set he `AGENT` in 
+To then submit your saved model, simply set the `AGENT` in 
 `submission config` to be `TorchBeastAgent`, and modify the 
 `agent/torchbeast_agent.py` to point to your saved directory.
 
@@ -96,8 +118,7 @@ You can now test your saved model with `python test_baseline.py`
 **How can I get going with a completely new model?**
 
 Train your model as you like, and when you’re ready to submit, just adapt
-`YourAgent` in `agents/your_agent.py` to load your model and take a  
-`batched_step`.
+`YourAgent` in `agents/your_agent.py` to load your model and take a `batched_step`.
 
 Then just set your `AGENT` in `submission_config.py` to be this class 
 and you are ready to test with `python test_submission.py`
@@ -114,9 +135,10 @@ The `aicrowd.json` of each submission should contain the following content:
   "description": "(optional) description about your awesome agent",
   "external_dataset_used": false
 }
+```
 
 The submission is made by adding everything including the model to git,
-tagging the submission with a git tag that start `submission-`, and 
+tagging the submission with a git tag that starts with `submission-`, and 
 pushing to AIcrowd's GitLab. The rest is done for you!
 
 More details are available [here](/docs/SUBMISSION.md)
@@ -124,12 +146,12 @@ More details are available [here](/docs/SUBMISSION.md)
 **Are there any hardware or time constraints?**
 
 Your submission will need to complete 128 rollouts in 30 minutes. We will
-run 4 of these in parallel, a total of 512 episodes will be used for
+run 4 of these in parallel, and a total of 512 episodes will be used for
 evaluation. The episode will timeout and terminate if any action is
 left hanging for 300 seconds, or 10,000 steps are taken without 
 advancing the in game clock. 
 
-The machine where the submission will run will have following specifications
+The machine where the submission will run will have following specifications:
 * 1 NVIDIA T4 GPU
 * 4 vCPUs
 * 16 GB RAM
@@ -153,6 +175,44 @@ You can add your SSH Keys to your GitLab account by going to your profile settin
 
 4. Run rollouts with a random agent with `python test_submission.py`.
 
+### For setting up the Nethack Learning Environment:
+
+NLE requires `python>=3.5`, `cmake>=3.14` to be installed and available both when building the
+package, and at runtime.
+
+On **MacOS**, one can use `Homebrew` as follows:
+
+``` bash
+$ brew install cmake
+```
+
+On a plain **Ubuntu 18.04** distribution, `cmake` and other dependencies
+can be installed by doing:
+
+```bash
+# Python and most build deps
+$ sudo apt-get install -y build-essential autoconf libtool pkg-config \
+    python3-dev python3-pip python3-numpy git flex bison libbz2-dev
+
+# recent cmake version
+$ wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+$ sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+$ sudo apt-get update && apt-get --allow-unauthenticated install -y \
+    cmake \
+    kitware-archive-keyring
+```
+
+Afterwards it's a matter of setting up your environment. We advise using a conda
+environment for this:
+
+```bash
+$ conda create -n nle python=3.8
+$ conda activate nle
+$ pip install git+https://github.com/facebookresearch/nle.git@eric/competition --no-binary:nle
+```
+
+Find more details on the [original nethack repository](https://github.com/facebookresearch/nle)
+
 # Baselines
 
 Although we are looking to supply this repository with more baselines throughout the first month of the competition, this repository comes with a strong IMPALA-based baseline in the directory `./nethack_baselines/torchbeast`.
@@ -175,6 +235,7 @@ More information on submissions can be found at our [SUBMISSION.md](/docs/SUBMIS
 - [Dipam chakraborty](https://www.aicrowd.com/participants/dipam)
 - [Shivam Khandelwal](https://www.aicrowd.com/participants/shivam)
 - [Eric Hambro](https://www.aicrowd.com/participants/eric_hammy)
+- [Danielle Rothermel](https://www.aicrowd.com/participants/danielle_rothermel)
 
 
 <!--  
