@@ -1,4 +1,4 @@
-![Nethack Banner](https://raw.githubusercontent.com/facebookresearch/nle/master/dat/nle/logo.png)
+![Nethack Banner](https://images.aicrowd.com/raw_images/challenges/banner_file/423/05645091231d5b0610f4.jpg)
 
 # **NeurIPS 2021 - The NetHack Challenge** - Starter Kit
 
@@ -11,7 +11,7 @@ This repository is the Nethack Challenge **Starter kit**! It contains:
 
 Quick Links:
 
-* [The NetHack Challenge - Competition Page](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge)
+* [The NetHack Challenge - Competition Page](https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge)
 * [The NetHack Challenge - Discord Server](https://discord.gg/zkFWQmSWBA)
 * [The NetHack Challenge - Starter Kit](https://gitlab.aicrowd.com/nethack/neurips-2021-the-nethack-challenge)
 * [IMPORTANT - Accept the rules before you submit](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/challenge_rules)
@@ -19,10 +19,10 @@ Quick Links:
 
 # Table of Contents
 1. [Intro to Nethack and the Nethack Challenge](#intro-to-nethack-and-the-nethack-challenge)
-2. [Setting up your codebase](setting-up-your-codebase)
-3. [Baselines](baselines)
-4. [How to test and debug locally](how-to-test-and-debug-locally)
-5. [How to submit](how-to-submit)
+2. [Setting up your codebase](#setting-up-your-codebase)
+3. [Baselines](#baselines)
+4. [How to test and debug locally](#how-to-test-and-debug-locally)
+5. [How to submit](#how-to-submit)
 
 # Intro to Nethack and the Nethack Challenge
 
@@ -43,7 +43,7 @@ will evaluate the submissions against the NLE environment for a fixed
 number of rollouts to compute and report the metrics on the leaderboard
 of the competition.
 
-![](https://i.imgur.com/xzQkwKV.jpg)
+![](https://images.aicrowd.com/raw_images/challenges/banner_file/423/5f69010437d25bf569c4.jpg)
 
 # Setting Up Your Codebase
 
@@ -79,7 +79,7 @@ We accept submissions with custom runtimes, so you can choose your
 favorite! The configuration files typically include `requirements.txt` 
 (pypi packages), `apt.txt` (apt packages) or even your own `Dockerfile`.
 
-You can check detailed information about the same in the `RUNTIME.md` file.
+You can check detailed information about the same in the [RUNTIME.md](/docs/RUNTIME.md) file.
 
 **What should my code structure look like?**
 
@@ -88,15 +88,30 @@ The different files and directories have following meaning:
 
 ```
 .
-├── aicrowd.json           # Submission meta information - like your username
-├── apt.txt                # Packages to be installed inside docker image
-├── requirements.txt       # Python packages to be installed
-├── rollout.py             # Your rollout code - can use a batched agent
-├── run.sh                 # Submission entrypoint   
-└── utility                # The utility scripts to provide smoother experience to you.
-    ├── docker_build.sh
-    ├── docker_run.sh
-    ├── environ.sh
+├── aicrowd.json                  # Submission meta information - add tags for tracks here
+├── apt.txt                       # Packages to be installed inside submission environment
+├── requirements.txt              # Python packages to be installed with pip
+├── rollout.py                    # This will run rollouts on a batched agent
+├── test_submission.py            # Run this on your machine to get an estimated score
+├── run.sh                        # Submission entrypoint
+├── utilities                     # Helper scripts for setting up and submission 
+    ├── submit.sh                 # script for easy submission of your code
+├── envs                          # Operations on the env like batching and wrappers
+    ├── batched_env.py            # Batching for multiple envs
+    ├── wrappers.py   	          # Add wrappers to your env here
+├── agents                        # Baseline agents for submission
+    ├── batched_agent.py	      # Abstraction reference batched agents
+    ├── random_batched_agent.py	  # Batched agent that returns random actions
+    ├── rllib_batched_agent.py	  # Batched agent that runs with the rllib baseline
+    ├── torchbeast_agent.py	      # Batched agent that runs with the torchbeast baseline
+├── nethack_baselines             # Baseline agents for submission
+     ├── other_examples  	
+	    ├── random_rollouts.py    # Barebones random agent with no batching
+     ├── rllib	                  # Baseline agent trained with rllib
+     ├── torchbeast	              # Baseline agent trained with IMPALA on Pytorch
+├── notebooks                 
+    ├── NetHackTutorial.ipynb     # Tutorial on the Nethack Learning Environment
+
 ```
 
 Finally, **you must specify an AIcrowd submission JSON in `aicrowd.json` to be scored!** See "How do I actually make a submission" below for more details.
@@ -129,10 +144,10 @@ The `aicrowd.json` of each submission should contain the following content:
 
 ```json
 {
-  "challenge_id": "evaluations-api-neurips-nethack",
+  "challenge_id": "neurips-2021-the-nethack-challenge",
   "authors": ["your-aicrowd-username"],
   "description": "(optional) description about your awesome agent",
-  "external_dataset_used": false
+  "gpu": true
 }
 ```
 
@@ -234,220 +249,12 @@ More information on submissions can be found at our [SUBMISSION.md](/docs/SUBMIS
 - [Danielle Rothermel](https://www.aicrowd.com/participants/danielle_rothermel)
 
 
-<!--  
-=================
+# 📎 Important links
 
-# Table of Contents
+💪 Challenge Page: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge
 
-1. [Competition Procedure](#competition-procedure)
+🗣️ Discussion Forum: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge/discussion
 
-
-#  Competition Procedure
-
-The NetHack Learning Environment (NLE) is a Reinforcement Learning environment presented at NeurIPS 2020. NLE is based on NetHack 3.6.6 and designed to provide a standard RL interface to the game, and comes with tasks that function as a first step to evaluate agents on this new environment. You can read more about NLE in the NeurIPS 2020 paper.
-
-We are excited that this competition offers machine learning students, researchers and NetHack-bot builders the opportunity to participate in a grand challenge in AI without prohibitive computational costs—and we are eagerly looking forward to the wide variety of submissions.
-
-
-**The following is a high level description of how this process works**
-
-1. **Sign up** to join the competition [on the AIcrowd website](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge).
-2. **Clone** this repo and start developing your solution.
-3. **Train** your models on NLE and write rollout code in `rollout.py`.
-4. [**Submit**](#how-to-submit-a-model) your trained models to [AIcrowd Gitlab](https://gitlab.aicrowd.com) for evaluation [(full instructions below)](#how-to-submit-a-model). The automated evaluation setup will evaluate the submissions against the NLE environment for a fixed number of rollouts to compute and report the metrics on the leaderboard of the competition.
-
-![](https://i.imgur.com/xzQkwKV.jpg)
-
-# Installation - Nethack Learning Environment
-
-NLE requires `python>=3.5`, `cmake>=3.14` to be installed and available both when building the
-package, and at runtime.
-
-On **MacOS**, one can use `Homebrew` as follows:
-
-``` bash
-$ brew install cmake
-```
-
-On a plain **Ubuntu 18.04** distribution, `cmake` and other dependencies
-can be installed by doing:
-
-```bash
-# Python and most build deps
-$ sudo apt-get install -y build-essential autoconf libtool pkg-config \
-    python3-dev python3-pip python3-numpy git flex bison libbz2-dev
-
-# recent cmake version
-$ wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-$ sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-$ sudo apt-get update && apt-get --allow-unauthenticated install -y \
-    cmake \
-    kitware-archive-keyring
-```
-
-Afterwards it's a matter of setting up your environment. We advise using a conda
-environment for this:
-
-```bash
-$ conda create -n nle python=3.8
-$ conda activate nle
-$ pip install git+https://github.com/facebookresearch/nle.git@eric/competition --no-binary:nle
-```
-
-Find more details on the [original nethack repository](https://github.com/facebookresearch/nle)
-
-# How to start participating
-
-## Setup
-
-1. **Add your SSH key** to AIcrowd GitLab
-
-You can add your SSH Keys to your GitLab account by going to your profile settings [here](https://gitlab.aicrowd.com/profile/keys). If you do not have SSH Keys, you will first need to [generate one](https://docs.gitlab.com/ee/ssh/README.html#generating-a-new-ssh-key-pair).
-
-2.  **Clone the repository** - TODO
-
-    ```
-    git clone git@github.com:AIcrowd/neurips-2021-nethack-starter-kit.git
-    ```
-
-3. **Install** competition specific dependencies!
-    ```
-    pip install aicrowd-api
-    pip install aicrowd-gym
-
-    ## Install NLE according to the instructions above
-    ```
-
-4. Try out random rollout script in `rollout.py`.
-
-
-## How do I specify my software runtime / dependencies ? - TODO
-
-We accept submissions with custom runtime, so you don't need to worry about which libraries or framework to pick from.
-
-The configuration files typically include `requirements.txt` (pypi packages), `apt.txt` (apt packages) or even your own `Dockerfile`.
-
-You can check detailed information about the same in the [RUNTIME.md](/docs/RUNTIME.md) file.
-
-## What should my code structure be like ?
-
-Please follow the example structure as it is in the starter kit for the code structure.
-The different files and directories have following meaning:
-
-```
-.
-├── aicrowd.json           # Submission meta information - like your username
-├── apt.txt                # Packages to be installed inside docker image
-├── requirements.txt       # Python packages to be installed
-├── rollout.py             # Your rollout code - can use a batched agent
-├── run.sh                 # Submission entrypoint   
-└── utility                # The utility scripts to provide smoother experience to you.
-    ├── docker_build.sh
-    ├── docker_run.sh
-    ├── environ.sh
-```
-
-Finally, **you must specify an AIcrowd submission JSON in `aicrowd.json` to be scored!** 
-
-The `aicrowd.json` of each submission should contain the following content:
-
-```json
-{
-  "challenge_id": "evaluations-api-neurips-nethack",
-  "authors": ["your-aicrowd-username"],
-  "description": "(optional) description about your awesome agent",
-  "external_dataset_used": false
-}
-```
-
-This JSON is used to map your submission to the challenge - so please remember to use the correct `challenge_id` as specified above.
-
-## Can I use some other language instead of python?
-
-The submission entrypoint is a bash script `run.sh`, you can call any arbitrary code you like from here. However, the environment has to be setup using python as in `rollout.py`. Any other code will have to communicte with the envrironment created in python.
-
-**Note**: You need to install your dependencies for running your code by following the `How do I specify my software runtime/dependencies` section above.
-
-
-## How to make submission
-
-👉 [SUBMISSION.md](/docs/SUBMISSION.md)
-
-
-
-# Other Information
-
-## Hardware and Time constraints
-
-To be added.
-
-## Local Run
-
-To be added.
-
-## Contributing? - TODO
-
-To be added
-
-## Contributors - TODO
-
-- [Jyotish Poonganam](https://www.aicrowd.com/participants/jyotish)
-- [Dipam chakraborty](https://www.aicrowd.com/participants/dipam)
-- [Shivam Khandelwal](https://www.aicrowd.com/participants/shivam)
-
-
-# 📎 Important links - TODO
-
-💪 &nbsp;Challenge Page: https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge
-
-🗣️ &nbsp;Discussion Forum: https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/discussion
-
-🏆 &nbsp;Leaderboard: https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/leaderboards
+🏆 Leaderboard: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge/leaderboards
 
 **Best of Luck** 🎉 🎉
-
-
-
-├── Dockerfile
-├── LICENSE
-├── README.md
-├── __pycache__
-│   ├── rollout.cpython-37.pyc
-│   └── submission_config.cpython-37.pyc
-├── agents
-│   ├── __pycache__
-│   ├── batched_agent.py
-│   ├── random_batched_agent.py
-│   ├── rllib_batched_agent.py
-│   └── torchbeast_agent.py
-├── aicrowd.json
-├── apt.txt
-├── docs
-│   ├── RUNTIME.md
-│   └── SUBMISSION.md
-├── envs
-│   ├── __init__.py
-│   ├── __pycache__
-│   ├── batched_env.py
-│   └── wrappers.py
-├── evaluation_utils
-│   └── custom_wrappers.py
-├── nethack_baselines
-│   ├── other_examples
-│   ├── rllib
-│   └── torchbeast
-├── notebooks
-├── requirements.txt
-├── rollout.py
-├── run.sh
-├── submission_config.py
-├── test_submission.py
-└── utility
-    ├── docker_build.sh
-    ├── docker_run.sh
-    ├── environ.sh
-    ├── parser.py
-    └── verify_or_download_data.py
-
-
-<p style="text-align:center"><img style="text-align:center" src="https://raw.githubusercontent.com/facebookresearch/nle/master/dat/nle/example_run.gif"></p> -->
