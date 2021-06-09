@@ -162,7 +162,7 @@ The machine where the submission will run will have following specifications:
 
 You can add your SSH Keys to your GitLab account by going to your profile settings [here](https://gitlab.aicrowd.com/profile/keys). If you do not have SSH Keys, you will first need to [generate one](https://docs.gitlab.com/ee/ssh/README.html#generating-a-new-ssh-key-pair).
 
-2.  **Clone the repository** - TODO
+2.  **Clone the repository**
 
     ```
     git clone git@gitlab.aicrowd.com:nethack/neurips-2021-the-nethack-challenge.git
