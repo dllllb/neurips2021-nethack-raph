@@ -102,7 +102,6 @@ The different files and directories have following meaning:
 Finally, **you must specify an AIcrowd submission JSON in `aicrowd.json` to be scored!** See "How do I actually make a submission" below for more details.
 
 
-
 **How can I get going with an existing baseline?**
 
 The best current baseline is the torchbeast baseline. Follow the instructions 
@@ -213,7 +212,8 @@ The machine where the submission will run will have following specifications:
 
 Although we are looking to supply this repository with more baselines throughout the first month of the competition, this repository comes with a strong IMPALA-based baseline in the directory `./nethack_baselines/torchbeast`.
 
-More info on how to install, train and submit that repo are available [here](./nethack_baselines/torchbeast/README.md) - along with some suggestions on where to go next!
+Follow the instructions [here](/nethack_baselines/torchbeast/) to install and start training the model (there are even some suggestions for improvements).
+
 
 # How to Test and Debug Locally
 
