@@ -1,6 +1,6 @@
-![Nethack Banner](https://i.imgur.com/7SRk7uK.jpg)
+[![Nethack Banner](https://i.imgur.com/7SRk7uK.jpg)](https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge)
 
-# **NeurIPS 2021 - The NetHack Challenge** - Starter Kit
+# **[NeurIPS 2021 - The NetHack Challenge](https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge)** - Starter Kit
 
 
 This repository is the Nethack Challenge **Starter kit**! It contains:
