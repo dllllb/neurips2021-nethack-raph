@@ -15,6 +15,12 @@ You can modify the existing `rollout.py` OR copy it (to say `your_code.py`) and 
 Before you submit make sure that you have saved your models, which are needed by your inference code.
 In case your files are larger in size you can use `git-lfs` to upload them. More details [here](https://discourse.aicrowd.com/t/how-to-upload-large-files-size-to-your-submission/2304).
 
+## Testing your model locally
+
+The best way to test your model is to run your submission locally.
+
+You can do this naively by simply running `python rollout.py` or you can simulate the extra timeout wrappers that AIcrowd will implement by using `python test_submission.py`.
+
 ## How to submit a trained model!
 
 To make a submission, you will have to create a **private** repository on [https://gitlab.aicrowd.com/](https://gitlab.aicrowd.com/).

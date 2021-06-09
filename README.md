@@ -127,7 +127,7 @@ To then submit your saved model, simply set the `AGENT` in
 `submission config` to be `TorchBeastAgent`, and modify the 
 `agent/torchbeast_agent.py` to point to your saved directory.
 
-You can now test your saved model with `python test_baseline.py`
+You can now test your saved model with `python test_submission.py`
 
 **How can I get going with a completely new model?**
 
@@ -214,10 +214,11 @@ The machine where the submission will run will have following specifications:
     We advise using a conda environment for this:
     ```bash
     # Optional: Create a conda env
-    $ conda create -n nle_challenge python=3.8
+    $ conda create -n nle_challenge python=3.8 'cmake>=3.15'
     $ conda activate nle_challenge
     $ pip install -r requirements.txt
     ```
+    If `pip install` fails with errors when installing NLE, please see installation requirements at https://github.com/facebookresearch/nle.
 
 5. **Run rollouts** with a random agent with `python test_submission.py`.
 
