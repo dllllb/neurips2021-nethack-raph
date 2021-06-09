@@ -160,7 +160,7 @@ The machine where the submission will run will have following specifications:
 
 1. **Add your SSH key** to AIcrowd GitLab
 
-You can add your SSH Keys to your GitLab account by going to your profile settings [here](https://gitlab.aicrowd.com/profile/keys). If you do not have SSH Keys, you will first need to [generate one](https://docs.gitlab.com/ee/ssh/README.html#generating-a-new-ssh-key-pair).
+    You can add your SSH Keys to your GitLab account by going to your profile settings [here](https://gitlab.aicrowd.com/profile/keys). If you do not have SSH Keys, you will first need to [generate one](https://docs.gitlab.com/ee/ssh/README.html#generating-a-new-ssh-key-pair).
 
 2.  **Clone the repository**
 
@@ -169,6 +169,7 @@ You can add your SSH Keys to your GitLab account by going to your profile settin
     ```
     
 3. **Verify you have dependencies** for the Nethack Learning Environment
+
     NLE requires `python>=3.5`, `cmake>=3.14` to be installed and available both when building the
     package, and at runtime.
     
@@ -195,6 +196,7 @@ You can add your SSH Keys to your GitLab account by going to your profile settin
     ```
 
 4. **Install** competition specific dependencies!
+
     We advise using a conda environment for this:
     ```bash
     # Optional: Create a conda env
@@ -203,9 +205,9 @@ You can add your SSH Keys to your GitLab account by going to your profile settin
     $ pip install -r requirements.txt
     ```
 
-5. Run rollouts with a random agent with `python test_submission.py`.
+5. **Run rollouts** with a random agent with `python test_submission.py`.
 
-Find more details on the [original nethack repository](https://github.com/facebookresearch/nle)
+    Find more details on the [original nethack repository](https://github.com/facebookresearch/nle)
 
 # Baselines
 
