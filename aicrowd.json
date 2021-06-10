@@ -3,7 +3,7 @@
   "authors": [
     "aicrowd-bot"
   ],
-  "external_dataset_used": false,
+  "description": "(optional) description about your awesome agent",
   "gpu": true
 }
 

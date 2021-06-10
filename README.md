@@ -54,7 +54,7 @@ GitLab.
 
 ## FAQs
 
-**How does submission work?**
+### How does submission work?
 
 The submission entrypoint is a bash script `run.sh`. When this script is 
 called, aicrowd will expect you to generate all your rollouts in the 
@@ -62,7 +62,7 @@ allotted time, using `aicrowd_gym` in place of regular `gym`.  This means
 that AIcrowd can make sure everyone is running the same environment, 
 and can keep score!
 
-**What languages can I use?**
+### What languages can I use?
 
 Since the entrypoint is a bash script `run.sh`, you can call any arbitrary
 code from this script.  However, to get you started, the environment is 
@@ -73,7 +73,7 @@ The repo gives you a template placeholder to load your model
 (`submission_config.py`). You can then test a submission, adding all of 
 AIcrowd’s timeouts on the environment, with `python test_submission.py`
 
-**How do I specify my dependencies?**
+### How do I specify my dependencies?
 
 We accept submissions with custom runtimes, so you can choose your 
 favorite! The configuration files typically include `requirements.txt` 
@@ -81,7 +81,7 @@ favorite! The configuration files typically include `requirements.txt`
 
 You can check detailed information about the same in the [RUNTIME.md](/docs/RUNTIME.md) file.
 
-**What should my code structure look like?**
+### What should my code structure look like?
 
 Please follow the example structure as it is in the starter kit for the code structure.
 The different files and directories have following meaning:
@@ -95,29 +95,29 @@ The different files and directories have following meaning:
 ├── test_submission.py            # Run this on your machine to get an estimated score
 ├── run.sh                        # Submission entrypoint
 ├── utilities                     # Helper scripts for setting up and submission 
-    ├── submit.sh                 # script for easy submission of your code
+│   └── submit.sh                 # script for easy submission of your code
 ├── envs                          # Operations on the env like batching and wrappers
-    ├── batched_env.py            # Batching for multiple envs
-    ├── wrappers.py   	          # Add wrappers to your env here
+│   ├── batched_env.py            # Batching for multiple envs
+│   └── wrappers.py   	          # Add wrappers to your env here
 ├── agents                        # Baseline agents for submission
-    ├── batched_agent.py	      # Abstraction reference batched agents
-    ├── random_batched_agent.py	  # Batched agent that returns random actions
-    ├── rllib_batched_agent.py	  # Batched agent that runs with the rllib baseline
-    ├── torchbeast_agent.py	      # Batched agent that runs with the torchbeast baseline
+│   ├── batched_agent.py          # Abstraction reference batched agents
+│   ├── random_batched_agent.py	  # Batched agent that returns random actions
+│   ├── rllib_batched_agent.py	  # Batched agent that runs with the rllib baseline
+│   └── torchbeast_agent.py       # Batched agent that runs with the torchbeast baseline
 ├── nethack_baselines             # Baseline agents for submission
-     ├── other_examples  	
-	    ├── random_rollouts.py    # Barebones random agent with no batching
-     ├── rllib	                  # Baseline agent trained with rllib
-     ├── torchbeast	              # Baseline agent trained with IMPALA on Pytorch
-├── notebooks                 
-    ├── NetHackTutorial.ipynb     # Tutorial on the Nethack Learning Environment
+│    ├── other_examples  	
+│    │   └── random_rollouts.py   # Barebones random agent with no batching
+│    ├── rllib	                  # Baseline agent trained with rllib
+│    └── torchbeast               # Baseline agent trained with IMPALA on Pytorch
+└── notebooks                 
+    └── NetHackTutorial.ipynb     # Tutorial on the Nethack Learning Environment
 
 ```
 
-Finally, **you must specify an AIcrowd submission JSON in `aicrowd.json` to be scored!** See "How do I actually make a submission" below for more details.
+Finally, **you must specify an AIcrowd submission JSON in `aicrowd.json` to be scored!** See [How do I actually make a submission?](#how-do-i-actually-make-a-submission) below for more details.
 
 
-**How can I get going with an existing baseline?**
+### How can I get going with an existing baseline?
 
 The best current baseline is the torchbeast baseline. Follow the instructions 
 [here](/nethack_baselines/torchbeast/) to install and start training 
@@ -129,7 +129,7 @@ To then submit your saved model, simply set the `AGENT` in
 
 You can now test your saved model with `python test_submission.py`
 
-**How can I get going with a completely new model?**
+### How can I get going with a completely new model?
 
 Train your model as you like, and when you’re ready to submit, just adapt
 `YourAgent` in `agents/your_agent.py` to load your model and take a `batched_step`.
@@ -137,7 +137,7 @@ Train your model as you like, and when you’re ready to submit, just adapt
 Then just set your `AGENT` in `submission_config.py` to be this class 
 and you are ready to test with `python test_submission.py`
 
-**How do I actually make a submission?**
+### How do I actually make a submission?
 
 First you need to fill in you `aicrowd.json`, to give AIcrowd some info so you can be scored.
 The `aicrowd.json` of each submission should contain the following content:
@@ -155,9 +155,9 @@ The submission is made by adding everything including the model to git,
 tagging the submission with a git tag that starts with `submission-`, and 
 pushing to AIcrowd's GitLab. The rest is done for you!
 
-More details are available [here](/docs/SUBMISSION.md)
+More details are available [here](/docs/SUBMISSION.md).
 
-**Are there any hardware or time constraints?**
+### Are there any hardware or time constraints?
 
 Your submission will need to complete 128 rollouts in 30 minutes. We will
 run 4 of these in parallel, and a total of 512 episodes will be used for
@@ -190,7 +190,7 @@ The machine where the submission will run will have following specifications:
     On **MacOS**, one can use `Homebrew` as follows:
     
     ``` bash
-    $ brew install cmake
+    brew install cmake
     ```
     
     On a plain **Ubuntu 18.04** distribution, `cmake` and other dependencies
@@ -198,13 +198,13 @@ The machine where the submission will run will have following specifications:
     
     ```bash
     # Python and most build deps
-    $ sudo apt-get install -y build-essential autoconf libtool pkg-config \
+    sudo apt-get install -y build-essential autoconf libtool pkg-config \
         python3-dev python3-pip python3-numpy git flex bison libbz2-dev
     
     # recent cmake version
-    $ wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-    $ sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-    $ sudo apt-get update && apt-get --allow-unauthenticated install -y \
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+    sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+    sudo apt-get update && apt-get --allow-unauthenticated install -y \
         cmake \
         kitware-archive-keyring
     ```
@@ -214,9 +214,9 @@ The machine where the submission will run will have following specifications:
     We advise using a conda environment for this:
     ```bash
     # Optional: Create a conda env
-    $ conda create -n nle_challenge python=3.8 'cmake>=3.15'
-    $ conda activate nle_challenge
-    $ pip install -r requirements.txt
+    conda create -n nle_challenge python=3.8 'cmake>=3.15'
+    conda activate nle_challenge
+    pip install -r requirements.txt
     ```
     If `pip install` fails with errors when installing NLE, please see installation requirements at https://github.com/facebookresearch/nle.
 
@@ -239,23 +239,21 @@ You can do this naively by simply running  `python rollout.py` or you can simula
 
 # How to Submit
 
-More information on submissions can be found at our [SUBMISSION.md](/docs/SUBMISSION.md)
+More information on submissions can be found at our [SUBMISSION.md](/docs/SUBMISSION.md).
 
 ## Contributors
 
-- [Jyotish Poonganam](https://www.aicrowd.com/participants/jyotish)
-- [Dipam chakraborty](https://www.aicrowd.com/participants/dipam)
+- [Dipam Chakraborty](https://www.aicrowd.com/participants/dipam)
 - [Shivam Khandelwal](https://www.aicrowd.com/participants/shivam)
 - [Eric Hambro](https://www.aicrowd.com/participants/eric_hammy)
 - [Danielle Rothermel](https://www.aicrowd.com/participants/danielle_rothermel)
+- [Jyotish Poonganam](https://www.aicrowd.com/participants/jyotish)
 
 
 # 📎 Important links
 
-💪 Challenge Page: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge
-
-🗣️ Discussion Forum: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge/discussion
-
-🏆 Leaderboard: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge/leaderboards
+- 💪 Challenge Page: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge
+- 🗣️ Discussion Forum: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge/discussion
+- 🏆 Leaderboard: https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge/leaderboards
 
 **Best of Luck** 🎉 🎉
