@@ -14,7 +14,7 @@ batching.
 
 ## Installation
 
-To get this running you'll need to follow the TorchBeast installation instructions for PolyBeast from the [TorchBeast repo](https://github.com/facebookresearch/torchbeast#installing-polybeast).
+To get this running you'll need to follow the TorchBeast installation instructions for PolyBeast from the [TorchBeast repo](https://github.com/facebookresearch/torchbeast#faster-version-polybeast).
 
 A Dockerfile is also provided with installation of Torchbeast.
 
