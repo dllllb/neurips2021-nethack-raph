@@ -5,7 +5,7 @@ from agents.base import BatchedAgent
 
 from nethack_baselines.torchbeast.models import load_model
 
-MODEL_DIR = "./models/torchbeast/example_run"
+MODEL_DIR = "./saved_models/torchbeast/pretrained_0.5B"
 
 
 class TorchBeastAgent(BatchedAgent):
@@ -33,12 +33,12 @@ class TorchBeastAgent(BatchedAgent):
         """
         states = list(observations[0].keys())
         obs = {k: [] for k in states}
-        
+
         # Unpack List[Dicts] -> Dict[Lists]
         for o in observations:
             for k, t in o.items():
                 obs[k].append(t)
-        
+
         # Convert to Tensor, Add Unroll Dim (=1), Move to GPU
         for k in states:
             obs[k] = torch.Tensor(np.stack(obs[k])[None, ...]).to(self.device)
@@ -54,8 +54,8 @@ class TorchBeastAgent(BatchedAgent):
             * return outputs as a dict of "action", "policy_logits", "baseline"
         """
         observations, dones = self.batch_inputs(observations, dones)
-    
+
         with torch.no_grad():
             outputs, self.core_state = self.model(observations, self.core_state)
-        
+
         return outputs["action"].cpu().numpy()[0]
