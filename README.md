@@ -230,6 +230,14 @@ Although we are looking to supply this repository with more baselines throughout
 
 Follow the instructions [here](/nethack_baselines/torchbeast/) to install and start training the model (there are even some suggestions for improvements).
 
+The TorchBeast baseline comes with two sets of weights - the same model trained to 250 million steps, and 500 million steps. 
+
+To download these weights, run `git lfs pull`, and check `saved_models`. 
+
+The TorchBeast agent can then be selected by setting `AGENT=TorchBeastAgent` in the `submission_config.py`, and the weights can be changed by changing the `MODEL_DIR` in `agents/torchbeast_agent.py`. 
+
+More information on git lfs can be found on [SUBMISSION.md](/docs/SUBMISSION.md). 
+
 
 # How to Test and Debug Locally
 
