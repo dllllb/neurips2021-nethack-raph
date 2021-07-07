@@ -1,9 +1,9 @@
 {
   "challenge_id": "neurips-2021-the-nethack-challenge",
   "authors": [
-    "aicrowd-bot"
+    "siberian"
   ],
-  "description": "(optional) description about your awesome agent",
+  "description": "dummy random actions",
   "gpu": true
 }
 

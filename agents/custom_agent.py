@@ -18,5 +18,6 @@ class CustomAgent(BatchedAgent):
         Each argument is a list of the respective gym output.
         Returns an iterable of actions.
         """
-        actions = self.seeded_state.randint(self.num_actions, size=self.num_envs)
+        # print(self.num_actions)
+        actions = self.seeded_state.randint(4, size=self.num_envs)
         return actions
