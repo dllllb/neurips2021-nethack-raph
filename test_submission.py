@@ -30,6 +30,7 @@ def evaluate():
         f"Median Score: {np.median(scores)}, "
         f"Mean Score: {np.mean(scores)}"
     )
+    return np.median(scores)
 
 
 if __name__ == "__main__":
