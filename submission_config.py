@@ -14,8 +14,8 @@ from envs.wrappers import addtimelimitwrapper_fn
 
 class SubmissionConfig:
     ## Add your own agent class
-    AGENT = CustomAgent
-    # AGENT = TorchBeastAgent
+    # AGENT = CustomAgent
+    AGENT = TorchBeastAgent
 
 
     ## Change the NUM_ENVIRONMENTS as you need

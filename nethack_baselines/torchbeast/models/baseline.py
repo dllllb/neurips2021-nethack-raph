@@ -25,7 +25,7 @@ from .util import id_pairs_table
 import numpy as np
 
 NUM_GLYPHS = nethack.MAX_GLYPH
-NUM_FEATURES = nethack.BLSTATS_SHAPE[0]
+NUM_FEATURES = 25
 PAD_CHAR = 0
 NUM_CHARS = 256
 
@@ -420,7 +420,7 @@ class BLStatsEncoder(nn.Module):
     def forward(self, inputs):
         T, B, *_ = inputs["blstats"].shape
 
-        features = inputs["blstats"]
+        features = inputs["blstats"][:,:, :NUM_FEATURES]
         # -- [B' x F]
         features = features.view(T * B, -1).float()
         # -- [B x K]
