@@ -16,8 +16,9 @@ class TorchBeastAgent(BatchedAgent):
     def __init__(self, num_envs, num_actions):
         super().__init__(num_envs, num_actions)
         self.model_dir = MODEL_DIR
-        self.device = "cuda:0"
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.model = load_model(MODEL_DIR, self.device)
+        print(f'Using Model In: {self.model_dir}, Device: {self.device}')
 
         self.core_state = [
             m.to(self.device) for m in self.model.initial_state(batch_size=num_envs)

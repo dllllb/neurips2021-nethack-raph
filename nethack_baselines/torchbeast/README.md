@@ -7,16 +7,41 @@ implementation of IMPALA for PyTorch.
 It comes with all the code you need to train, run and submit a model
 that is based on the results published in the original NLE paper.
 
-This implementation runs with 2 GPUS (one for acting and one for
+This implementation can run with 2 GPUS (one for acting and one for
 learning), and runs many simultaneous environments with dynamic
-batching.
+batching. Currently it has been configured to run with only 1 GPU.
 
 
-## Installation
+## Installation 
+
+**[Native Installation]**
 
 To get this running you'll need to follow the TorchBeast installation instructions for PolyBeast from the [TorchBeast repo](https://github.com/facebookresearch/torchbeast#faster-version-polybeast).
 
-A Dockerfile is also provided with installation of Torchbeast.
+**[Docker Installation]**
+
+You can fast track the installation of PolyBeast, by running the competitions own Dockerfile. Prebuilt images are also hosted on the Docker Hub. These commands should open an image that allows you run the baseline
+
+**To Run Existing Docker Image**
+
+`docker pull fairnle/challenge:dev`
+
+```docker run -it -v `pwd`:/home/aicrowd --gpus='all' fairnle/challenge:dev```
+
+**To Build Your Own Image**
+
+*Dev Image*  - runs with root user, doesn't copy all your files across into image
+
+`docker build -t competition --target nhc-dev .`
+
+*or Submission Image* - runs with aicrowd user, copies across all your files into image
+
+`docker build -t competition --target nhc-submit .`
+
+*Run Image*
+
+```docker run -it -v `pwd`:/home/aicrowd --gpus='all' competition```
+
 
 
 ## Running The Baseline
