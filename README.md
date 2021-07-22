@@ -36,7 +36,7 @@ python test_submission.py      # Tests ./saved_models/pretrained_0.5B
 python nethack_baselines/torchbeast/polyhydra.py batch_size=16 
 ```
 
-To Troubleshoot see [here](#how-to-test-and-debug-locally)
+To Troubleshoot see [here](#setting-up-details-[docker]).
 
 
 # Table of Contents
@@ -264,6 +264,9 @@ docker run -it -v `pwd`:/home/aicrowd fairnle/challenge:dev
 ```
 docker run -it -v `pwd`:/home/aicrowd --gpus 'all' fairnle/challenge:dev
 ```
+
+*NB* On Linux, this `--gpus` argument requires you to install `nvidia-container-toolkit`, which on Ubuntu is available with `apt install`.
+
 This will take you into an image, with your current working directory mounted as a volume. At submission time, `nhc-submit` target will be built by AIcrowd, which copies all the files into the image, instead of simply mounting them.
 
 If you wish to wish to build your own dev environment from the Dockerfile, you can do this with:
@@ -271,6 +274,7 @@ If you wish to wish to build your own dev environment from the Dockerfile, you c
 ```
 docker build --target nhc-dev  -t your-image-name .
 ```
+
 
 # Baselines
 
