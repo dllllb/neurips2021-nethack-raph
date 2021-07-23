@@ -36,7 +36,7 @@ python test_submission.py      # Tests ./saved_models/pretrained_0.5B
 python nethack_baselines/torchbeast/polyhydra.py batch_size=16 
 ```
 
-To Troubleshoot see [here](#setting-up-details-[docker]).
+To Troubleshoot see [here](#setting-up-details-docker).
 
 
 # Table of Contents
