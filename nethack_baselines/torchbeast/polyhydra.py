@@ -143,6 +143,7 @@ def main(flags: DictConfig):
     for p in env_processes:
         p.kill()
         p.join()
+    print('Training Done!')
 
 
 if __name__ == "__main__":
