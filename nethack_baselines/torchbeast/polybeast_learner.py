@@ -515,3 +515,6 @@ def main(flags):
             train(flags)
     elif flags.mode.startswith("test"):
         test(flags)
+    if flags.wandb:
+        wandb.finish()
+        
