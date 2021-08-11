@@ -16,6 +16,28 @@ Quick Links:
 * [The NetHack Challenge - Starter Kit](https://gitlab.aicrowd.com/nethack/neurips-2021-the-nethack-challenge)
 * [IMPORTANT - Accept the rules before you submit](https://www.aicrowd.com/challenges/neurips-2021-nethack-challenge/challenge_rules)
 
+## Quick Start
+
+With Docker and x1 GPU
+```bash
+# 1. CLONE THE REPO AND DOWNLOAD BASELINE MODELS
+git clone http://gitlab.aicrowd.com/nethack/neurips-2021-the-nethack-challenge.git \
+    && cd neurips-2021-the-nethack-challenge \
+    && git lfs install \
+    && git lfs pull  
+
+# 2. START THE DOCKER IMAGE
+docker run -it -v `pwd`:/home/aicrowd --gpus 'all' fairnle/challenge:dev 
+
+# 3. TEST AN EXISTING SUBMISSION 
+python test_submission.py      # Tests ./saved_models/pretrained_0.5B
+
+# 3. TRAIN YOUR OWN
+python nethack_baselines/torchbeast/polyhydra.py batch_size=16 
+```
+
+To Troubleshoot see [here](#setting-up-details-docker).
+
 
 # Table of Contents
 1. [Intro to Nethack and the Nethack Challenge](#intro-to-nethack-and-the-nethack-challenge)
@@ -56,7 +78,7 @@ GitLab.
 
 ### How does submission work?
 
-The submission entrypoint is a bash script `run.sh`. When this script is 
+The submission entrypoint is a bash script `run.sh`, that runs in an environment defined by `Dockerfile`. When this script is 
 called, aicrowd will expect you to generate all your rollouts in the 
 allotted time, using `aicrowd_gym` in place of regular `gym`.  This means 
 that AIcrowd can make sure everyone is running the same environment, 
@@ -170,7 +192,8 @@ The machine where the submission will run will have following specifications:
 * 4 vCPUs
 * 16 GB RAM
 
-## Setting Up Details
+
+## Setting Up Details [No Docker]
 
 1. **Add your SSH key** to AIcrowd GitLab
 
@@ -224,11 +247,40 @@ The machine where the submission will run will have following specifications:
 
     Find more details on the [original nethack repository](https://github.com/facebookresearch/nle)
 
+## Setting Up Details [Docker]
+
+With Docker, setting up is very simple! Simply pull a preexisting image from the fair nle repo.
+
+```
+docker pull fairnle/challenge:dev 
+```
+This image is based of Ubuntu 18.04, with CUDA 10.2 and cudnn 7, and is the Docker image corresponding to the `nhc-dev` target in the `Dockerfile`. You can run it as follows:
+
+**Without GPUS**
+```
+docker run -it -v `pwd`:/home/aicrowd fairnle/challenge:dev
+```
+**With GPUS**
+```
+docker run -it -v `pwd`:/home/aicrowd --gpus 'all' fairnle/challenge:dev
+```
+
+*NB* On Linux, this `--gpus` argument requires you to install `nvidia-container-toolkit`, which on Ubuntu is available with `apt install`.
+
+This will take you into an image, with your current working directory mounted as a volume. At submission time, `nhc-submit` target will be built by AIcrowd, which copies all the files into the image, instead of simply mounting them.
+
+If you wish to wish to build your own dev environment from the Dockerfile, you can do this with:
+
+```
+docker build --target nhc-dev  -t your-image-name .
+```
+
+
 # Baselines
 
 Although we are looking to supply this repository with more baselines throughout the first month of the competition, this repository comes with a strong IMPALA-based baseline in the directory `./nethack_baselines/torchbeast`.
 
-Follow the instructions [here](/nethack_baselines/torchbeast/) to install and start training the model (there are even some suggestions for improvements).
+The [README](/nethack_baselines/torchbeast/READMEmd) has more info about the baselines, including to install and start training the model (there are even some suggestions for improvements).
 
 The TorchBeast baseline comes with two sets of weights - the same model trained to 250 million steps, and 500 million steps. 
 

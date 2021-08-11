@@ -420,7 +420,7 @@ class BLStatsEncoder(nn.Module):
     def forward(self, inputs):
         T, B, *_ = inputs["blstats"].shape
 
-        features = inputs["blstats"]
+        features = inputs["blstats"][:,:, :NUM_FEATURES]
         # -- [B' x F]
         features = features.view(T * B, -1).float()
         # -- [B x K]

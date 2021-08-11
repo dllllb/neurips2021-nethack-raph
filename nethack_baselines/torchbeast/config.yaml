@@ -73,7 +73,7 @@ unroll_length: 80            # The unroll length (time dimension).
 num_learner_threads: 1       # Number learner threads.
 num_inference_threads: 1     # Number inference threads.
 disable_cuda: false          # Disable CUDA.
-learner_device: cuda:1       # Set learner device.
+learner_device: cuda:0       # Set learner device.
 actor_device: cuda:0         # Set actor device.
 
 # OPTIMIZER settings. (RMS Prop)

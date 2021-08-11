@@ -15,3 +15,5 @@ ffmpeg
 freeglut3-dev
 gcc
 g++
+ninja-build
+vim

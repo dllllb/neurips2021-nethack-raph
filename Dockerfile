@@ -1,5 +1,4 @@
-FROM nvidia/cuda:10.2-cudnn7-runtime-ubuntu18.04
-
+FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04 AS nhc-dev
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY apt.txt /tmp/apt.txt
@@ -29,21 +28,32 @@ RUN adduser --disabled-password \
     --uid ${HOST_UID} \
     ${USER_NAME}
 
-USER ${USER_NAME}
-WORKDIR ${HOME_DIR}
+WORKDIR /opt/
 
-ENV CONDA_DIR ${HOME_DIR}/.conda
-
+# Install anaconda
+ENV CONDA_DIR /opt/conda
 RUN wget -nv -O miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py38_4.9.2-Linux-x86_64.sh \
  && bash miniconda.sh -b -p ${CONDA_DIR} \
  && . ${CONDA_DIR}/etc/profile.d/conda.sh \
  && conda clean -y -a \
  && rm -rf miniconda.sh
-
 ENV PATH ${CONDA_DIR}/bin:${PATH}
 
-RUN conda install cmake -y && conda clean -y -a
+# Install TorchBeast
+RUN conda install cmake cudatoolkit=10.2 pytorch -y -c pytorch -c nvidia && conda clean -y -a
+RUN git clone https://github.com/facebookresearch/torchbeast.git --recursive
+WORKDIR /opt/torchbeast
+RUN pip install -r requirements.txt
+RUN pip install ./nest
+RUN python setup.py install
+
+# Install AICrowd items
+WORKDIR ${HOME_DIR}
 COPY --chown=1001:1001 requirements.txt ${HOME_DIR}/requirements.txt
 RUN pip install -r requirements.txt --no-cache-dir
 
+# SUBMISSION IMAGE - change user and copy files
+FROM nhc-dev AS nhc-submit
 COPY --chown=1001:1001 . ${HOME_DIR}
+USER ${USER_NAME}
+
