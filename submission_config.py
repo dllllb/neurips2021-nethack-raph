@@ -35,4 +35,4 @@ class TestEvaluationConfig:
     # Change this to locally check a different number of rollouts
     # The AIcrowd submission evaluator will not use this
     # It is only for your local evaluation
-    NUM_EPISODES = 10#512
+    NUM_EPISODES = 512
