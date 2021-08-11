@@ -14,5 +14,5 @@ def addtimelimitwrapper_fn():
     Should return a gym env which wraps the nethack gym env
     """
     env = create_env()
-    env = TimeLimit(env, max_episode_steps=1000)
+    env = TimeLimit(env, max_episode_steps=10_000_000)
     return env
