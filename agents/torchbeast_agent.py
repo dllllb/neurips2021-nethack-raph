@@ -5,7 +5,7 @@ from agents.base import BatchedAgent
 
 from nethack_baselines.torchbeast.models import load_model
 
-MODEL_DIR = "./saved_models/torchbeast/pretrained_0.5B"
+MODEL_DIR = "./saved_models/torchbeast/pretrained_0.002B"
 
 
 class TorchBeastAgent(BatchedAgent):

@@ -14,8 +14,8 @@ from envs.wrappers import addtimelimitwrapper_fn
 
 class SubmissionConfig:
     ## Add your own agent class
-    AGENT = CustomAgent
-    # AGENT = TorchBeastAgent
+    # AGENT = CustomAgent
+    AGENT = TorchBeastAgent
 
 
     ## Change the NUM_ENVIRONMENTS as you need
@@ -35,4 +35,4 @@ class TestEvaluationConfig:
     # Change this to locally check a different number of rollouts
     # The AIcrowd submission evaluator will not use this
     # It is only for your local evaluation
-    NUM_EPISODES = 512
+    NUM_EPISODES = 10#512

@@ -25,7 +25,7 @@ from .util import id_pairs_table
 import numpy as np
 
 NUM_GLYPHS = nethack.MAX_GLYPH
-NUM_FEATURES = nethack.BLSTATS_SHAPE[0]
+NUM_FEATURES = nethack.BLSTATS_SHAPE[0] #25
 PAD_CHAR = 0
 NUM_CHARS = 256
 
@@ -424,6 +424,8 @@ class BLStatsEncoder(nn.Module):
         # -- [B' x F]
         features = features.view(T * B, -1).float()
         # -- [B x K]
+
+        # features = features[:, :-1] # remove me
         features_emb = self.embed_features(features)
 
         assert features_emb.shape[0] == T * B
