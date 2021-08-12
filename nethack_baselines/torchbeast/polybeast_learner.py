@@ -191,6 +191,7 @@ def learn(
         # instead of actually being the frame itself. This is currently not a problem
         # because we never use actor_outputs.frame in the rest of this function.
         env_outputs = EnvOutput._make(env_outputs)
+        actor_outputs = AgentOutput._make(actor_outputs)
         learner_outputs = AgentOutput._make(learner_outputs)
 
         rewards = env_outputs.rewards
