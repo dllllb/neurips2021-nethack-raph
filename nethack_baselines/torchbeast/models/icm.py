@@ -36,13 +36,19 @@ class StateEmbeddingNet(nn.Module):
         # BLSTATS MODEL
         self.blstats_model = BLStatsEncoder(NUM_FEATURES, flags.embedding_dim)
 
-    def output_dim(self):
         out_dim = (
             self.blstats_model.hidden_dim
             + self.glyph_model.hidden_dim
             + self.msg_model.hidden_dim
         )
-        return out_dim
+
+        self.fc = nn.Sequential(
+            nn.Linear(out_dim, self.output_dim()),
+            nn.ReLU(),
+        )
+
+    def output_dim(self):
+        return 256
 
     def forward(self, inputs):
         T, B, H, W = inputs["glyphs"].shape
@@ -62,6 +68,7 @@ class StateEmbeddingNet(nn.Module):
 
         # -- [B' x K]
         st = torch.cat(reps, dim=1)
+        st = self.fc(st)
         return st.view(T, B, -1)
 
 
@@ -73,13 +80,13 @@ class InverseDynamicsNet(nn.Module):
         init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
                                constant_(x, 0), nn.init.calculate_gain('relu'))
         self.inverse_dynamics = nn.Sequential(
-            init_(nn.Linear(2 * emb_size, 1024)),
+            init_(nn.Linear(2 * emb_size, 256)),
             nn.ReLU(),
         )
 
         init_ = lambda m: init(m, nn.init.orthogonal_,
                                lambda x: nn.init.constant_(x, 0))
-        self.id_out = init_(nn.Linear(1024, self.num_actions))
+        self.id_out = init_(nn.Linear(256, self.num_actions))
 
     def forward(self, state_embedding, next_state_embedding):
         inputs = torch.cat((state_embedding, next_state_embedding), dim=2)
@@ -96,14 +103,14 @@ class ForwardDynamicsNet(nn.Module):
                                constant_(x, 0), nn.init.calculate_gain('relu'))
 
         self.forward_dynamics = nn.Sequential(
-            init_(nn.Linear(emb_size + self.num_actions, 1024)),
+            init_(nn.Linear(emb_size + self.num_actions, 256)),
             nn.ReLU(),
         )
 
         init_ = lambda m: init(m, nn.init.orthogonal_,
                                lambda x: nn.init.constant_(x, 0))
 
-        self.fd_out = init_(nn.Linear(1024, emb_size))
+        self.fd_out = init_(nn.Linear(256, emb_size))
 
     def forward(self, state_embedding, action):
         action_one_hot = F.one_hot(action, num_classes=self.num_actions).float()
