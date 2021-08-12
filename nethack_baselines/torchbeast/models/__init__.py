@@ -16,6 +16,8 @@ from nle.env import tasks
 from nle.env.base import DUNGEON_SHAPE
 
 from .baseline import BaselineNet
+from .icm import StateEmbeddingNet, InverseDynamicsNet, ForwardDynamicsNet
+
 
 from omegaconf import OmegaConf
 import torch
@@ -45,6 +47,15 @@ def create_model(flags, device):
     model = model_cls(DUNGEON_SHAPE, action_space, flags, device)
     model.to(device=device)
     return model
+
+
+def create_icm(flags, device):
+    action_space = ENVS[flags.env](savedir=None, archivefile=None)._actions
+
+    state_embedding_model = StateEmbeddingNet(DUNGEON_SHAPE, action_space, flags, device).to(device)
+    forward_dynamics_model = ForwardDynamicsNet(len(action_space), state_embedding_model.output_dim()).to(device)
+    inverse_dynamics_model = InverseDynamicsNet(len(action_space), state_embedding_model.output_dim()).to(device)
+    return state_embedding_model, forward_dynamics_model, inverse_dynamics_model
 
 
 def load_model(load_dir, device):

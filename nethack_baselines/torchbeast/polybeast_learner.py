@@ -33,7 +33,7 @@ import libtorchbeast
 from core import file_writer
 from core import vtrace
 
-from models import create_model
+from models import create_model, create_icm
 from models.baseline import NetHackNet
 
 from torch import nn
@@ -68,6 +68,20 @@ def compute_policy_gradient_loss(logits, actions, advantages):
     cross_entropy = cross_entropy.view_as(advantages)
     policy_gradient_loss_per_timestep = cross_entropy * advantages.detach()
     return torch.sum(policy_gradient_loss_per_timestep)
+
+
+def compute_forward_dynamics_loss(pred_next_emb, next_emb):
+    forward_dynamics_loss = torch.norm(pred_next_emb - next_emb, dim=2, p=2)
+    return torch.sum(torch.mean(forward_dynamics_loss, dim=1))
+
+
+def compute_inverse_dynamics_loss(pred_actions, true_actions):
+    inverse_dynamics_loss = F.nll_loss(
+        F.log_softmax(torch.flatten(pred_actions, 0, 1), dim=-1),
+        target=torch.flatten(true_actions, 0, 1),
+        reduction='none')
+    inverse_dynamics_loss = inverse_dynamics_loss.view_as(true_actions)
+    return torch.sum(torch.mean(inverse_dynamics_loss, dim=1))
 
 
 def inference(
@@ -115,8 +129,14 @@ Batch = collections.namedtuple("Batch", "env agent")
 def learn(
     learner_queue,
     model,
+    state_embedding_model,
+    inverse_dynamics_model,
+    forward_dynamics_model,
     actor_model,
     optimizer,
+    state_embedding_optimizer,
+    inverse_dynamics_optimizer,
+    forward_dynamics_optimizer,
     scheduler,
     stats,
     flags,
@@ -137,6 +157,22 @@ def learn(
 
         output, _ = model(observation, initial_agent_state, learning=True)
 
+        # ################## curiosity #####################
+        state_emb = state_embedding_model(observation)[:-1]
+        next_state_emb = state_embedding_model(observation)[1:]
+        actor_outputs = AgentOutput._make(actor_outputs) #keep me
+        pred_next_state_emb = forward_dynamics_model(state_emb, actor_outputs.action[1:])
+        pred_actions = inverse_dynamics_model(state_emb, next_state_emb)
+
+        intrinsic_rewards = torch.norm(pred_next_state_emb - next_state_emb, dim=2, p=2)
+
+        intrinsic_reward_coef = flags.intrinsic_reward_coef
+        intrinsic_rewards *= intrinsic_reward_coef
+
+        forward_dynamics_loss = flags.forward_loss_coef * compute_forward_dynamics_loss(pred_next_state_emb, next_state_emb)
+        inverse_dynamics_loss = flags.inverse_loss_coef * compute_inverse_dynamics_loss(pred_actions, actor_outputs.action[1:])
+        # ################ curiosity end #####################
+
         # Use last baseline value (from the value function) to bootstrap.
         learner_outputs = AgentOutput._make(
             (output["action"], output["policy_logits"], output["baseline"])
@@ -155,13 +191,15 @@ def learn(
         # instead of actually being the frame itself. This is currently not a problem
         # because we never use actor_outputs.frame in the rest of this function.
         env_outputs = EnvOutput._make(env_outputs)
-        actor_outputs = AgentOutput._make(actor_outputs)
         learner_outputs = AgentOutput._make(learner_outputs)
 
         rewards = env_outputs.rewards
         if flags.normalize_reward:
             model.update_running_moments(rewards)
             rewards /= model.get_running_std()
+
+        # modified
+        rewards += intrinsic_rewards
 
         total_loss = 0
 
@@ -195,14 +233,25 @@ def learn(
         baseline_loss = flags.baseline_cost * compute_baseline_loss(
             vtrace_returns.vs - learner_outputs.baseline
         )
-        total_loss += pg_loss + baseline_loss
+
+        # modified
+        total_loss += pg_loss + baseline_loss + forward_dynamics_loss + inverse_dynamics_loss
 
         # BACKWARD STEP
         optimizer.zero_grad()
+        state_embedding_optimizer.zero_grad()
+        inverse_dynamics_optimizer.zero_grad()
+        forward_dynamics_optimizer.zero_grad()
+
         total_loss.backward()
         if flags.grad_norm_clipping > 0:
             nn.utils.clip_grad_norm_(model.parameters(), flags.grad_norm_clipping)
+
         optimizer.step()
+        state_embedding_optimizer.step()
+        inverse_dynamics_optimizer.step()
+        forward_dynamics_optimizer.step()
+
         scheduler.step()
 
         actor_model.load_state_dict(model.state_dict())
@@ -215,6 +264,11 @@ def learn(
         stats["total_loss"] = total_loss.item()
         stats["pg_loss"] = pg_loss.item()
         stats["baseline_loss"] = baseline_loss.item()
+        stats["forward_dynamics_loss"] = forward_dynamics_loss.item()
+        stats["inverse_dynamics_loss"] = inverse_dynamics_loss.item()
+        stats['mean_intrinsic_rewards'] = torch.mean(intrinsic_rewards).item(),
+        stats['mean_total_rewards'] = torch.mean(rewards).item(),
+
         if flags.entropy_cost > 0:
             stats["entropy_loss"] = entropy_loss.item()
 
@@ -291,6 +345,7 @@ def train(flags):
     logging.info("Using model %s", flags.model)
 
     model = create_model(flags, learner_device)
+    state_embedding_model, forward_dynamics_model, inverse_dynamics_model = create_icm(flags, learner_device)
 
     plogger.metadata["model_numel"] = sum(
         p.numel() for p in model.parameters() if p.requires_grad
@@ -328,6 +383,27 @@ def train(flags):
         alpha=flags.alpha,
     )
 
+    state_embedding_optimizer = torch.optim.RMSprop(
+        state_embedding_model.parameters(),
+        lr=flags.learning_rate,
+        momentum=flags.momentum,
+        eps=flags.epsilon,
+        alpha=flags.alpha)
+
+    inverse_dynamics_optimizer = torch.optim.RMSprop(
+        inverse_dynamics_model.parameters(),
+        lr=flags.learning_rate,
+        momentum=flags.momentum,
+        eps=flags.epsilon,
+        alpha=flags.alpha)
+
+    forward_dynamics_optimizer = torch.optim.RMSprop(
+        forward_dynamics_model.parameters(),
+        lr=flags.learning_rate,
+        momentum=flags.momentum,
+        eps=flags.epsilon,
+        alpha=flags.alpha)
+
     def lr_lambda(epoch):
         return (
             1
@@ -345,7 +421,15 @@ def train(flags):
             flags.checkpoint, map_location=flags.learner_device
         )
         model.load_state_dict(checkpoint_states["model_state_dict"])
+        state_embedding_model.load_state_dict(checkpoint_states["state_embedding_model_state_dict"])
+        inverse_dynamics_model.load_state_dict(checkpoint_states["inverse_dynamics_model_state_dict"])
+        forward_dynamics_model.load_state_dict(checkpoint_states["forward_dynamics_model_state_dict"])
+
         optimizer.load_state_dict(checkpoint_states["optimizer_state_dict"])
+        state_embedding_optimizer.load_state_dict(checkpoint_states["state_embedding_optimizer_state_dict"])
+        inverse_dynamics_optimizer.load_state_dict(checkpoint_states["inverse_dynamics_optimizer_state_dict"])
+        forward_dynamics_optimizer.load_state_dict(checkpoint_states["forward_dynamics_optimizer_state_dict"])
+
         scheduler.load_state_dict(checkpoint_states["scheduler_state_dict"])
         stats = checkpoint_states["stats"]
         logging.info(f"Resuming preempted job, current stats:\n{stats}")
@@ -360,8 +444,14 @@ def train(flags):
             args=(
                 learner_queue,
                 model,
+                state_embedding_model,
+                inverse_dynamics_model,
+                forward_dynamics_model,
                 actor_model,
                 optimizer,
+                state_embedding_optimizer,
+                inverse_dynamics_optimizer,
+                forward_dynamics_optimizer,
                 scheduler,
                 stats,
                 flags,
@@ -392,7 +482,15 @@ def train(flags):
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
+                    "state_embedding_model_state_dict": state_embedding_model.state_dict(),
+                    "inverse_dynamics_model_state_dict": inverse_dynamics_model.state_dict(),
+                    "forward_dynamics_model_state_dict": forward_dynamics_model.state_dict(),
+
                     "optimizer_state_dict": optimizer.state_dict(),
+                    "state_embedding_optimizer_state_dict": state_embedding_optimizer.state_dict(),
+                    "inverse_dynamics_optimizer_state_dict": inverse_dynamics_optimizer.state_dict(),
+                    "forward_dynamics_optimizer_state_dict": forward_dynamics_optimizer.state_dict(),
+
                     "scheduler_state_dict": scheduler.state_dict(),
                     "stats": stats,
                     "flags": vars(flags),
