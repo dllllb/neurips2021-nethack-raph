@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from baseline import GlyphEncoder, MessageEncoder, BLStatsEncoder, NUM_FEATURES
+from .baseline import GlyphEncoder, MessageEncoder, BLStatsEncoder, NUM_FEATURES
 
 
 def init(module, weight_init, bias_init, gain=1):
@@ -45,6 +45,7 @@ class StateEmbeddingNet(nn.Module):
         return out_dim
 
     def forward(self, inputs):
+        T, B, H, W = inputs["glyphs"].shape
         reps = []
 
         # -- [B' x K] ; B' == (T x B)
@@ -61,7 +62,7 @@ class StateEmbeddingNet(nn.Module):
 
         # -- [B' x K]
         st = torch.cat(reps, dim=1)
-        return st
+        return st.view(T, B, -1)
 
 
 class InverseDynamicsNet(nn.Module):
