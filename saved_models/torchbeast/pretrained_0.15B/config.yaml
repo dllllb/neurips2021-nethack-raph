@@ -46,3 +46,6 @@ msg:
   hidden_dim: 64
   embedding_dim: 32
 load_dir: null
+forward_loss_coef: 10
+inverse_loss_coef: 0.1
+intrinsic_reward_coef: 0.5
