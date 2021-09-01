@@ -9,11 +9,13 @@ Make a HealSelf(), perhaps cooperating with a Retreat()
 Make .can() return the number of moves needed untill it's action can start performing so we can pick up stuff on the way to kicking a door
 
 DIMA
-1. diagonal moves (!)
+1. diagonal moves (!) (check)
 2. fix bugs
 3. make it eat
 4. status and msg from nle, not from tty
-5. You are carrying too much to get through.                                       
+5. You are carrying too much to get through. - temp fixed
+6. You can't move diagonally into an intact doorway. - temp fixed
+7. "Will you please leave your pick-axe outside?"
 
 
   File "/Users/sorokin/dev/raph/./nh.py", line 56, in <module>

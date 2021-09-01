@@ -16,7 +16,7 @@ class Eat():
         self.path = None
         self.adj = None
 
-        if Kernel.instance.Hero.hanger == 'Satiated':
+        if Kernel.instance.Hero.hanger == 0:
             return False
 
         # if Kernel.instance.Hero.hanger not in ['Hungry', 'Weak', 'Fainting']:
@@ -52,15 +52,15 @@ class Eat():
     def execute(self):
         if self.in_position:
             Kernel.instance.Hero.eat()
-            Kernel.instance.sendSignal("interrupt_action", self)
+            # Kernel.instance.sendSignal("interrupt_action", self)
         elif self.adj:
             Kernel.instance.Hero.move(self.adj)
             Kernel.instance.log('adj ' + str(self.adj))
             Kernel.instance.log('adj ' + str(Kernel.instance.curTile()))
             Kernel.instance.log(self.adj.isWalkable())
-            Kernel.instance.sendSignal("interrupt_action", self)
+            # Kernel.instance.sendSignal("interrupt_action", self)
         else:
             Kernel.instance.log(self.path)
             Kernel.instance.Hero.move(self.path[-2].tile)
-            Kernel.instance.sendSignal("interrupt_action", self)
+            # Kernel.instance.sendSignal("interrupt_action", self)
 

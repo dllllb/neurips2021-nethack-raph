@@ -19,7 +19,7 @@ class Kernel:
 
         Kernel.instance = self
 
-        self.action = ''
+        self.action = ' '
 
         self.frame_buffer = FramebufferParser()
         self.stdout("\u001b[2J\u001b[0;0H")
@@ -49,7 +49,8 @@ class Kernel:
         return self.frame_buffer.mapTiles()
 
     def step(self, obs):
-        self.action = ''
+        if len(self.action) != 0:
+            self.action = self.action[1:]
 
         y, x = obs['tty_cursor']
         self.frame_buffer.parse(obs)
@@ -85,20 +86,27 @@ class Kernel:
         if Kernel.instance.searchBot("the Werejackal"):
             Kernel.instance.Hero.isPolymorphed = True
 
-
         #TODO: checkt for "--More--" and return if found!
         if "--More--" in self.frame_buffer.allLines():
             self.action += ' '
             return self.action
 
         self.log("Updates starting: \n\n")
+        self.log("--------- DUNGEON ---------")
+        self.Dungeon.update()
+        if len(self.action):
+            return self.action
 
         self.log("--------- SENSES --------- ")
         self.Senses.update()
-        self.log("--------- DUNGEON ---------")
-        self.Dungeon.update()
+        if len(self.action):
+            return self.action
+
         self.log("-------- MESSAGES -------- ")
         self.Senses.parseMessages()
+        if len(self.action):
+            return self.action
+
         self.log("------ PERSONALITY ------  ")
         self.Personality.nextAction()
 
@@ -135,9 +143,10 @@ class Kernel:
         self.stdout("%s\x1b[%d;%dH%s\x1b[m" % (c and "\x1b[%dm" % c or "", y, x, char))
 
     def dontUpdate(self):
+        pass
         # self.Dungeon.dontUpdate()
-        self.Personality.dontUpdate()
-        self.Senses.dontUpdate()
+        # self.Personality.dontUpdate()
+        # self.Senses.dontUpdate()
 
     def logScreen(self):
         if self.silent:

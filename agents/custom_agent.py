@@ -22,7 +22,7 @@ class CustomAgent(BatchedAgent):
     """A example agent... that simple acts randomly. Adapt to your needs!"""
 
     def init(self):
-        Kernel(silent=True)
+        Kernel(silent=False)
 
         # Stuff
         Console()
@@ -42,7 +42,6 @@ class CustomAgent(BatchedAgent):
         curBrain = TestBrain()
 
         Kernel.instance.Personality.setBrain(curBrain)  # Default brain
-        self.action = ''
 
     def delete(self):
         del Kernel.instance
@@ -70,11 +69,18 @@ class CustomAgent(BatchedAgent):
             self.delete()
             self.init()
 
-        while self.action == '':
-            self.action = Kernel.instance.step(observations[0])
+        action = Kernel.instance.step(observations[0])
+        if len(action):
+            ch = action[0]
+        else:
+            #TODO check if it happens
+            ch = ' '
 
-        ch = self.action[0]
-        self.action = self.action[1:]
+        action = self.action2id.get(ch)
+        if action is None:
+            #TODO check if it happens
+            action = 0
+
         Kernel.instance.log("Sent string:" + ch + ' ' + str(type(ch)))
-        Kernel.instance.log("Sent string:" + ch + ' ' + str(self.action2id.get(ch)))
-        return [self.action2id.get(ch)]
+        Kernel.instance.log("Sent string:" + ch + ' ' + str(action))
+        return [action]

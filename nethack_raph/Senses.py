@@ -178,7 +178,7 @@ class Senses(EeekObject):
 
     def eat_it(self, msg):
         # FIXME: (dima) should be in Eat.py
-        if Kernel.instance.Hero.hanger == 'Satiated':
+        if Kernel.instance.Hero.hanger == 0:
             Kernel.instance.send('n')
             return
 
@@ -198,7 +198,7 @@ class Senses(EeekObject):
 
     def eat(self, matched):
         # FIXME: (dima) should be in Eat.py
-        if Kernel.instance.Hero.hanger == 'Satiated':
+        if Kernel.instance.Hero.hanger == 0:
             Kernel.instance.send(' ')
             return
 
