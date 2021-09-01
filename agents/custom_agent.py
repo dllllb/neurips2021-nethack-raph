@@ -1,8 +1,21 @@
 import numpy as np
 
 from agents.base import BatchedAgent
-from nethack_dqn.dqn_model import DQNAgent, DuelDQNModel
-import torch
+import nethack_raph.Kernel
+from nethack_raph.myconstants import *
+from nethack_raph.Personality import *
+from nethack_raph.Senses import *
+from nethack_raph.Console import *
+from nethack_raph.Hero import *
+from nethack_raph.Dungeon import *
+from nethack_raph.MonsterSpoiler import *
+from nethack_raph.Pathing import *
+from nethack_raph.TestBrain import *
+from nethack_raph.Cursor import *
+from nethack_raph.ItemDB import *
+from nethack_raph.Inventory import *
+
+from nle.nethack.actions import ACTIONS
 
 
 class CustomAgent(BatchedAgent):
@@ -12,11 +25,32 @@ class CustomAgent(BatchedAgent):
         """Set up and load you model here"""
         super().__init__(num_envs, num_actions)
         self.seeded_state = np.random.RandomState(42)
+        Kernel(silent=False)
 
-        self.device = torch.device('cuda:0')
-        model = DuelDQNModel(input_shape=(21, 79), n_actions=4)
-        model.load_state_dict(torch.load('/Users/sodi/dev/sber/neurips-2021-the-nethack-challenge/saved_models/dqn/model'))
-        self.impl = DQNAgent(model, epsilon=0.01, device=self.device)
+        # Stuff
+        Console()
+        Cursor()
+        Dungeon()
+        Hero()
+        MonsterSpoiler()
+        ItemDB()
+        Inventory()
+
+        # AI
+        Personality()
+        Senses()
+        Pathing()
+
+        # Brains
+        curBrain = TestBrain()
+
+        Kernel.instance.Personality.setBrain(curBrain)  # Default brain
+
+        self.action2id = {
+            chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
+        }
+
+        self.action = ''
 
     def batched_step(self, observations, rewards, dones, infos):
         """
@@ -25,23 +59,15 @@ class CustomAgent(BatchedAgent):
         Each argument is a list of the respective gym output.
         Returns an iterable of actions.
         """
+
+        assert len(dones) == 1
         # print(self.num_actions)
-        observations = self.batch_inputs(observations)
 
-        # print(observations[0])
-        actions = self.impl.sample_actions(observations['chars'])
-        return actions
+        while self.action == '':
+            self.action = Kernel.instance.step(observations[0])
 
-    def batch_inputs(self, observations):
-        states = list(observations[0].keys())
-        obs = {k: [] for k in states}
-
-        # Unpack List[Dicts] -> Dict[Lists]
-        for o in observations:
-            for k, t in o.items():
-                obs[k].append(t)
-
-        # Convert to Tensor, Add Unroll Dim (=1), Move to GPU
-        for k in states:
-            obs[k] = torch.Tensor(np.stack(obs[k])).to(self.device)
-        return obs
+        ch = self.action[0]
+        self.action = self.action[1:]
+        Kernel.instance.log("Sent string:" + ch + ' ' + str(type(ch)))
+        Kernel.instance.log("Sent string:" + ch + ' ' + str(self.action2id.get(ch)))
+        return [self.action2id.get(ch)]
