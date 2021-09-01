@@ -25,6 +25,9 @@ class FramebufferParser:
     def mapTiles(self):
         return self.screen[WIDTH:-WIDTH*2]
 
+    def allLines(self):
+        return "".join(x.char for x in self.screen)
+
     def topLine(self):
         return "".join(x.char for x in self.screen[:WIDTH])
 

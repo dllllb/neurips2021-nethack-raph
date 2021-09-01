@@ -9,10 +9,18 @@ class Explore(SignalReceiver):
 
         self.goal = None
         self.path = None
+        self.recursion_depth = 0
 
     def can(self):
+        # FIXME (dima) check logick
+        if self.recursion_depth > 15:
+            return False
+
+        self.recursion_depth += 1
+
         if Kernel.instance.curLevel().explored:
             Kernel.instance.log("Level is explored.")
+            self.recursion_depth = 0
             return False
 
         if self.goal and self.goal == Kernel.instance.curTile():
@@ -29,6 +37,7 @@ class Explore(SignalReceiver):
             if not goalNode:
                 Kernel.instance.log("Didn't find any goals.")
                 Kernel.instance.curLevel().explored = True
+                self.recursion_depth = 0
                 return False
             else:
                 Kernel.instance.log("Found one (%s)" % str(goalNode))
@@ -39,6 +48,7 @@ class Explore(SignalReceiver):
             while a.parent != 0:
                 a = a.parent
             if Kernel.instance.curTile() == a.tile:
+                self.recursion_depth = 0
                 return True
 
         self.path = Kernel.instance.Pathing.path(end=self.goal)
@@ -46,6 +56,7 @@ class Explore(SignalReceiver):
             self.goal = None
             self.path = None
             return self.can()
+        self.recursion_depth = 0
         return True
 
     def execute(self):

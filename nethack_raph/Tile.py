@@ -110,6 +110,8 @@ class Tile(Findable):
 
             #Kernel.instance.log("Found monster:%s, Color: %s, at (%d,%d). Tile is now: %s" % (str(self.monster), str(color), self.y, self.x, str(self)))
         else:
+            self.glyph = glyph
+            return #FIXME DIMA
             Kernel.instance.die("Couldn't parse tile: " + glyph)
 
     def appearance(self):

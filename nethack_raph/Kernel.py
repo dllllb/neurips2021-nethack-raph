@@ -63,9 +63,9 @@ class Kernel:
         self.logScreen()
 
         # TODO: use them
-        #herox, heroy, strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, unk
+        #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, unk
 
-        herox, heroy, strength_percentage, \
+        Kernel.instance.Hero.x, Kernel.instance.Hero.y, strength_percentage, \
         Kernel.instance.Hero.str, Kernel.instance.Hero.dex, Kernel.instance.Hero.con, \
         Kernel.instance.Hero.int, Kernel.instance.Hero.wis, Kernel.instance.Hero.cha, \
         Kernel.instance.score, Kernel.instance.Hero.curhp, Kernel.instance.Hero.maxhp, \
@@ -84,6 +84,12 @@ class Kernel:
 
         if Kernel.instance.searchBot("the Werejackal"):
             Kernel.instance.Hero.isPolymorphed = True
+
+
+        #TODO: checkt for "--More--" and return if found!
+        if "--More--" in self.frame_buffer.allLines():
+            self.action += ' '
+            return self.action
 
         self.log("Updates starting: \n\n")
 
@@ -116,9 +122,10 @@ class Kernel:
             self._file.flush()
 
     def die(self, msg):
-        self.stdout("\x1b[35m\x1b[3;1H%s\x1b[m\x1b[25;0f" % msg)
-        self.log(msg)
-        exit()
+        if not self.silent:
+            self.stdout("\x1b[35m\x1b[3;1H%s\x1b[m\x1b[25;0f" % msg)
+            self.log(msg)
+        self.action = '#quit\r'
 
     def drawString(self, msg):
         Kernel.instance.log("Currently -> "+msg)
@@ -128,7 +135,7 @@ class Kernel:
         self.stdout("%s\x1b[%d;%dH%s\x1b[m" % (c and "\x1b[%dm" % c or "", y, x, char))
 
     def dontUpdate(self):
-        self.Dungeon.dontUpdate()
+        # self.Dungeon.dontUpdate()
         self.Personality.dontUpdate()
         self.Senses.dontUpdate()
 

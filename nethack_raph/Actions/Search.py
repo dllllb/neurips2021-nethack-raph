@@ -10,10 +10,15 @@ class Search:
         self.walkto = None
         self.goal = None
         self.search = False
-        # self._reset_walktos = []
+        self.recursion_depth = 0
 
     def can(self):
-        # FIXME: INFINITE RECURSION HERE
+        # FIXME (dima) check logick
+        if self.recursion_depth > 15:
+            return False
+
+        self.recursion_depth += 1
+
         if self.goal and self.goal.searched:
             Kernel.instance.log("Searched enough here. Let's move on")
             self.walkto = None
@@ -52,19 +57,19 @@ class Search:
             if self.goal and self.goal.isAdjacent(Kernel.instance.curTile()) and self.goal.searches < Kernel.instance.curLevel().maxSearches:
                 Kernel.instance.log("Searching tile (%s)" % str(self.walkto))
                 self.search = True
-                # self.reset_walktos()
+                self.recursion_depth = 0
                 return True
 
 
         if not self.walkto:
-            # self.reset_walktos()
+            self.recursion_depth = 0
             return False
 
 
         if self.walkto == Kernel.instance.curTile():
             Kernel.instance.log("Searching tile (%s)" % str(self.walkto))
             self.search = True
-            # self.reset_walktos()
+            self.recursion_depth = 0
             return True
 
         elif self.walkto:
@@ -72,7 +77,7 @@ class Search:
             self.path = Kernel.instance.Pathing.path(end=self.walkto)
             if self.path:
                 Kernel.instance.log("Found a path.")
-                # self.reset_walktos()
+                self.recursion_depth = 0
                 return True
             else:
                 Kernel.instance.log("Recursing Search.can()..")
@@ -88,7 +93,7 @@ class Search:
                 self.path = None
                 return self.can()
         Kernel.instance.curLevel().maxSearches = Kernel.instance.curLevel().maxSearches + 5
-        # self.reset_walktos()
+        self.recursion_depth = 0
         return False
 
     def execute(self):
@@ -104,6 +109,3 @@ class Search:
             myPath.parent = 0
             Kernel.instance.Hero.move(myPath.tile)
             Kernel.instance.sendSignal('interrupt_action', self)
-
-    # def reset_walktos(self):
-    #     self._reset_walktos = []

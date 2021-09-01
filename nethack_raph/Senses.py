@@ -1,4 +1,3 @@
-import nethack_raph.Kernel
 import inspect
 
 from nethack_raph.Kernel import *
@@ -43,7 +42,13 @@ class Senses(EeekObject):
             "You finish eating .*": ['food_is_eaten'],
             "You don't have anything to eat.": ['food_is_eaten'],
             "You harmlessly attack a statue.": ['is_statue'],
-            "You cannot pass through the bars.": ['is_bar']
+            "You cannot pass through the bars.": ['not_walkable'],
+            "You are carrying too much to get through.": ['not_walkable'],
+            "You can't move diagonally into an intact doorway.": ['not_walkable'],
+            "You can't move diagonally out of an intact doorway.": ['not_walkable'],
+            "Hello stranger, who are you?": ['not_walkable'],
+            "It's solid stone.": ['not_walkable'],
+            "Will you please leave your pick-axe outside?": ['not_walkable']
         }
 
     def update(self):
@@ -237,6 +242,11 @@ class Senses(EeekObject):
 
     def shop_entrance(self):
         Kernel.instance.log("Found a shop.")
+
+        #FIXME (dima) some loop here
+        Kernel.instance.Hero.lastActionedTile.walkable = False
+        return
+
         buf = [Kernel.instance.curTile()]
         while buf:
             for tile in buf.pop().neighbours():
@@ -255,9 +265,20 @@ class Senses(EeekObject):
         Kernel.instance.Hero.lastActionedTile.monster.is_statue = True
         Kernel.instance.log(str( Kernel.instance.Hero.lastActionedTile))
 
-    def is_bar(self):
+    def not_walkable(self):
         Kernel.instance.Hero.lastActionedTile.walkable = False
 
+    def carrying_too_mach(self):
+        # FIXME (dima) drop smth
+        Kernel.instance.Hero.lastActionedTile.walkable = False
+
+    def intact_doorway(self):
+        # FIXME (dima) hack
+        Kernel.instance.Hero.lastActionedTile.walkable = False
+
+    def croesus(self):
+        # FIXME (dima) or respond croesus?
+        Kernel.instance.Hero.lastActionedTile.walkable = False
 
     def graffiti_on_floor(self):
         Kernel.instance.log("Found grafitti!")

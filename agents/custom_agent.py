@@ -21,11 +21,8 @@ from nle.nethack.actions import ACTIONS
 class CustomAgent(BatchedAgent):
     """A example agent... that simple acts randomly. Adapt to your needs!"""
 
-    def __init__(self, num_envs, num_actions):
-        """Set up and load you model here"""
-        super().__init__(num_envs, num_actions)
-        self.seeded_state = np.random.RandomState(42)
-        Kernel(silent=False)
+    def init(self):
+        Kernel(silent=True)
 
         # Stuff
         Console()
@@ -45,12 +42,19 @@ class CustomAgent(BatchedAgent):
         curBrain = TestBrain()
 
         Kernel.instance.Personality.setBrain(curBrain)  # Default brain
+        self.action = ''
+
+    def delete(self):
+        del Kernel.instance
+
+    def __init__(self, num_envs, num_actions):
+        """Set up and load you model here"""
+        super().__init__(num_envs, num_actions)
+        self.init()
 
         self.action2id = {
             chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
         }
-
-        self.action = ''
 
     def batched_step(self, observations, rewards, dones, infos):
         """
@@ -61,7 +65,10 @@ class CustomAgent(BatchedAgent):
         """
 
         assert len(dones) == 1
-        # print(self.num_actions)
+
+        if int(dones[0]):
+            self.delete()
+            self.init()
 
         while self.action == '':
             self.action = Kernel.instance.step(observations[0])
