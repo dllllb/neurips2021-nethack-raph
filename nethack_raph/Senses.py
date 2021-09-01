@@ -20,6 +20,7 @@ class Senses(EeekObject):
             "There's some graffiti on the floor here":                       ['graffiti_on_floor'],
             "You read: (.*?)":                                               ['graffiti_on_floor'],
             "Velkommen, [^,]+!":                                                     ['shop_entrance'],
+            ".* Welcome to .*":  ['shop_entrance'],
             "There is an open door here":                                    ['open_door_here'],
             "There is a bear trap here|You are caught in a bear trap":       ['found_beartrap'],
             "You feel more confident in your ([^ ]+) ":                      ['skill_up'],

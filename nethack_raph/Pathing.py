@@ -6,7 +6,7 @@ class Pathing(EeekObject):
     def __init__(self):
         EeekObject.__init__(self)
 
-    def path(self, start=None, end=None, find=None, max_g=None):
+    def path(self, start=None, end=None, find=None, max_g=15):
         if not start:
             start = Kernel.instance.curTile()
         if end:
@@ -31,7 +31,7 @@ class Pathing(EeekObject):
             # Find the most promising square
             current = open[0]
             for x in open:
-                if x.f()<current.f():
+                if x.f() < current.f():
                     current = x
 
             if self.end:
@@ -119,7 +119,7 @@ class TileNode:
         self.h = 0
 
     def f(self):
-        return self.g+self.h
+        return self.g + self.h
 
     def draw(self, color=41):
         a = self

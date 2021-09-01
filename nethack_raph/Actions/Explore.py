@@ -14,6 +14,7 @@ class Explore(SignalReceiver):
     def can(self):
         # FIXME (dima) check logick
         if self.recursion_depth > 15:
+            self.recursion_depth = 0
             return False
 
         self.recursion_depth += 1

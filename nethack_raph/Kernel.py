@@ -133,7 +133,7 @@ class Kernel:
         if not self.silent:
             self.stdout("\x1b[35m\x1b[3;1H%s\x1b[m\x1b[25;0f" % msg)
             self.log(msg)
-        self.action = '#quit\r'
+        self.action = '#quit\ry'
 
     def drawString(self, msg):
         Kernel.instance.log("Currently -> "+msg)

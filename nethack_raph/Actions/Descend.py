@@ -8,6 +8,7 @@ class Descend:
         self.descend = False
 
     def can(self):
+        #FIXME (dima) interupt?
         if Kernel.instance.curTile().glyph == '>':
             Kernel.instance.log("We're standing on '>'. Let's descend!")
             self.descend = True
