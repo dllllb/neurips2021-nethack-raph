@@ -142,7 +142,7 @@ class Tile(Findable):
             if neighbour.isWalkable() and not (neighbour.isDoor() or self.isDoor()):
                 ret.append(neighbour)
                 continue
-            if (self.isDoor() or neighbour.isDoor()) and (self.x==neighbour.x or self.y==neighbour.y) and neighbour.isWalkable():
+            if (self.isDoor() or neighbour.isDoor()) and (self.x == neighbour.x or self.y == neighbour.y) and neighbour.isWalkable():
                 ret.append(neighbour)
                 continue
         return ret
@@ -168,19 +168,18 @@ class Tile(Findable):
 
     def neighbours(self):
         ret = []
-        for x in range(-1,2):
-            for y in range(-1,2):
-                if x+self.x<0 or x+self.x>WIDTH-1 or y+self.y<0 or y+self.y>HEIGHT-4 or (x==0 and y==0):
-                    continue
-                tile = self.level.tiles[x+self.x + (y+self.y)*WIDTH]
-                ret.append(tile)
+        for x, y in ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)):
+            if x + self.x < 0 or x + self.x >= DUNGEON_WIDTH or y + self.y < 0 or y + self.y >= DUNGEON_HEIGHT:
+                continue
+            tile = self.level.tiles[x + self.x + (y + self.y) * WIDTH]
+            ret.append(tile)
         return ret
 
     def isHero(self):
         return self.coords() == Kernel.instance.curTile().coords()
 
     def tilesFromCurrent(self):
-        return (abs(Kernel.instance.Hero.x-self.x) + abs(Kernel.instance.Hero.y-self.y))
+        return abs(Kernel.instance.Hero.x - self.x) + abs(Kernel.instance.Hero.y - self.y)
 
     def __str__(self):
         return "(%s,%s)->g:%s, c:(%s), e:%s, @:%s, m:(%s), i:(%s) w:%s(is:%s) sea:%s" % tuple(map(str, (self.y, self.x, self.glyph, self.color, self.explored, self.isHero(), self.monster, map(str, self.items), self.walkable, self.isWalkable(), self.searches)))

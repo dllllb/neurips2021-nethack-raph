@@ -19,8 +19,6 @@ class FramebufferParser:
         self.y = 0
         self.x = 0
         self.color = TermColor()
-        self.top_line = None
-        self.bot_line = None
 
     def mapTiles(self):
         return self.screen[WIDTH:-WIDTH*2]
@@ -46,7 +44,6 @@ class FramebufferParser:
 
     def parse(self, obs):
         self.x, self.y = 0, 0
-        self.top_line = obs['message']
 
         chars, colors = obs['tty_chars'], obs['tty_colors']
 

@@ -85,14 +85,14 @@ class Kernel:
 
         if Kernel.instance.searchBot("the Werejackal"):
             Kernel.instance.Hero.isPolymorphed = True
-
-        #TODO: checkt for "--More--" and return if found!
-        if "--More--" in self.frame_buffer.allLines():
+            
+        if '--More--' in self.frame_buffer.allLines():
             self.action += ' '
             return self.action
 
         self.log("Updates starting: \n\n")
         self.log("--------- DUNGEON ---------")
+
         self.Dungeon.update()
         if len(self.action):
             return self.action

@@ -44,13 +44,12 @@ class Level:
         if len(FBTiles) != len(self.tiles):
             Kernel.instance.die("Amount of tiles in map_tiles() or Level() is wrong.")
 
-        heroLast = Kernel.instance.curTile()
         for x in range(0, len(self.tiles)):
             if self.tiles[x].appearance() != FBTiles[x].char:
                 tmp = self.tiles[x].appearance()
                 Kernel.instance.log("\n   <--- %s\n   ---> %s" % (str(self.tiles[x].appearance()), str(FBTiles[x].char)))
                 self.tiles[x].setTile(FBTiles[x].char, FBTiles[x].color)
-                if not (self.tiles[x].isHero() or self.tiles[x].coords() == heroLast.coords()):
+                if not (self.tiles[x].isHero()):
                     Kernel.instance.log("\n   <!!! %s(%s)\n   !!!> %s" % (tmp, str(self.tiles[x].coords()), str(FBTiles[x].char)))
                     self.explored = False
 

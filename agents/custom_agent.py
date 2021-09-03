@@ -22,7 +22,7 @@ class CustomAgent(BatchedAgent):
     """A example agent... that simple acts randomly. Adapt to your needs!"""
 
     def init(self):
-        Kernel(silent=True)
+        Kernel(silent=False)
 
         # Stuff
         Console()

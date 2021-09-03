@@ -1,10 +1,100 @@
 from nethack_raph.EeekObject import *
 from nethack_raph.Tile import *
 
+import heapq
+
+
+class Node:
+    def __init__(self, tile, cost, heuristic):
+        self.total_cost = cost + heuristic
+        self.tile = tile
+
+    def __lt__(self, other):
+        return self.total_cost < other.total_cost
+
+    def __hash__(self):
+        return self.tile.x + self.tile.y * WIDTH
+
+    def __eq__(self, other):
+        return self.tile.x == other.tile.x and self.tile.y == other.tile.y
+
+
+def make_node(tile, cost, end):
+    heuristic = abs(tile.x - end.x) + abs(tile.y - end.y) if end else 0
+    return Node(tile, cost, heuristic)
+
+
+class PriorityQueue:
+    def __init__(self):
+        self.elements = []
+
+    def empty(self):
+        return not self.elements
+
+    def push(self, item):
+        heapq.heappush(self.elements, item)
+
+    def pop(self):
+        return heapq.heappop(self.elements)
+
+
+def reconstruct_path(came_from, start, goal):
+    current = goal
+    result = TileNode(goal.tile, 0)
+    while current.tile != start.tile:
+        current = came_from[current]
+        result = TileNode(current.tile, result)
+    return result
+
 
 class Pathing(EeekObject):
     def __init__(self):
         EeekObject.__init__(self)
+        self.end = None
+
+    def a_star_search(self, start=None, end=None, condition_fn=None, max_g=None):
+        if not start:
+            start = Kernel.instance.curTile()
+        if end:
+            self.end = end
+            if not end.isWalkable():
+                Kernel.instance.die("Asked for unwalkable square")
+                return None
+            elif end == start:
+                Kernel.instance.die("end == start in Pathing.path()")
+                return None
+        else:
+            self.end = None
+            if not condition_fn:
+                Kernel.instance.die("No end or find in path()\n  Start:%s\n  End:%s" % (str(start), str(end)))
+
+        start_node = make_node(start, 0, self.end)
+        frontier = PriorityQueue()
+        frontier.push(start_node)
+        came_from = {start_node: None}
+        cost_so_far = {start_node: 0}
+        while not frontier.empty():
+            Kernel.instance.log(frontier.elements.__len__())
+            current = frontier.pop()
+
+            if self.end and current.tile == self.end:
+                return reconstruct_path(came_from, start_node, current)
+
+            if condition_fn and condition_fn(current.tile):
+                return reconstruct_path(came_from, start_node, current)
+
+            if max_g and current.g >= max_g:
+                return None
+
+            for neighbour in current.tile.walkableNeighbours():
+                neighbour_cost = cost_so_far[current] + Tile.walkables.get(neighbour.glyph, 1)
+                neighbour_node = make_node(neighbour, neighbour_cost, self.end)
+                if neighbour_node not in cost_so_far or neighbour_cost < cost_so_far[neighbour_node]:
+                    cost_so_far[neighbour_node] = neighbour_cost
+                    frontier.push(neighbour_node)
+                    came_from[neighbour_node] = current
+        return None
+
 
     def path(self, start=None, end=None, find=None, max_g=15):
         if not start:
@@ -99,6 +189,7 @@ class Pathing(EeekObject):
         return tmp
 
     def getDirection(self, tile):
+        Kernel.instance.log(tile)
         if abs(Kernel.instance.curTile().y - tile.y) > 1 or abs(Kernel.instance.curTile().x - tile.x) > 1:
             Kernel.instance.die("Asked for directions to a nonadjacent tile: %s" % tile)
         if Kernel.instance.curTile().y <  tile.y and Kernel.instance.curTile().x <  tile.x: return 'n'
@@ -109,6 +200,7 @@ class Pathing(EeekObject):
         if Kernel.instance.curTile().y >  tile.y and Kernel.instance.curTile().x <  tile.x: return 'u'
         if Kernel.instance.curTile().y >  tile.y and Kernel.instance.curTile().x == tile.x: return 'k'
         if Kernel.instance.curTile().y >  tile.y and Kernel.instance.curTile().x >  tile.x: return 'y'
+
 
 class TileNode:
     def __init__(self, tile, parent):
