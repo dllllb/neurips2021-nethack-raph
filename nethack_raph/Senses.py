@@ -7,7 +7,6 @@ class Senses(EeekObject):
     def __init__(self):
         EeekObject.__init__(self)
         self.messages = []
-        self.updateNext = True
 
         self.events = {
             "(needs food, badly!|feel weak now\.|feel weak\.)":              ['is_weak'],
@@ -70,16 +69,6 @@ class Senses(EeekObject):
         match = Kernel.instance.searchTop("Call a (.+) potion")
         if match:
             self.call_potion(match)
-
-        if Kernel.instance.searchTop("--More--"):
-            Kernel.instance.log("Found --More-- (%s)" % Kernel.instance.top_line())
-            Kernel.instance.send(" ")
-            Kernel.instance.dontUpdate()
-
-        if Kernel.instance.get_row_line(2).find("--More--") >= 0:
-            Kernel.instance.log("Stupid graffiti ..")
-            Kernel.instance.send(" ")
-            Kernel.instance.dontUpdate()
 
         match = Kernel.instance.searchTop("(Illegal objects|Weapons|Armor|Rings|Amulets|Tools|Comestibles|Potions|Scrolls|Spellbooks|Wands|Coins|Gems|Boulders/Statues|Iron balls|Chains|Venoms)       ")
         if match:
@@ -183,7 +172,8 @@ class Senses(EeekObject):
             Kernel.instance.send('n')
             return
 
-        if 'corpse' in msg:
+        #FIXME strange fwd bkwd happens
+        if False and 'corpse' in msg:
             Kernel.instance.log('corpse: eating aborted')
             Kernel.instance.send('n')
             for item in Kernel.instance.curTile().items:
@@ -285,10 +275,6 @@ class Senses(EeekObject):
         Kernel.instance.log("Found grafitti!")
 
     def parseMessages(self):
-        if not self.updateNext:
-            self.updateNext = True
-            return
-
         for msg in self.messages:
             for event in self.events:
                 match = re.search(event, msg)

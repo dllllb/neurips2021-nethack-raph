@@ -3,45 +3,35 @@ from nethack_raph.Kernel import *
 
 class Descend:
     def __init__(self):
-        self.goal    = None
-        self.path    = None
-        self.descend = False
+        self.path = None
+        self.on_stairs = False
 
     def can(self):
-        #FIXME (dima) interupt?
+        self.path = None
+        self.on_stairs = False
+
         if Kernel.instance.curTile().glyph == '>':
             Kernel.instance.log("We're standing on '>'. Let's descend!")
-            self.descend = True
-            self.goal = False
+            self.on_stairs = True
             return True
 
-        self.descend = False
-
-        if not self.goal:
-            Kernel.instance.log("Finding '>' ..")
-            stairs = Kernel.instance.curLevel().find({'glyph': '>'})
-            for stair in stairs: # Grammar <3
-                Kernel.instance.log("Found one (%s)" % str(stair))
-                path = Kernel.instance.Pathing.path(end=stair)
-                if path:
-                    Kernel.instance.log("Path: %s" % path)
-                    self.goal = stair
-                    self.path = path
-                    return True
-        else:
-            path = Kernel.instance.Pathing.path(end=self.goal)
-            if path:
+        Kernel.instance.log("Finding '>' ..")
+        stairs = Kernel.instance.curLevel().find({'glyph': '>'})
+        for stair in stairs: # Grammar <3
+            Kernel.instance.log("Found one (%s)" % str(stair))
+            path = Kernel.instance.Pathing.a_star_search(end=stair)
+            if path and (self.path is None or self.path.g > path.g):
                 self.path = path
-                return True
+
+        if self.path:
+            Kernel.instance.log("Path: %s" % self.path)
+            return True
         return False
 
     def execute(self):
-        if self.descend:
+        if self.on_stairs:
             Kernel.instance.Hero.descend()
-            self.path = None
-            self.goal = None
         else:
             Kernel.instance.log("Going towards stairs")
-
             self.path.draw(color=COLOR_BG_GREEN)
-            Kernel.instance.Hero.move(self.path[-2].tile)
+            Kernel.instance.Hero.move(self.path[1].tile)

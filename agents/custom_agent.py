@@ -22,7 +22,7 @@ class CustomAgent(BatchedAgent):
     """A example agent... that simple acts randomly. Adapt to your needs!"""
 
     def init(self):
-        Kernel(silent=False)
+        Kernel(silent=True)
 
         # Stuff
         Console()
@@ -55,6 +55,8 @@ class CustomAgent(BatchedAgent):
             chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
         }
 
+        self.maxtime = 0
+
     def batched_step(self, observations, rewards, dones, infos):
         """
         Perform a batched step on lists of environment outputs.
@@ -69,6 +71,8 @@ class CustomAgent(BatchedAgent):
             self.delete()
             self.init()
 
+        before = time.time()
+
         action = Kernel.instance.step(observations[0])
         if len(action):
             ch = action[0]
@@ -81,6 +85,10 @@ class CustomAgent(BatchedAgent):
             #TODO check if it happens
             action = 0
 
+        after = time.time()
+        self.maxtime = max(self.maxtime, after - before)
+
         Kernel.instance.log("Sent string:" + ch + ' ' + str(type(ch)))
         Kernel.instance.log("Sent string:" + ch + ' ' + str(action))
+        Kernel.instance.log(f'action time: {after - before}, maxtime: {self.maxtime}')
         return [action]

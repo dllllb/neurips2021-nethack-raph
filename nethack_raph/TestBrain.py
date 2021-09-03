@@ -7,7 +7,7 @@ class TestBrain(Brain):
 
         self.actions = [
                             [AttackMonster(),   4000],
-                            # [Eat(), 3500],
+                            #[Eat(), 3500],
                             [FixStatus(),       3000],
                             [RestoreHP(),       2500],
                             [SearchSpot(),      2000],
@@ -16,7 +16,7 @@ class TestBrain(Brain):
                             [GetPhatz(),        1500],
                             [Explore(),         1000],
                             [Descend(),          500],
-                            [Search(),           400],
+                            #[Search(),           400],
                             [RandomWalk(),         1],
                        ]
 
