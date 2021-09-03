@@ -11,12 +11,12 @@ class TestBrain(Brain):
                             [FixStatus(),       3000],
                             [RestoreHP(),       2500],
                             [SearchSpot(),      2000],
-                            [OpenDoors(),       1750],
+                            #[OpenDoors(),       1750],
                             # [DipForExcalibur(), 1600],
-                            [GetPhatz(),        1500],
-                            [Explore(),         1000],
-                            [Descend(),          500],
-                            [Search(),           400],
+                            #[GetPhatz(),        1500],
+                            #[Explore(),         1000],
+                            #[Descend(),          500],
+                            #[Search(),           400],
                             [RandomWalk(),         1],
                        ]
 

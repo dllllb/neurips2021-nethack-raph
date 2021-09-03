@@ -48,7 +48,8 @@ class Senses(EeekObject):
             "You can't move diagonally out of an intact doorway.": ['not_walkable'],
             "Hello stranger, who are you?": ['not_walkable'],
             "It's solid stone.": ['not_walkable'],
-            "Will you please leave your pick-axe outside?": ['not_walkable']
+            "Will you please leave your pick-axe outside?": ['not_walkable'],
+            "Call a scroll .*": ['scroll']
         }
 
     def update(self):
@@ -258,6 +259,9 @@ class Senses(EeekObject):
 
     def not_walkable(self):
         Kernel.instance.Hero.lastActionedTile.walkable = False
+
+    def scroll(self):
+        Kernel.instance.send('r')
 
     def carrying_too_mach(self):
         # FIXME (dima) drop smth
