@@ -29,7 +29,7 @@ class OpenDoors:
             for adjacent in door.walkableNeighbours():
                 if not adjacent.explored:
                     continue
-                tmp = Kernel.instance.Pathing.path(end=adjacent, max_g=self.path and self.path.g or None)
+                tmp = Kernel.instance.Pathing.a_star_search(end=adjacent, max_g=self.path and self.path.g or None)
                 if tmp and (self.path == None or self.path.g > tmp.g):
                     self.path = tmp
 
@@ -44,7 +44,7 @@ class OpenDoors:
             self.goal = None
         else:
             self.path.draw(color=COLOR_BG_CYAN)
-            Kernel.instance.Hero.move(self.path[-2].tile)
+            Kernel.instance.Hero.move(self.path[1].tile)
             Kernel.instance.sendSignal("interrupt_action", self)
 
     def interrupt_action(self, who):

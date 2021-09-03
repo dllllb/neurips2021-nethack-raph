@@ -32,35 +32,25 @@ class Eat():
             Kernel.instance.log('curr is food')
             return True
 
-        foods = [neib for neib in Kernel.instance.curTile().neighbours() if Kernel.instance.Hero.can_eat(neib)]
-        for food in foods:
-            self.adj = food
-            return True
-
         Kernel.instance.log("Looking for any foods on level..")
 
         foods = Kernel.instance.curLevel().find_food()
         for food in foods:
-            for adjacent in food.walkableNeighbours():
-                if not adjacent.explored:
-                    continue
-                tmp = Kernel.instance.Pathing.path(end=adjacent, max_g=self.path and self.path.g or None)
-                if tmp and (self.path is None or self.path.g > tmp.g):
-                    self.path = tmp
+            #TODO check if we need walkable / explored here
+            #for adjacent in food.walkableNeighbours():
+            #    if not adjacent.explored:
+            #        continue
+            tmp = Kernel.instance.Pathing.a_star_search(end=food, max_g=self.path and self.path.g or None)
+            if tmp and (self.path is None or self.path.g > tmp.g):
+                self.path = tmp
         return self.path is not None
 
     def execute(self):
         if self.in_position:
             Kernel.instance.Hero.eat()
             # Kernel.instance.sendSignal("interrupt_action", self)
-        elif self.adj:
-            Kernel.instance.Hero.move(self.adj)
-            Kernel.instance.log('adj ' + str(self.adj))
-            Kernel.instance.log('adj ' + str(Kernel.instance.curTile()))
-            Kernel.instance.log(self.adj.isWalkable())
-            # Kernel.instance.sendSignal("interrupt_action", self)
         else:
             Kernel.instance.log(self.path)
-            Kernel.instance.Hero.move(self.path[-2].tile)
+            Kernel.instance.Hero.move(self.path[1].tile)
             # Kernel.instance.sendSignal("interrupt_action", self)
 
