@@ -1,4 +1,5 @@
 from nethack_raph.Kernel import *
+import numpy as np
 
 
 class RandomWalk:
@@ -6,8 +7,10 @@ class RandomWalk:
         pass
 
     def can(self):
-        return True
+        return True, np.ones((HEIGHT, WIDTH))
 
-    def execute(self):
+    def after_search(self, path):
+        pass
+
+    def execute(self, path):
         Kernel.instance.Hero.search()
-

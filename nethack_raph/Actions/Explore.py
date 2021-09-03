@@ -1,38 +1,33 @@
 from nethack_raph.Kernel import *
 from nethack_raph.SignalReceiver import *
-import time
+import numpy as np
 
 
 class Explore(SignalReceiver):
     def __init__(self):
         SignalReceiver.__init__(self)
-        self.path = None
 
     def can(self):
+        goal_coords = np.zeros((HEIGHT, WIDTH))
+
         if Kernel.instance.curLevel().explored:
             Kernel.instance.log("Level is explored.")
-            return False
+            return False, goal_coords
 
         Kernel.instance.log("No goals defined in Explore, finding one ..")
-        self.path = Kernel.instance.Pathing.a_star_search(find={'explored': False, 'isWalkable': True, 'isHero': False})
-        if not self.path:
+        found_unexplored = False
+        for tile in Kernel.instance.curLevel().find(query={'explored': False, 'isWalkable': True, 'isHero': False}):
+            goal_coords[tile.coords()] = True
+            found_unexplored = True
+
+        return found_unexplored, goal_coords
+
+    def after_search(self, path):
+        if path is None:
             Kernel.instance.log("Didn't find any goals.")
             Kernel.instance.curLevel().explored = True
-            return False
 
-        Kernel.instance.log("Found one (%s)" % str(self.path[-1].tile))
-        return True
-
-    def execute(self):
-        Kernel.instance.log("Found self.path (%s)" % str(self.path))
-        self.path.draw(color=COLOR_BG_BLUE)
-        Kernel.instance.Hero.move(self.path[1].tile)
-
-    def new_dlvl(self):
-        self.interrupt_action()
-
-    def interrupt_action(self, action=None):
-        if action != self:
-            self.path = None
-            self.goal = None
-            Kernel.instance.log("Explorer got interrupted by %s" % str(action))
+    def execute(self, path):
+        Kernel.instance.log("Found self.path (%s)" % str(path))
+        path.draw(color=COLOR_BG_BLUE)
+        Kernel.instance.Hero.move(path[1].tile)

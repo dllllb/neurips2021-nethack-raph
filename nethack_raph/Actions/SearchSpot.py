@@ -1,5 +1,5 @@
 from nethack_raph.Kernel import *
-import time
+import numpy as np
 
 
 class SearchSpot:
@@ -7,23 +7,26 @@ class SearchSpot:
         self.goal = None
 
     def can(self):
-        if self.goal and (self.goal.searched or self.goal.walkable or self.goal.is_door):
-            Kernel.instance.log("Done searching hotspot.")
-            self.goal = None
+        goal_coords = np.zeros((HEIGHT, WIDTH))
+        self.goal = None
 
-        #                 #
-        # This will get ###@
-        #                 #
         unsearched = Kernel.instance.curTile().adjacent({'walkable': False, 'searched': False})
         if len(unsearched) > 4 and len(Kernel.instance.curTile().straight({'walkable': True})) == 1:
             for tile in Kernel.instance.curTile().neighbours():
                 if tile.is_door: # So it won't search on "###@]  "
-                    return False
+                    return False, np.zeros((HEIGHT, WIDTH))
             self.goal = sorted(unsearched, key=lambda x: x.searches)[0]
-            return True
-        return False
 
-    def execute(self):
+            #FIXME (dima) add all?
+            goal_coords[self.goal.coords()] = True
+            return True, goal_coords
+
+        return False, goal_coords
+
+    def after_search(self, path):
+        pass
+
+    def execute(self, path):
         Kernel.instance.log("Searching..")
         Kernel.instance.drawString("Searching hotspot (%s)" % self.goal)
         Kernel.instance.Hero.search()

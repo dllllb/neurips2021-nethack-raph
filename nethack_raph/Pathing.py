@@ -5,8 +5,8 @@ import heapq
 
 
 class Node:
-    def __init__(self, tile, cost, heuristic):
-        self.total_cost = cost + heuristic
+    def __init__(self, tile, cost):
+        self.total_cost = cost
         self.tile = tile
 
     def __lt__(self, other):
@@ -19,9 +19,8 @@ class Node:
         return self.tile.x == other.tile.x and self.tile.y == other.tile.y
 
 
-def make_node(tile, cost, end):
-    heuristic = abs(tile.x - end.x) + abs(tile.y - end.y) if end else 0
-    return Node(tile, cost, heuristic)
+def make_node(tile, cost):
+    return Node(tile, cost)
 
 
 class PriorityQueue:
@@ -47,57 +46,38 @@ def reconstruct_path(came_from, start, goal):
     return result
 
 
+def dijkastra(start, condition_fns):
+    start_node = make_node(start, 0)
+    frontier = PriorityQueue()
+    frontier.push(start_node)
+    came_from = {start_node: None}
+    cost_so_far = {start_node: 0}
+    results = [None] * len(condition_fns)
+    n_results = 0
+
+    while not frontier.empty():
+        current = frontier.pop()
+        for condition_id, condition in enumerate(condition_fns):
+            if results[condition_id] is None and condition(condition_id, current.tile):
+                results[condition_id] = reconstruct_path(came_from, start_node, current)
+                n_results += 1
+            if n_results == len(results):
+                return results
+
+        for neighbour in current.tile.walkableNeighbours():
+            neighbour_cost = cost_so_far[current] + Tile.walkables.get(neighbour.glyph, 1)
+            neighbour_node = make_node(neighbour, neighbour_cost)
+            if neighbour_node not in cost_so_far or neighbour_cost < cost_so_far[neighbour_node]:
+                cost_so_far[neighbour_node] = neighbour_cost
+                frontier.push(neighbour_node)
+                came_from[neighbour_node] = current
+    return results
+
+
 class Pathing(EeekObject):
     def __init__(self):
         EeekObject.__init__(self)
         self.end = None
-
-    def a_star_search(self, start=None, end=None, find=None, max_g=None, condition_fn=None):
-        if not start:
-            start = Kernel.instance.curTile()
-        if end:
-            self.end = end
-            if not end.isWalkable():
-                Kernel.instance.die("Asked for unwalkable square")
-                return None
-            elif end == start:
-                Kernel.instance.die("end == start in Pathing.path()")
-                return None
-        else:
-            self.end = None
-            if not find and not condition_fn:
-                Kernel.instance.die("No end or find in path()\n  Start:%s\n  End:%s" % (str(start), str(end)))
-
-        start_node = make_node(start, 0, self.end)
-        frontier = PriorityQueue()
-        frontier.push(start_node)
-        came_from = {start_node: None}
-        cost_so_far = {start_node: 0}
-        while not frontier.empty():
-            Kernel.instance.log(frontier.elements.__len__())
-            current = frontier.pop()
-
-            if self.end and current.tile == self.end:
-                return reconstruct_path(came_from, start_node, current)
-
-            if find and current.tile.find(find):
-                return reconstruct_path(came_from, start_node, current)
-
-            if condition_fn and condition_fn(current.tile):
-                return reconstruct_path(came_from, start_node, current)
-
-            if max_g and current.g >= max_g:
-                return None
-
-            for neighbour in current.tile.walkableNeighbours():
-                neighbour_cost = cost_so_far[current] + Tile.walkables.get(neighbour.glyph, 1)
-                neighbour_node = make_node(neighbour, neighbour_cost, self.end)
-                if neighbour_node not in cost_so_far or neighbour_cost < cost_so_far[neighbour_node]:
-                    cost_so_far[neighbour_node] = neighbour_cost
-                    frontier.push(neighbour_node)
-                    came_from[neighbour_node] = current
-        return None
-
 
     def path(self, start=None, end=None, find=None, max_g=15):
         if not start:

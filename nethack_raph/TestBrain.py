@@ -1,4 +1,5 @@
 from nethack_raph.Brain import *
+from nethack_raph.Pathing import dijkastra
 
 
 class TestBrain(Brain):
@@ -6,26 +7,41 @@ class TestBrain(Brain):
         Brain.__init__(self, "TestBrain")
 
         self.actions = [
-                            [AttackMonster(),   4000],
+                            AttackMonster(),
                             #[Eat(), 3500],
-                            [FixStatus(),       3000],
-                            [RestoreHP(),       2500],
-                            [SearchSpot(),      2000],
-                            #[OpenDoors(),       1750],
+                            FixStatus(),
+                            RestoreHP(),
+                            SearchSpot(),
+                            OpenDoors(),
                             # [DipForExcalibur(), 1600],
                             #[GetPhatz(),        1500],
-                            #[Explore(),         1000],
-                            #[Descend(),          500],
+                            Explore(),
+                            Descend(),
                             #[Search(),           400],
-                            [RandomWalk(),         1],
+                            RandomWalk(),
                        ]
 
     def executeNext(self):
-        for action in [x[0] for x in sorted(self.actions, key=lambda x:-x[1])]:
-            Kernel.instance.log("### TestBrain -> "+str(action))
-            if action.can():
-                action.execute()
-                break
+        Kernel.instance.log(self.actions)
+        condition_fns = []
+        enabled_coords = []
+        enabled_actions = []
+        for action in self.actions:
+            can_act, coords = action.can()
+            if can_act:
+                enabled_coords.append(coords)
+                condition_fns.append(lambda coords_id, tile: enabled_coords[coords_id][tile.coords()])
+                enabled_actions.append(action)
+
+        paths = dijkastra(Kernel.instance.curTile(), condition_fns)
+        for path, action in zip(paths, enabled_actions):
+            action.after_search(path)
+
+        for path, action in zip(paths, enabled_actions):
+            if path is not None:
+                Kernel.instance.log(f'found path: {path} for {action}')
+                action.execute(path)
+                return
 
     def s_isWeak(self):
         Kernel.instance.log("Praying because I'm weak")

@@ -39,6 +39,9 @@ class Level:
     def find_food(self):
         return [tile for tile in self.tiles for item in tile.items if item.is_food()]
 
+    def find(self, query):
+        return [tile for tile in self.tiles if tile.find(query)]
+
     def update(self):
         FBTiles = Kernel.instance.map_tiles()
         if len(FBTiles) != len(self.tiles):
