@@ -14,7 +14,7 @@ class Search:
 
     def can(self):
         # FIXME (dima) check logick
-        if self.recursion_depth > 15:
+        if self.recursion_depth > 5:
             self.recursion_depth = 0
             return False
 

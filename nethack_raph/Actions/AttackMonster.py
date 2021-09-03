@@ -1,6 +1,7 @@
 import time
 from nethack_raph.Kernel import *
 from nethack_raph.Tile import *
+import numpy as np
 
 
 class AttackMonster:
@@ -18,12 +19,10 @@ class AttackMonster:
 
         # O(n)
         monsters = Kernel.instance.curLevel().findAttackableMonsters()
+        Kernel.instance.log(f"We found {len(monsters)} monsters")
 
         if len(monsters) == 0:
-            Kernel.instance.log("Found no monster to attack.")
             return False
-
-        Kernel.instance.log("We have monsters..")
 
         # O(n)
         for monster in monsters:
@@ -34,14 +33,13 @@ class AttackMonster:
                 return True
 
         self.path = None
-
-        # O(n) * O(path) * n_neib
+        candidates = np.zeros((HEIGHT, WIDTH))
         for monster in monsters:
-            for neighbour in sorted(monster.walkableNeighbours(), key=lambda x: x.tilesFromCurrent()):
-                Kernel.instance.log("Checking path from %s->monster(%s)" % (Kernel.instance.curTile(), neighbour))
-                path = Kernel.instance.Pathing.a_star_search(end=neighbour, max_g=self.path and self.path.g or None)
-                if self.path is None or (path and (self.path.g > path.g)):
-                    self.path = path
+            for neighbour in monster.walkableNeighbours():
+                candidates[neighbour.coords()] = True
+
+        # O(dijkastra)
+        self.path = Kernel.instance.Pathing.a_star_search(condition_fn=lambda tile: candidates[tile.coords()])
 
         if self.path:
             Kernel.instance.log("Found monster. Path:(%s)" % str(self.path))
