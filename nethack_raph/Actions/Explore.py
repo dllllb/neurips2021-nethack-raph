@@ -6,64 +6,27 @@ import time
 class Explore(SignalReceiver):
     def __init__(self):
         SignalReceiver.__init__(self)
-
-        self.goal = None
         self.path = None
-        self.recursion_depth = 0
 
     def can(self):
-        # FIXME (dima) check logick
-        if self.recursion_depth > 15:
-            self.recursion_depth = 0
-            return False
-
-        self.recursion_depth += 1
-
         if Kernel.instance.curLevel().explored:
             Kernel.instance.log("Level is explored.")
-            self.recursion_depth = 0
             return False
 
-        if self.goal and self.goal == Kernel.instance.curTile():
-            Kernel.instance.log("Goal has been reached in Explore")
-            self.goal = None
-
-        if self.goal and not self.goal.isWalkable():
-            Kernel.instance.log("Goal has be switched to unwalkable.")
-            self.goal = None
-
-        if not self.goal:
-            Kernel.instance.log("No goals defined in Explore, finding one ..")
-            goalNode = Kernel.instance.Pathing.path(find={'explored': False, 'isWalkable': True, 'isHero': False})
-            if not goalNode:
-                Kernel.instance.log("Didn't find any goals.")
-                Kernel.instance.curLevel().explored = True
-                self.recursion_depth = 0
-                return False
-            else:
-                Kernel.instance.log("Found one (%s)" % str(goalNode))
-                self.goal = goalNode.tile
-
-        if self.path and self.path.isWalkable():
-            a = self.path
-            while a.parent != 0:
-                a = a.parent
-            if Kernel.instance.curTile() == a.tile:
-                self.recursion_depth = 0
-                return True
-
-        self.path = Kernel.instance.Pathing.path(end=self.goal)
+        Kernel.instance.log("No goals defined in Explore, finding one ..")
+        self.path = Kernel.instance.Pathing.a_star_search(find={'explored': False, 'isWalkable': True, 'isHero': False})
         if not self.path:
-            self.goal = None
-            self.path = None
-            return self.can()
-        self.recursion_depth = 0
+            Kernel.instance.log("Didn't find any goals.")
+            Kernel.instance.curLevel().explored = True
+            return False
+
+        Kernel.instance.log("Found one (%s)" % str(self.path[-1].tile))
         return True
 
     def execute(self):
         Kernel.instance.log("Found self.path (%s)" % str(self.path))
         self.path.draw(color=COLOR_BG_BLUE)
-        Kernel.instance.Hero.move(self.path[-2].tile)
+        Kernel.instance.Hero.move(self.path[1].tile)
 
     def new_dlvl(self):
         self.interrupt_action()

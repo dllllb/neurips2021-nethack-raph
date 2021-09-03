@@ -52,7 +52,7 @@ class Pathing(EeekObject):
         EeekObject.__init__(self)
         self.end = None
 
-    def a_star_search(self, start=None, end=None, condition_fn=None, max_g=None):
+    def a_star_search(self, start=None, end=None, find=None, max_g=None):
         if not start:
             start = Kernel.instance.curTile()
         if end:
@@ -65,7 +65,7 @@ class Pathing(EeekObject):
                 return None
         else:
             self.end = None
-            if not condition_fn:
+            if not find:
                 Kernel.instance.die("No end or find in path()\n  Start:%s\n  End:%s" % (str(start), str(end)))
 
         start_node = make_node(start, 0, self.end)
@@ -80,7 +80,7 @@ class Pathing(EeekObject):
             if self.end and current.tile == self.end:
                 return reconstruct_path(came_from, start_node, current)
 
-            if condition_fn and condition_fn(current.tile):
+            if find and current.tile.find(find):
                 return reconstruct_path(came_from, start_node, current)
 
             if max_g and current.g >= max_g:
