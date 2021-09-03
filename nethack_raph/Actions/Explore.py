@@ -16,7 +16,7 @@ class Explore(SignalReceiver):
 
         Kernel.instance.log("No goals defined in Explore, finding one ..")
         found_unexplored = False
-        for tile in Kernel.instance.curLevel().find(query={'explored': False, 'isWalkable': True, 'isHero': False}):
+        for tile in filter(lambda t: not t.explored and t.isWalkable() and not t.isHero(), Kernel.instance.curLevel().tiles):
             goal_coords[tile.coords()] = True
             found_unexplored = True
 

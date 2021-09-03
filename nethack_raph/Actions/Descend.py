@@ -10,7 +10,7 @@ class Descend:
         goal_coords = np.zeros((HEIGHT, WIDTH))
 
         Kernel.instance.log("Finding '>' ..")
-        stairs = Kernel.instance.curLevel().find({'glyph': '>'})
+        stairs = list(filter(lambda tile: tile.glyph == '>', Kernel.instance.curLevel().tiles))
         Kernel.instance.log(f"Found {len(stairs)} stairs")
         for stair in stairs: # Grammar <3
             goal_coords[stair.coords()] = True
