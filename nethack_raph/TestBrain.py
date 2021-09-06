@@ -8,7 +8,7 @@ class TestBrain(Brain):
 
         self.actions = [
                             AttackMonster(),
-                            #[Eat(), 3500],
+                            Eat(),
                             FixStatus(),
                             RestoreHP(),
                             SearchSpot(),

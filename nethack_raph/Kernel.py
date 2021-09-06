@@ -80,7 +80,7 @@ class Kernel:
         Kernel.instance.Dungeon.dlvl, Kernel.instance.Hero.gold, Kernel.instance.Hero.curpw, \
         Kernel.instance.Hero.maxpw, Kernel.instance.Hero.ac, monster_level, \
         Kernel.instance.Hero.xp, Kernel.instance.Hero.xp_next, Kernel.instance.turns, \
-        Kernel.instance.Hero.status, carrying_capacity, dungeon_number, \
+        Kernel.instance.Hero.hunger, carrying_capacity, dungeon_number, \
         level_number, unk = obs['blstats']
 
         # unk == 64 -> Deaf

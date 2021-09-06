@@ -1,56 +1,43 @@
-import nethack_raph.Kernel
-
 from nethack_raph.Kernel import *
 from nethack_raph.Pathing import TileNode
-from nethack_raph.SignalReceiver import SignalReceiver
 
 
-class Eat():
+class Eat:
     def __init__(self):
-        self.in_position = False
-        self.path = None
-        self.adj = None
+        pass
 
     def can(self):
-        self.in_position = False
-        self.path = None
-        self.adj = None
+        food_tiles = np.zeros((HEIGHT, WIDTH))
 
-        if Kernel.instance.Hero.hanger == 0:
-            return False
+        if Kernel.instance.Hero.hunger == 0:
+            return False, food_tiles
 
-        # if Kernel.instance.Hero.hanger not in ['Hungry', 'Weak', 'Fainting']:
-        #     return False
+        Kernel.instance.log(f"Hero have food: {Kernel.instance.Hero.have_food}")
 
-        # if Kernel.instance.Hero.have_food:
-        #     return True
+        if Kernel.instance.Hero.have_food:
+            return True, np.ones((HEIGHT, WIDTH))
 
-        Kernel.instance.log("Checking for adjacent food.." + str(Kernel.instance.Hero.hanger))
-
-        if Kernel.instance.Hero.can_eat(Kernel.instance.curTile()):
-            self.in_position = True
-            Kernel.instance.log('curr is food')
-            return True
-
-        Kernel.instance.log("Looking for any foods on level..")
+        # return False, food_tiles
 
         foods = Kernel.instance.curLevel().find_food()
+        Kernel.instance.log(f"Found {len(foods)} food tiles")
+        found_food = False
         for food in foods:
-            #TODO check if we need walkable / explored here
-            #for adjacent in food.walkableNeighbours():
-            #    if not adjacent.explored:
-            #        continue
-            tmp = Kernel.instance.Pathing.a_star_search(end=food, max_g=self.path and self.path.g or None)
-            if tmp and (self.path is None or self.path.g > tmp.g):
-                self.path = tmp
-        return self.path is not None
+            food_tiles[food.coords()] = True
+            found_food = True
+            Kernel.instance.log(f"Found {food}: {list(map(lambda t: str(t), food.items))}")
+        return found_food, food_tiles
 
-    def execute(self):
-        if self.in_position:
+    def after_search(self, path):
+        pass
+
+    def execute(self, path):
+        if len(path) == 1:
+            assert path.tile == Kernel.instance.curTile()
             Kernel.instance.Hero.eat()
-            # Kernel.instance.sendSignal("interrupt_action", self)
-        else:
-            Kernel.instance.log(self.path)
-            Kernel.instance.Hero.move(self.path[1].tile)
-            # Kernel.instance.sendSignal("interrupt_action", self)
+            return
+
+        Kernel.instance.log(path)
+        Kernel.instance.Hero.move(path[1].tile)
+        # Kernel.instance.sendSignal("interrupt_action", self)
 

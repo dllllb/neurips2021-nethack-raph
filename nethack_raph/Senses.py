@@ -40,7 +40,6 @@ class Senses(EeekObject):
             # r".* eat it\? \[ynq\] \(n\)":              ['eat_it'],
             "You see no door there.": ['no_door'],
             "You finish eating .*": ['food_is_eaten'],
-            "You don't have anything to eat.": ['food_is_eaten'],
             "You harmlessly attack a statue.": ['is_statue'],
             "You cannot pass through the bars.": ['not_walkable'],
             "You are carrying too much to get through.": ['not_walkable'],
@@ -49,7 +48,8 @@ class Senses(EeekObject):
             "Hello stranger, who are you?": ['not_walkable'],
             "It's solid stone.": ['not_walkable'],
             "Will you please leave your pick-axe outside?": ['not_walkable'],
-            "Call a scroll .*": ['scroll']
+            "Call a scroll .*": ['scroll'],
+            "You don't have anything to eat.": ['no_food']
         }
 
     def update(self):
@@ -175,17 +175,17 @@ class Senses(EeekObject):
 
     def eat_it(self, msg):
         # FIXME: (dima) should be in Eat.py
-        if Kernel.instance.Hero.hanger == 0:
+        if Kernel.instance.Hero.hunger == 0:
             Kernel.instance.send('n')
             return
 
         #FIXME strange fwd bkwd happens
-        if False and 'corpse' in msg:
+        if 'corpse' in msg:
             Kernel.instance.log('corpse: eating aborted')
             Kernel.instance.send('n')
             for item in Kernel.instance.curTile().items:
                 if item.glyph == '%':
-                    item.appearance = 'corpse'
+                    item.name = 'corpse'
         else:
             Kernel.instance.log('eating...')
             Kernel.instance.send('y')
@@ -196,7 +196,7 @@ class Senses(EeekObject):
 
     def eat(self, matched):
         # FIXME: (dima) should be in Eat.py
-        if Kernel.instance.Hero.hanger == 0:
+        if Kernel.instance.Hero.hunger == 0:
             Kernel.instance.send(' ')
             return
 
@@ -257,6 +257,14 @@ class Senses(EeekObject):
 
     def food_is_eaten(self):
         Kernel.instance.curTile().items = []
+
+    def no_food(self):
+        if not Kernel.instance.Hero.have_food:
+            for item in Kernel.instance.curTile().items:
+                item.name = 'corpse' #FIXME
+                return
+
+        Kernel.instance.Hero.have_food = False
 
     def is_statue(self):
         Kernel.instance.log(str(Kernel.instance.Hero.lastActionedTile))
