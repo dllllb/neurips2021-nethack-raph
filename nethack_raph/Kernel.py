@@ -1,8 +1,9 @@
-import re
-from nethack_raph.FramebufferParser import *
-import sys
+from nethack_raph.myconstants import *
+from nethack_raph.TermColor import TermColor
 
-import random
+import re
+import sys
+import numpy as np
 
 
 class Kernel:
@@ -21,8 +22,10 @@ class Kernel:
 
         self.action = ' '
 
-        self.frame_buffer = FramebufferParser()
         self.stdout("\u001b[2J\u001b[0;0H")
+        self.state = None
+        self.bot = None
+        self.top = None
 
     def curLevel(self):
         return self.Dungeon.curBranch.curLevel
@@ -31,37 +34,41 @@ class Kernel:
         return self.Dungeon.curBranch.curLevel.tiles[Kernel.instance.Hero.x + Kernel.instance.Hero.y*WIDTH]
 
     def searchBot(self, regex):
-        return re.search(regex, self.frame_buffer.botLines())
+        return re.search(regex, self.bot)
 
     def searchTop(self, regex):
-        return re.search(regex, self.frame_buffer.topLine())
+        return re.search(regex, self.top)
 
     def top_line(self):
-        return self.frame_buffer.topLine()
+        return self.top
 
     def bot_line(self):
-        return self.frame_buffer.botLines()
+        return self.bot
 
     def get_row_line(self, row):
-        return self.frame_buffer.getRowLine(row)
-
-    def map_tiles(self):
-        return self.frame_buffer.mapTiles()
+        if row < 1 or row > 24:
+            return ""
+        return "".join(chr(ch) for ch in self.state[0].reshape(-1)[(row-1)*WIDTH:row*WIDTH])
 
     def step(self, obs):
+        self.state = np.zeros((2, HEIGHT, WIDTH), dtype=np.uint8)
+        self.state[0] = obs['tty_chars']
+        self.state[1] = obs['tty_colors']
+        self.bot = "".join(chr(ch) for ch in self.state[0].reshape(-1)[22*WIDTH:])
+        self.top = "".join(chr(ch) for ch in self.state[0].reshape(-1)[:WIDTH])
+
         if len(self.action) != 0:
             self.action = self.action[1:]
 
-        y, x = obs['tty_cursor']
-        self.frame_buffer.parse(obs)
-        self.frame_buffer.x = x
-        self.frame_buffer.y = y
-
-        for y in range(0, HEIGHT):
-            for x in range(0, WIDTH):
-                cur = self.frame_buffer.screen[x+y*WIDTH]
-                self.stdout("\x1b[%dm\x1b[%d;%dH%s" % (cur.color.fg, y+1, x+1, cur.char))
-        self.logScreen()
+        # self.frame_buffer.parse(obs)
+        if not self.silent:
+            TTY_BRIGHT = 8
+            for y in range(0, HEIGHT):
+                for x in range(0, WIDTH):
+                    ch = chr(self.state[0][y, x])
+                    color = 30 + int(self.state[1][y, x] & ~TTY_BRIGHT)
+                    self.stdout("\x1b[%dm\x1b[%d;%dH%s" % (color, y+1, x+1, ch))
+            self.logScreen()
 
         # TODO: use them
         #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, unk
@@ -85,10 +92,11 @@ class Kernel:
 
         if Kernel.instance.searchBot("the Werejackal"):
             Kernel.instance.Hero.isPolymorphed = True
-            
-        if '--More--' in self.frame_buffer.allLines():
-            self.action += ' '
-            return self.action
+
+        #FIXME --more-- in the middle
+        #if '--More--' in self.frame_buffer.allLines():
+        #    self.action += ' '
+        #    return self.action
 
         self.log("Updates starting: \n\n")
         self.log("--------- DUNGEON ---------")
@@ -157,10 +165,9 @@ class Kernel:
             for x in range(0, WIDTH):
                 if y == HEIGHT-1 and x > WIDTH-5:
                     break
-                self._frames_log.write(self.frame_buffer.screen[x+y*WIDTH].char)
+                self._frames_log.write(chr(self.state[0][y,x]))
         if Kernel.instance.Dungeon.curBranch:
             self._frames_log.write(str(Kernel.instance.curTile().coords()))
-            self._frames_log.write("\n"+str(self.frame_buffer.y)+","+str(self.frame_buffer.x))
         self._frames_log.flush()
 
     def stdout(self, msg):

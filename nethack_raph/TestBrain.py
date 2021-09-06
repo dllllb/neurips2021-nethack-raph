@@ -33,15 +33,13 @@ class TestBrain(Brain):
                 condition_fns.append(lambda coords_id, tile: enabled_coords[coords_id][tile.coords()])
                 enabled_actions.append(action)
 
-        paths = dijkastra(Kernel.instance.curTile(), condition_fns)
-        for path, action in zip(paths, enabled_actions):
-            action.after_search(path)
+                path = dijkastra(Kernel.instance.curTile(), [lambda _, tile: coords[tile.coords()]])[0]
+                action.after_search(path)
 
-        for path, action in zip(paths, enabled_actions):
-            if path is not None:
-                Kernel.instance.log(f'found path: {path} for {action}')
-                action.execute(path)
-                return
+                if path is not None:
+                    Kernel.instance.log(f'found path: {path} for {action}')
+                    action.execute(path)
+                    return
 
     def s_isWeak(self):
         Kernel.instance.log("Praying because I'm weak")

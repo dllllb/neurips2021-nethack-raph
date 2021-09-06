@@ -63,6 +63,9 @@ class Senses(EeekObject):
         self.messages = self.messages + top.strip().split("  ")
         Kernel.instance.log(str(self.messages))
 
+        if '--More--' in Kernel.instance.top_line():
+            Kernel.instance.send(' ')
+
         match = Kernel.instance.searchTop("(.+) engulfs you")
         if match:
             self.got_engulfed(match)

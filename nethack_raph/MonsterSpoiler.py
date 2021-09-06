@@ -1,5 +1,7 @@
 from nethack_raph.EeekObject import *
 from nethack_raph.Kernel import *
+from nethack_raph.myconstants import *
+
 
 class MonsterSpoiler(EeekObject):
     def fromGlyphColor(self, g, c):

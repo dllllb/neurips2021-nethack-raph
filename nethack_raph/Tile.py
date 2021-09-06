@@ -132,7 +132,7 @@ class Tile(Findable):
             return not self.monster and self.walkable
         else:
             if self.isDoor():
-                return not self.monster and True
+                return not self.monster
             return not self.monster and self.glyph in Tile.walkables.keys() and self.walkable
 
     def walkableNeighbours(self):
