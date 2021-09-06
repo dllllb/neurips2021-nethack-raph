@@ -49,7 +49,10 @@ class Senses(EeekObject):
             "It's solid stone.": ['not_walkable'],
             "Will you please leave your pick-axe outside?": ['not_walkable'],
             "Call a scroll .*": ['scroll'],
-            "You don't have anything to eat.": ['no_food']
+            "You don't have anything to eat.": ['no_food'],
+            "You don't have anything else to wear.": ['no_wear'],
+            "You don't have anything else to put on.": ['no_wear'],
+            "What do you want to wear? [*]": ['what_to_wear']
         }
 
     def update(self):
@@ -107,6 +110,8 @@ class Senses(EeekObject):
             self.eat(match)
         elif match2:
             self.eat_it(Kernel.instance.top_line())
+        elif Kernel.instance.searchTop("What do you want to wear? [*]"):
+            self.what_to_wear()
         elif Kernel.instance.searchTop("\? \[(.*?)\]"):
             Kernel.instance.log("Found a prompt we can't handle: %s" % Kernel.instance.top_line())
             Kernel.instance.send(" ")
@@ -261,10 +266,18 @@ class Senses(EeekObject):
     def no_food(self):
         if not Kernel.instance.Hero.have_food:
             for item in Kernel.instance.curTile().items:
-                item.name = 'corpse' #FIXME
-                return
+                if item.glyph == '%':
+                    item.name = 'corpse' #FIXME
 
         Kernel.instance.Hero.have_food = False
+
+    def no_wear(self):
+        for item in Kernel.instance.curTile().items:
+            if item.glyph == '[':
+                item.name = 'absent' #FIXME
+
+    def what_to_wear(self):
+        Kernel.intance.send('*')
 
     def is_statue(self):
         Kernel.instance.log(str(Kernel.instance.Hero.lastActionedTile))
