@@ -1,18 +1,27 @@
-import nethack_raph.Kernel
-
 from nethack_raph.Kernel import *
-import time
 
 
 class Search:
     def __init__(self):
-        self.path = None
-        self.walkto = None
-        self.goal = None
-        self.search = False
-        self.recursion_depth = 0
+        pass
 
     def can(self):
+        target_tiles = np.zeros((HEIGHT, WIDTH))
+        found = False
+
+        Kernel.instance.log("Finding possible searchwalktos")
+
+        for tile in filter(lambda t: not t.isWalkable() and not t.searched and t.glyph in {'|', '-', ' '}, Kernel.instance.curLevel().tiles):
+            # TODO should preoritize them by count = len([x for x in neighbour.adjacent({'searched': False})])
+            neighbours = list(filter(lambda t: t.explored and t.walkable and t.monster is None, tile.neighbours()))
+            if len(neighbours):
+                walkto = max(neighbours, key=lambda t: len([neigh for neigh in t.neighbours() if not neigh.searched]))
+                target_tiles[walkto.coords()] = True
+                found = True
+        return found, target_tiles
+
+
+    def can2(self):
         # FIXME (dima) check logick
         if self.recursion_depth > 5:
             self.recursion_depth = 0
@@ -97,16 +106,17 @@ class Search:
         self.recursion_depth = 0
         return False
 
-    def execute(self):
-        if self.search:
+    def after_search(self, path):
+        if path is None:
+            Kernel.instance.curLevel().maxSearches = Kernel.instance.curLevel().maxSearches + 5
+
+    def execute(self, path):
+        if len(path) == 1:
+            assert path.tile == Kernel.instance.curTile()
             Kernel.instance.Hero.search()
-            self.search = False
-        else:
-            Kernel.instance.log("Going towards searchspot")
+            return
 
-            self.path.draw(color=COLOR_BG_YELLOW)
-
-            myPath = self.path[-2]
-            myPath.parent = 0
-            Kernel.instance.Hero.move(myPath.tile)
-            Kernel.instance.sendSignal('interrupt_action', self)
+        Kernel.instance.log("Going towards searchspot")
+        path.draw(color=COLOR_BG_YELLOW)
+        Kernel.instance.Hero.move(path[1].tile)
+        # Kernel.instance.sendSignal('interrupt_action', self)

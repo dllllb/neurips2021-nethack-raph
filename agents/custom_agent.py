@@ -16,6 +16,7 @@ from nethack_raph.ItemDB import *
 from nethack_raph.Inventory import *
 
 from nle.nethack.actions import ACTIONS
+import time
 
 
 class CustomAgent(BatchedAgent):

@@ -123,8 +123,11 @@ class Senses(EeekObject):
         Kernel.instance.Hero.isEngulfed = True
 
     def shopkeep_door(self):
-        door = [tile for tile in Kernel.instance.curTile().neighbours() if tile.is_door][0]
-        door.shopkeepDoor = True
+        #FIXME exception [tile for tile in Kernel.instance.curTile().neighbours() if tile.is_door][0]
+        for tile in Kernel.instance.curTile().neighbours():
+            if tile.is_door:
+                tile.shopkeepDoor = True
+                break
 
     def locked_door(self):
         if Kernel.instance.Hero.lastActionedTile and Kernel.instance.Hero.lastActionedTile.is_door:

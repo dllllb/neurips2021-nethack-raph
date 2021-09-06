@@ -17,7 +17,7 @@ class TestBrain(Brain):
                             #[GetPhatz(),        1500],
                             Explore(),
                             Descend(),
-                            #[Search(),           400],
+                            Search(),
                             RandomWalk(),
                        ]
 
