@@ -26,7 +26,7 @@ class Hero:
         return self.y, self.x
 
     def attack(self, tile):
-        dir = self.kernel().pathing.getDirection(tile)
+        dir = self._get_direction(self.kernel().curTile(), tile)
         self.kernel().drawString("Attacking -> %s (%s)" % (dir, tile))
         self.kernel().send("F"+dir)
         self.lastActionedTile = tile
@@ -38,7 +38,7 @@ class Hero:
         else:
             if self.beforeMove != (self.x, self.y):
                 self.inBearTrap = False
-                self.inPit      = False
+                self.inPit = False
             else:
                 if self.tmpCount > 3:
                     if not tile.glyph:
@@ -47,11 +47,11 @@ class Hero:
                         tile.color = TermColor(33, 0, False, False)
                         self.kernel().sendSignal("interrupt_action")
 
-            dir = self.kernel().pathing.getDirection(tile)
+            dir = self._get_direction(self.kernel().curTile(), tile)
             self.kernel().drawString("Walking -> %s (%s)" % (dir, tile))
 
             self.beforeMove = (self.x,self.y)
-            self.tmpCount   = 0
+            self.tmpCount = 0
 
             self.lastActionedTile = tile
             self.kernel().send(dir)
@@ -62,13 +62,13 @@ class Hero:
         self.kernel().dontUpdate()
 
     def open(self, tile):
-        dir = self.kernel().pathing.getDirection(tile)
+        dir = self._get_direction(self.kernel().curTile(), tile)
         self.kernel().log("Hero is opening a door..")
         self.kernel().send("o%s" % dir)
         self.lastActionedTile = tile
 
     def kick(self, tile):
-        dir = self.kernel().pathing.getDirection(tile)
+        dir = self._get_direction(self.kernel().curTile(), tile)
         self.kernel().log("Hero is kicking a door..")
         self.kernel().send("\x04%s" % dir)
 
@@ -92,3 +92,23 @@ class Hero:
 
     def canOpen(self, tile):
         return not tile.shopkeepDoor and tile.is_door and (tile.locked or self.kernel().hero.legShape) and tile.isAdjacent(self.kernel().curTile())
+
+    def _get_direction(self, source, target):
+        if abs(source.y - target.y) > 1 or abs(source.x - target.x) > 1:
+            self.kernel().die(f"\n\nAsked for directions to a nonadjacent tile {source} -> {target}\n\n")
+        if source.y < target.y and source.x < target.x:
+            return 'n'
+        if source.y < target.y and source.x == target.x:
+            return 'j'
+        if source.y < target.y and source.x > target.x:
+            return 'b'
+        if source.y == target.y and source.x < target.x:
+            return 'l'
+        if source.y == target.y and source.x > target.x:
+            return 'h'
+        if source.y > target.y and source.x < target.x:
+            return 'u'
+        if source.y > target.y and source.x == target.x:
+            return 'k'
+        if source.y > target.y and source.x > target.x:
+            return 'y'

@@ -2,6 +2,7 @@ from nethack_raph.myconstants import HEIGHT, WIDTH
 
 import numpy as np
 
+
 class WearArmor:
     def __init__(self, kernel):
         self.kernel = kernel
@@ -20,12 +21,12 @@ class WearArmor:
 
     def execute(self, path):
         if len(path) == 1:
-            assert path.tile == self.kernel().curTile()
+            assert path[0] == self.kernel().curTile()
             self.kernel().send('W')
             self.kernel().log('HERO:WEAR')
             return
 
         self.kernel().log(path)
-        self.kernel().hero.move(path[1].tile)
+        self.kernel().hero.move(path[-2])
         # self.kernel().sendSignal("interrupt_action", self)
 

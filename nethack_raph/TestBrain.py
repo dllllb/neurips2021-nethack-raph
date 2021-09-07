@@ -1,5 +1,5 @@
 from nethack_raph.Brain import *
-from nethack_raph.Pathing import dijkastra
+from nethack_raph.Pathing import dijkstra
 
 
 class TestBrain(Brain):
@@ -34,7 +34,7 @@ class TestBrain(Brain):
                 condition_fns.append(lambda coords_id, tile: enabled_coords[coords_id][tile.coords()])
                 enabled_actions.append(action)
 
-                path = dijkastra(self.kernel().curTile(), [lambda _, tile: coords[tile.coords()]])[0]
+                path = dijkstra(self.kernel().curTile(), [lambda _, tile: coords[tile.coords()]])[0]
                 action.after_search(path)
 
                 if path is not None:

@@ -5,7 +5,6 @@ from nethack_raph.Senses import Senses
 from nethack_raph.Console import Console
 from nethack_raph.Hero import Hero
 from nethack_raph.Dungeon import Dungeon
-from nethack_raph.Pathing import Pathing
 from nethack_raph.TestBrain import TestBrain
 from nethack_raph.Cursor import Cursor
 
@@ -16,10 +15,11 @@ import weakref
 
 
 class Kernel:
-    instance = None
-
     def __init__(self, silent):
         self.silent = silent
+        if not self.silent:
+            self._file = open("logs/log.txt", "w")
+            self._frames_log = open("logs/frames.txt", "w")
 
         # Stuff
         self.console = Console(weakref.ref(self))
@@ -30,21 +30,13 @@ class Kernel:
         # AI
         self.personality = Personality(weakref.ref(self))
         self.senses = Senses(weakref.ref(self))
-        self.pathing = Pathing(weakref.ref(self))
 
         # Brains
         self.curBrain = TestBrain(weakref.ref(self))
 
         self.personality.setBrain(self.curBrain)  # Default brain
 
-
         self.signalReceivers = []
-
-        if not self.silent:
-            self._file = open("logs/log.txt", "w")
-            self._frames_log = open("logs/frames.txt", "w")
-
-        Kernel.instance = self
 
         self.action = ' '
 
@@ -170,11 +162,18 @@ class Kernel:
         self.action = '#quit\ry'
 
     def drawString(self, msg):
-        self.log("Currently -> "+msg)
-        self.stdout("\x1b[35m\x1b[25;0H%s\x1b[m" % msg + " "*(240-len(msg)))
+        if not self.silent:
+            self.log("Currently -> "+msg)
+            self.stdout("\x1b[35m\x1b[25;0H%s\x1b[m" % msg + " "*(240-len(msg)))
 
     def addch(self, y, x, char, c=None):
-        self.stdout("%s\x1b[%d;%dH%s\x1b[m" % (c and "\x1b[%dm" % c or "", y, x, char))
+        if not self.silent:
+            self.stdout("%s\x1b[%d;%dH%s\x1b[m" % (c and "\x1b[%dm" % c or "", y, x, char))
+
+    def draw_path(self, path, color=41):
+        if not self.silent:
+            for tile in path:
+                self.stdout("\x1b[%dm\x1b[%d;%dH%s\x1b[m" % (color, tile.y + 2, tile.x + 1, tile.appearance()))
 
     def dontUpdate(self):
         pass

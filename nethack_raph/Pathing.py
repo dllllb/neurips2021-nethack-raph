@@ -1,4 +1,5 @@
-from nethack_raph.Tile import *
+from nethack_raph.myconstants import WIDTH
+from nethack_raph.Tile import Tile
 
 import heapq
 
@@ -18,10 +19,6 @@ class Node:
         return self.tile.x == other.tile.x and self.tile.y == other.tile.y
 
 
-def make_node(tile, cost):
-    return Node(tile, cost)
-
-
 class PriorityQueue:
     def __init__(self):
         self.elements = []
@@ -38,15 +35,15 @@ class PriorityQueue:
 
 def reconstruct_path(came_from, start, goal):
     current = goal
-    result = TileNode(goal.tile, 0)
+    result = [goal.tile]
     while current.tile != start.tile:
         current = came_from[current]
-        result = TileNode(current.tile, result)
+        result.append(current.tile)
     return result
 
 
-def dijkastra(start, condition_fns):
-    start_node = make_node(start, 0)
+def dijkstra(start, condition_fns):
+    start_node = Node(start, 0)
     frontier = PriorityQueue()
     frontier.push(start_node)
     came_from = {start_node: None}
@@ -65,185 +62,9 @@ def dijkastra(start, condition_fns):
 
         for neighbour in current.tile.walkableNeighbours():
             neighbour_cost = cost_so_far[current] + Tile.walkables.get(neighbour.glyph, 1)
-            neighbour_node = make_node(neighbour, neighbour_cost)
+            neighbour_node = Node(neighbour, neighbour_cost)
             if neighbour_node not in cost_so_far or neighbour_cost < cost_so_far[neighbour_node]:
                 cost_so_far[neighbour_node] = neighbour_cost
                 frontier.push(neighbour_node)
                 came_from[neighbour_node] = current
     return results
-
-
-class Pathing:
-    def __init__(self, kernel):
-        self.end = None
-        self.kernel = kernel
-
-    def path(self, start=None, end=None, find=None, max_g=15):
-        if not start:
-            start = self.kernel().curTile()
-        if end:
-            self.end = end
-            if not end.isWalkable():
-                self.kernel().die("Asked for unwalkable square")
-                return None
-            elif end == start:
-                self.kernel().die("end == start in Pathing.path()")
-                return None
-        else:
-            self.end = None
-            if not find:
-                self.kernel().die("No end or find in path()\n  Start:%s\n  End:%s" % (str(start), str(end)))
-
-        self.kernel().log("Finding path from\n    st:%s\n    en:%s\n    fi:%s" % (str(start), str(end), str(find)))
-
-        open   = [self.createNode(start, 0)]
-        closed = []
-
-        while open:
-            # Find the most promising square
-            current = open[0]
-            for x in open:
-                if x.f() < current.f():
-                    current = x
-
-            if self.end:
-                if current.tile == self.end:
-                    return current
-
-            if find:
-                if current.tile.find(find):
-                    return current
-
-            if max_g and current.g >= max_g:
-                return None
-            # Switch it over to closed
-            open.remove(current)
-            closed.append(current)
-
-            # For each of its walkable neighbours:
-            for neighbour in current.tile.walkableNeighbours():
-                # Ignore it if it's already in closed
-                if [x for x in closed if x.tile == neighbour]:
-                    continue
-
-                neighbourNode = self.createNode(neighbour, current)
-                if self.end:
-                    if neighbourNode.tile == self.end:
-                        return neighbourNode
-
-                if find:
-                    if neighbourNode.tile.find(find):
-                        return neighbourNode
-
-                openNode = None
-                for n in open:
-                    if n.tile == neighbour:
-                        openNode = n
-                        break
-
-                # Add to open if it's not already in it
-                if not openNode:
-                    open.append(neighbourNode)
-                else:
-                    # If it is, and G is better: swaptime!
-                    if openNode.g > neighbourNode.g:
-                        open.remove(openNode)
-                        open.append(neighbourNode)
-
-        self.kernel().log("open is now empty. Did not find anything in Pathing")
-        return None
-
-    def createNode(self, tile, parent):
-        tmp = TileNode(tile, parent)
-        if parent and tile.glyph:
-            if tile.glyph in Tile.walkables.keys():
-                tmp.g = parent.g + Tile.walkables[tile.glyph]
-            else:
-                tmp.g = parent.g + 1
-        else:
-            tmp.g = 0
-
-
-        if self.end:
-            tmp.h = abs(tile.x-self.end.x) + abs(tile.y-self.end.y)
-        else:
-            tmp.h = 0
-        return tmp
-
-    def getDirection(self, tile):
-        self.kernel().log(tile)
-        if abs(self.kernel().curTile().y - tile.y) > 1 or abs(self.kernel().curTile().x - tile.x) > 1:
-            self.kernel().die("Asked for directions to a nonadjacent tile: %s" % tile)
-        if self.kernel().curTile().y <  tile.y and self.kernel().curTile().x <  tile.x: return 'n'
-        if self.kernel().curTile().y <  tile.y and self.kernel().curTile().x == tile.x: return 'j'
-        if self.kernel().curTile().y <  tile.y and self.kernel().curTile().x >  tile.x: return 'b'
-        if self.kernel().curTile().y == tile.y and self.kernel().curTile().x <  tile.x: return 'l'
-        if self.kernel().curTile().y == tile.y and self.kernel().curTile().x >  tile.x: return 'h'
-        if self.kernel().curTile().y >  tile.y and self.kernel().curTile().x <  tile.x: return 'u'
-        if self.kernel().curTile().y >  tile.y and self.kernel().curTile().x == tile.x: return 'k'
-        if self.kernel().curTile().y >  tile.y and self.kernel().curTile().x >  tile.x: return 'y'
-
-
-class TileNode:
-    def __init__(self, tile, parent):
-        self.tile = tile
-        self.parent = parent
-
-        self.g = 0
-        self.h = 0
-
-    def f(self):
-        return self.g + self.h
-
-    def draw(self, color=41):
-        a = self
-        while a.parent != 0:
-            #FIXME !!!!!
-            #self.kernel().stdout("\x1b[%dm\x1b[%d;%dH%s\x1b[m" % (color, a.tile.y+2, a.tile.x+1, a.tile.appearance()))
-            a = a.parent
-
-    def isWalkable(self):
-        a = self
-        while a.parent != 0:
-            if not a.tile.isWalkable():
-                return False
-            a = a.parent
-        return True
-
-    def __getitem__(self, i):
-        reverse = False
-        if i < 0:
-            i = abs(i)
-            reverse = True
-        if len(self) < i:
-            raise IndexError
-
-        if reverse:
-            toReturn = len(self)-i
-        else:
-            toReturn = i
-
-        count = 0
-        a = self
-        while a.parent != 0:
-            if count == toReturn:
-                break
-            a = a.parent
-            count = count + 1
-        return a
-
-    def __len__(self):
-        count = 1
-        a = self
-        while a.parent != 0:
-            a = a.parent
-            count = count + 1
-        return count
-
-    def __str__(self):
-        ret = str(self.tile.coords())
-        a = self
-        while a.parent != 0:
-            a = a.parent
-            ret = ret + ",(" + str(a.tile.coords()) +")"
-        return ret

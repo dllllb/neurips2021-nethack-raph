@@ -29,5 +29,5 @@ class Explore:
 
     def execute(self, path):
         self.kernel().log("Found self.path (%s)" % str(path))
-        path.draw(color=COLOR_BG_BLUE)
-        self.kernel().hero.move(path[1].tile)
+        self.kernel().draw_path(path, color=COLOR_BG_BLUE)
+        self.kernel().hero.move(path[-2])

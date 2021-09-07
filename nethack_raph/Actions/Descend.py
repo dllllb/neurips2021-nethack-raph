@@ -22,7 +22,7 @@ class Descend:
 
     def execute(self, path):
         if len(path) == 1:
-            if path[0].tile.glyph == '>':
+            if path[0].glyph == '>':
                 self.kernel().hero.descend()
                 return
             self.kernel().log('door is absent')
@@ -30,5 +30,5 @@ class Descend:
             return
 
         self.kernel().log("Going towards stairs")
-        path.draw(color=COLOR_BG_GREEN)
-        self.kernel().hero.move(path[1].tile)
+        self.kernel().draw_path(path, color=COLOR_BG_GREEN)
+        self.kernel().hero.move(path[-2])

@@ -32,7 +32,7 @@ class AttackMonster:
     def execute(self, path):
         self.kernel().log(f'len path: {len(path)}')
         if len(path) == 1:
-            assert path.tile == self.kernel().curTile()
+            assert path[0] == self.kernel().curTile()
             for tile in self.kernel().curTile().neighbours():
                 if tile.monster and tile.monster.isAttackable():
                     self.kernel().hero.attack(tile)
@@ -42,6 +42,6 @@ class AttackMonster:
             return
 
         self.kernel().sendSignal("interrupt_action", self)
-        path.draw(color=COLOR_BG_RED)
+        self.kernel().draw_path(path, color=COLOR_BG_RED)
         self.kernel().log("Going towards monster")
-        self.kernel().hero.move(path[1].tile)
+        self.kernel().hero.move(path[-2])

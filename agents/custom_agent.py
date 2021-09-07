@@ -115,7 +115,7 @@ class CustomAgent(BatchedAgent):
     def __init__(self, num_envs, num_actions):
         """Set up and load you model here"""
         super().__init__(num_envs, num_actions)
-        self.kernel = Kernel(silent=True)
+        self.kernel = Kernel(silent=False)
 
         self.action2id = {
             chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
@@ -137,9 +137,9 @@ class CustomAgent(BatchedAgent):
 
 
         if int(dones[0]):
-            # input(f'tot reward: {self.reward}')
+            input(f'tot reward: {self.reward}')
             del self.kernel
-            self.kernel = Kernel(silent=True)
+            self.kernel = Kernel(silent=False)
             self.reward = 0
 
 

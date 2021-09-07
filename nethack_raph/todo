@@ -16,17 +16,4 @@ DIMA
 5. You are carrying too much to get through. - temp fixed
 6. You can't move diagonally into an intact doorway. - temp fixed
 7. "Will you please leave your pick-axe outside?"
-
-
-  File "/Users/sorokin/dev/raph/./nh.py", line 56, in <module>
-    aciton = self.kernel().step(obs)
-  File "/Users/sorokin/dev/raph/Kernel.py", line 85, in step
-    self.Senses.parseMessages()
-  File "/Users/sorokin/dev/raph/Senses.py", line 282, in parseMessages
-    func(match)
-  File "/Users/sorokin/dev/raph/Senses.py", line 217, in is_staircase_here
-    self.kernel().curTile().glyph = '<'
-  File "/Users/sorokin/dev/raph/Kernel.py", line 26, in curTile
-    return self.Dungeon.curBranch.curLevel.tiles[self.kernel().hero.x + self.kernel().hero.y*WIDTH]
-AttributeError: 'NoneType' object has no attribute 'curLevel'
-
+8. Never mind.                   What do you want to wear? [*} - loops

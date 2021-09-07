@@ -28,7 +28,7 @@ class OpenDoors:
 
     def execute(self, path):
         if len(path) == 1:
-            assert path.tile == self.kernel().curTile()
+            assert path[0] == self.kernel().curTile()
             for tile in self.kernel().curTile().neighbours():
                 if tile.is_door:
                     if tile.locked:
@@ -40,7 +40,6 @@ class OpenDoors:
             self.kernel().send(' ')
             return
         else:
-            path.draw(color=COLOR_BG_CYAN)
-            self.kernel().hero.move(path[1].tile)
+            self.kernel().draw_path(path, color=COLOR_BG_CYAN)
+            self.kernel().hero.move(path[-2])
             self.kernel().sendSignal("interrupt_action", self)
-
