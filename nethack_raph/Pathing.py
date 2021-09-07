@@ -1,4 +1,3 @@
-from nethack_raph.EeekObject import *
 from nethack_raph.Tile import *
 
 import heapq
@@ -74,28 +73,28 @@ def dijkastra(start, condition_fns):
     return results
 
 
-class Pathing(EeekObject):
-    def __init__(self):
-        EeekObject.__init__(self)
+class Pathing:
+    def __init__(self, kernel):
         self.end = None
+        self.kernel = kernel
 
     def path(self, start=None, end=None, find=None, max_g=15):
         if not start:
-            start = Kernel.instance.curTile()
+            start = self.kernel().curTile()
         if end:
             self.end = end
             if not end.isWalkable():
-                Kernel.instance.die("Asked for unwalkable square")
+                self.kernel().die("Asked for unwalkable square")
                 return None
             elif end == start:
-                Kernel.instance.die("end == start in Pathing.path()")
+                self.kernel().die("end == start in Pathing.path()")
                 return None
         else:
             self.end = None
             if not find:
-                Kernel.instance.die("No end or find in path()\n  Start:%s\n  End:%s" % (str(start), str(end)))
+                self.kernel().die("No end or find in path()\n  Start:%s\n  End:%s" % (str(start), str(end)))
 
-        Kernel.instance.log("Finding path from\n    st:%s\n    en:%s\n    fi:%s" % (str(start), str(end), str(find)))
+        self.kernel().log("Finding path from\n    st:%s\n    en:%s\n    fi:%s" % (str(start), str(end), str(find)))
 
         open   = [self.createNode(start, 0)]
         closed = []
@@ -151,7 +150,7 @@ class Pathing(EeekObject):
                         open.remove(openNode)
                         open.append(neighbourNode)
 
-        Kernel.instance.log("open is now empty. Did not find anything in Pathing")
+        self.kernel().log("open is now empty. Did not find anything in Pathing")
         return None
 
     def createNode(self, tile, parent):
@@ -172,22 +171,22 @@ class Pathing(EeekObject):
         return tmp
 
     def getDirection(self, tile):
-        Kernel.instance.log(tile)
-        if abs(Kernel.instance.curTile().y - tile.y) > 1 or abs(Kernel.instance.curTile().x - tile.x) > 1:
-            Kernel.instance.die("Asked for directions to a nonadjacent tile: %s" % tile)
-        if Kernel.instance.curTile().y <  tile.y and Kernel.instance.curTile().x <  tile.x: return 'n'
-        if Kernel.instance.curTile().y <  tile.y and Kernel.instance.curTile().x == tile.x: return 'j'
-        if Kernel.instance.curTile().y <  tile.y and Kernel.instance.curTile().x >  tile.x: return 'b'
-        if Kernel.instance.curTile().y == tile.y and Kernel.instance.curTile().x <  tile.x: return 'l'
-        if Kernel.instance.curTile().y == tile.y and Kernel.instance.curTile().x >  tile.x: return 'h'
-        if Kernel.instance.curTile().y >  tile.y and Kernel.instance.curTile().x <  tile.x: return 'u'
-        if Kernel.instance.curTile().y >  tile.y and Kernel.instance.curTile().x == tile.x: return 'k'
-        if Kernel.instance.curTile().y >  tile.y and Kernel.instance.curTile().x >  tile.x: return 'y'
+        self.kernel().log(tile)
+        if abs(self.kernel().curTile().y - tile.y) > 1 or abs(self.kernel().curTile().x - tile.x) > 1:
+            self.kernel().die("Asked for directions to a nonadjacent tile: %s" % tile)
+        if self.kernel().curTile().y <  tile.y and self.kernel().curTile().x <  tile.x: return 'n'
+        if self.kernel().curTile().y <  tile.y and self.kernel().curTile().x == tile.x: return 'j'
+        if self.kernel().curTile().y <  tile.y and self.kernel().curTile().x >  tile.x: return 'b'
+        if self.kernel().curTile().y == tile.y and self.kernel().curTile().x <  tile.x: return 'l'
+        if self.kernel().curTile().y == tile.y and self.kernel().curTile().x >  tile.x: return 'h'
+        if self.kernel().curTile().y >  tile.y and self.kernel().curTile().x <  tile.x: return 'u'
+        if self.kernel().curTile().y >  tile.y and self.kernel().curTile().x == tile.x: return 'k'
+        if self.kernel().curTile().y >  tile.y and self.kernel().curTile().x >  tile.x: return 'y'
 
 
 class TileNode:
     def __init__(self, tile, parent):
-        self.tile   = tile
+        self.tile = tile
         self.parent = parent
 
         self.g = 0
@@ -199,7 +198,8 @@ class TileNode:
     def draw(self, color=41):
         a = self
         while a.parent != 0:
-            Kernel.instance.stdout("\x1b[%dm\x1b[%d;%dH%s\x1b[m" % (color, a.tile.y+2, a.tile.x+1, a.tile.appearance()))
+            #FIXME !!!!!
+            #self.kernel().stdout("\x1b[%dm\x1b[%d;%dH%s\x1b[m" % (color, a.tile.y+2, a.tile.x+1, a.tile.appearance()))
             a = a.parent
 
     def isWalkable(self):

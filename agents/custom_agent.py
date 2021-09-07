@@ -1,19 +1,6 @@
-import numpy as np
-
 from agents.base import BatchedAgent
-import nethack_raph.Kernel
-from nethack_raph.myconstants import *
-from nethack_raph.Personality import *
-from nethack_raph.Senses import *
-from nethack_raph.Console import *
-from nethack_raph.Hero import *
-from nethack_raph.Dungeon import *
-from nethack_raph.MonsterSpoiler import *
-from nethack_raph.Pathing import *
-from nethack_raph.TestBrain import *
-from nethack_raph.Cursor import *
-from nethack_raph.ItemDB import *
-from nethack_raph.Inventory import *
+from nethack_raph.Kernel import Kernel
+
 
 from nle.nethack.actions import ACTIONS
 import time
@@ -21,36 +8,10 @@ import time
 
 class CustomAgent(BatchedAgent):
     """A example agent... that simple acts randomly. Adapt to your needs!"""
-
-    def init(self):
-        Kernel(silent=True)
-
-        # Stuff
-        Console()
-        Cursor()
-        Dungeon()
-        Hero()
-        MonsterSpoiler()
-        ItemDB()
-        Inventory()
-
-        # AI
-        Personality()
-        Senses()
-        Pathing()
-
-        # Brains
-        curBrain = TestBrain()
-
-        Kernel.instance.Personality.setBrain(curBrain)  # Default brain
-
-    def delete(self):
-        del Kernel.instance
-
     def __init__(self, num_envs, num_actions):
         """Set up and load you model here"""
         super().__init__(num_envs, num_actions)
-        self.init()
+        self.kernel = Kernel(silent=True)
 
         self.action2id = {
             chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
@@ -69,12 +30,12 @@ class CustomAgent(BatchedAgent):
         assert len(dones) == 1
 
         if int(dones[0]):
-            self.delete()
-            self.init()
+            del self.kernel
+            self.kernel = Kernel(silent=False)
 
         before = time.time()
 
-        action = Kernel.instance.step(observations[0])
+        action = self.kernel.step(observations[0])
         if len(action):
             ch = action[0]
         else:
@@ -89,7 +50,7 @@ class CustomAgent(BatchedAgent):
         after = time.time()
         self.maxtime = max(self.maxtime, after - before)
 
-        Kernel.instance.log("Sent string:" + ch + ' ' + str(type(ch)))
-        Kernel.instance.log("Sent string:" + ch + ' ' + str(action))
-        Kernel.instance.log(f'action time: {after - before}, maxtime: {self.maxtime}')
+        self.kernel.log("Sent string:" + ch + ' ' + str(type(ch)))
+        self.kernel.log("Sent string:" + ch + ' ' + str(action))
+        self.kernel.log(f'action time: {after - before}, maxtime: {self.maxtime}')
         return [action]

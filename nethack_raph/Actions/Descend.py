@@ -1,17 +1,18 @@
-from nethack_raph.Kernel import *
+from nethack_raph.myconstants import HEIGHT, WIDTH, COLOR_BG_GREEN
+
 import numpy as np
 
 
 class Descend:
-    def __init__(self):
-        pass
+    def __init__(self, kernel):
+        self.kernel = kernel
 
     def can(self):
         goal_coords = np.zeros((HEIGHT, WIDTH))
 
-        Kernel.instance.log("Finding '>' ..")
-        stairs = list(filter(lambda tile: tile.glyph == '>', Kernel.instance.curLevel().tiles))
-        Kernel.instance.log(f"Found {len(stairs)} stairs")
+        self.kernel().log("Finding '>' ..")
+        stairs = list(filter(lambda tile: tile.glyph == '>', self.kernel().curLevel().tiles))
+        self.kernel().log(f"Found {len(stairs)} stairs")
         for stair in stairs: # Grammar <3
             goal_coords[stair.coords()] = True
         return len(stairs), goal_coords
@@ -22,12 +23,12 @@ class Descend:
     def execute(self, path):
         if len(path) == 1:
             if path[0].tile.glyph == '>':
-                Kernel.instance.Hero.descend()
+                self.kernel().hero.descend()
                 return
-            Kernel.instance.log('door is absent')
-            Kernel.instance.send(' ')
+            self.kernel().log('door is absent')
+            self.kernel().send(' ')
             return
 
-        Kernel.instance.log("Going towards stairs")
+        self.kernel().log("Going towards stairs")
         path.draw(color=COLOR_BG_GREEN)
-        Kernel.instance.Hero.move(path[1].tile)
+        self.kernel().hero.move(path[1].tile)

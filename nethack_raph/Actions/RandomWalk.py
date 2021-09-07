@@ -1,10 +1,11 @@
-from nethack_raph.Kernel import *
+from nethack_raph.myconstants import HEIGHT, WIDTH
+
 import numpy as np
 
 
 class RandomWalk:
-    def __init__(self):
-        pass
+    def __init__(self, kernel):
+        self.kernel = kernel
 
     def can(self):
         return True, np.ones((HEIGHT, WIDTH))
@@ -13,4 +14,4 @@ class RandomWalk:
         pass
 
     def execute(self, path):
-        Kernel.instance.Hero.search()
+        self.kernel().hero.search()

@@ -1,9 +1,18 @@
 from nethack_raph.myconstants import *
 from nethack_raph.TermColor import TermColor
+from nethack_raph.Personality import Personality
+from nethack_raph.Senses import Senses
+from nethack_raph.Console import Console
+from nethack_raph.Hero import Hero
+from nethack_raph.Dungeon import Dungeon
+from nethack_raph.Pathing import Pathing
+from nethack_raph.TestBrain import TestBrain
+from nethack_raph.Cursor import Cursor
 
 import re
 import sys
 import numpy as np
+import weakref
 
 
 class Kernel:
@@ -11,6 +20,23 @@ class Kernel:
 
     def __init__(self, silent):
         self.silent = silent
+
+        # Stuff
+        self.console = Console(weakref.ref(self))
+        self.cursor = Cursor(weakref.ref(self))
+        self.dungeon = Dungeon(weakref.ref(self))
+        self.hero = Hero(weakref.ref(self))
+
+        # AI
+        self.personality = Personality(weakref.ref(self))
+        self.senses = Senses(weakref.ref(self))
+        self.pathing = Pathing(weakref.ref(self))
+
+        # Brains
+        self.curBrain = TestBrain(weakref.ref(self))
+
+        self.personality.setBrain(self.curBrain)  # Default brain
+
 
         self.signalReceivers = []
 
@@ -28,10 +54,10 @@ class Kernel:
         self.top = None
 
     def curLevel(self):
-        return self.Dungeon.curBranch.curLevel
+        return self.dungeon.curBranch.curLevel
 
     def curTile(self):
-        return self.Dungeon.curBranch.curLevel.tiles[Kernel.instance.Hero.x + Kernel.instance.Hero.y*WIDTH]
+        return self.dungeon.curBranch.curLevel.tiles[self.hero.x + self.hero.y*WIDTH]
 
     def searchBot(self, regex):
         return re.search(regex, self.bot)
@@ -73,25 +99,25 @@ class Kernel:
         # TODO: use them
         #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, unk
 
-        Kernel.instance.Hero.x, Kernel.instance.Hero.y, strength_percentage, \
-        Kernel.instance.Hero.str, Kernel.instance.Hero.dex, Kernel.instance.Hero.con, \
-        Kernel.instance.Hero.int, Kernel.instance.Hero.wis, Kernel.instance.Hero.cha, \
-        Kernel.instance.score, Kernel.instance.Hero.curhp, Kernel.instance.Hero.maxhp, \
-        Kernel.instance.Dungeon.dlvl, Kernel.instance.Hero.gold, Kernel.instance.Hero.curpw, \
-        Kernel.instance.Hero.maxpw, Kernel.instance.Hero.ac, monster_level, \
-        Kernel.instance.Hero.xp, Kernel.instance.Hero.xp_next, Kernel.instance.turns, \
-        Kernel.instance.Hero.hunger, carrying_capacity, dungeon_number, \
+        self.hero.x, self.hero.y, strength_percentage, \
+        self.hero.str, self.hero.dex, self.hero.con, \
+        self.hero.int, self.hero.wis, self.hero.cha, \
+        self.hero.score, self.hero.curhp, self.hero.maxhp, \
+        self.dungeon.dlvl, self.hero.gold, self.hero.curpw, \
+        self.hero.maxpw, self.hero.ac, monster_level, \
+        self.hero.xp, self.hero.xp_next, self.hero.turns, \
+        self.hero.hunger, carrying_capacity, dungeon_number, \
         level_number, unk = obs['blstats']
 
         # unk == 64 -> Deaf
 
-        if Kernel.instance.searchBot("Blind"):
-            Kernel.instance.Hero.blind = True
+        if self.searchBot("Blind"):
+            self.hero.blind = True
         else:
-            Kernel.instance.Hero.blind = False
+            self.hero.blind = False
 
-        if Kernel.instance.searchBot("the Werejackal"):
-            Kernel.instance.Hero.isPolymorphed = True
+        if self.searchBot("the Werejackal"):
+            self.hero.isPolymorphed = True
 
         #FIXME --more-- in the middle
         #if '--More--' in self.frame_buffer.allLines():
@@ -101,22 +127,22 @@ class Kernel:
         self.log("Updates starting: \n\n")
         self.log("--------- DUNGEON ---------")
 
-        self.Dungeon.update()
+        self.dungeon.update()
         if len(self.action):
             return self.action
 
         self.log("--------- SENSES --------- ")
-        self.Senses.update()
+        self.senses.update()
         if len(self.action):
             return self.action
 
         self.log("-------- MESSAGES -------- ")
-        self.Senses.parseMessages()
+        self.senses.parseMessages()
         if len(self.action):
             return self.action
 
         self.log("------ PERSONALITY ------  ")
-        self.Personality.nextAction()
+        self.personality.nextAction()
 
         self.log("\n\nUpdates ended.")
         return self.action
@@ -144,7 +170,7 @@ class Kernel:
         self.action = '#quit\ry'
 
     def drawString(self, msg):
-        Kernel.instance.log("Currently -> "+msg)
+        self.log("Currently -> "+msg)
         self.stdout("\x1b[35m\x1b[25;0H%s\x1b[m" % msg + " "*(240-len(msg)))
 
     def addch(self, y, x, char, c=None):
@@ -166,8 +192,8 @@ class Kernel:
                 if y == HEIGHT-1 and x > WIDTH-5:
                     break
                 self._frames_log.write(chr(self.state[0][y,x]))
-        if Kernel.instance.Dungeon.curBranch:
-            self._frames_log.write(str(Kernel.instance.curTile().coords()))
+        if self.dungeon.curBranch:
+            self._frames_log.write(str(self.curTile().coords()))
         self._frames_log.flush()
 
     def stdout(self, msg):

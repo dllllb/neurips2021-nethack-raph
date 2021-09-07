@@ -1,13 +1,13 @@
-from nethack_raph.Kernel import *
 from nethack_raph.Tile import *
 
 
 class Level:
-    def __init__(self, dlvl):
-        Kernel.instance.log("Making a level")
+    def __init__(self, kernel, dlvl):
+        self.kernel = kernel
+        self.kernel().log("Making a level")
 
         self.dlvl = dlvl
-        self.branchname = Kernel.instance.Dungeon.curBranch.name
+        self.branchname = self.kernel().dungeon.curBranch.name
         self.tiles = []
         self.special = None
         self.explored = False
@@ -15,9 +15,9 @@ class Level:
 
         for y in range(0, 21):
             for x in range(0, 80):
-                self.tiles.append(Tile(y, x, self))
+                self.tiles.append(Tile(y, x, self, kernel))
 
-        Kernel.instance.log("Made a Level() with dlvl: %d in branch %s" % (self.dlvl, self.branchname))
+        self.kernel().log("Made a Level() with dlvl: %d in branch %s" % (self.dlvl, self.branchname))
 
     def find(self, args):
         return [tile for tile in self.tiles if tile.find(args)]
@@ -43,7 +43,7 @@ class Level:
         return [tile for tile in self.tiles if tile.find(query)]
 
     def update(self):
-        chars, colors = Kernel.instance.state
+        chars, colors = self.kernel().state
         chars = chars.reshape(-1)
         colors = colors.reshape(-1)
         for x in range(0, len(self.tiles)):
@@ -56,13 +56,13 @@ class Level:
                 color = TermColor(color, bold=is_bold)
 
                 tmp = self.tiles[x].appearance()
-                Kernel.instance.log("\n   <--- %s\n   ---> %s" % (str(self.tiles[x].appearance()), str(char)))
+                self.kernel().log("\n   <--- %s\n   ---> %s" % (str(self.tiles[x].appearance()), str(char)))
                 self.tiles[x].setTile(char, color)
                 if not (self.tiles[x].isHero()):
-                    Kernel.instance.log("\n   <!!! %s(%s)\n   !!!> %s" % (tmp, str(self.tiles[x].coords()), str(char)))
+                    self.kernel().log("\n   <!!! %s(%s)\n   !!!> %s" % (tmp, str(self.tiles[x].coords()), str(char)))
                     self.explored = False
 
-        for tile in Kernel.instance.curTile().neighbours():
+        for tile in self.kernel().curTile().neighbours():
             if tile.appearance() == ' ' and tile.walkable:
-                Kernel.instance.log("Setting walkable to False because I think this is rock (%s)" % tile)
+                self.kernel().log("Setting walkable to False because I think this is rock (%s)" % tile)
                 tile.walkable = False

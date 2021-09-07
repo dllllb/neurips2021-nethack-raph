@@ -1,13 +1,18 @@
-from nethack_raph.Kernel import *
-from nethack_raph.EeekObject import *
 from nethack_raph.Branch import *
 
 
-class Dungeon(EeekObject):
-    def __init__(self):
-        EeekObject.__init__(self)
-
-        self.branches = [Branch("Main"), Branch("Mines"), Branch("Sokoban"), Branch("Quest"), Branch("Gehennom"), Branch("Planes"), Branch("Unknown")]
+class Dungeon:
+    def __init__(self, kernel):
+        self.kernel = kernel
+        self.branches = [
+            Branch("Main", kernel),
+            Branch("Mines", kernel),
+            Branch("Sokoban", kernel),
+            Branch("Quest", kernel),
+            Branch("Gehennom", kernel),
+            Branch("Planes", kernel),
+            Branch("Unknown", kernel)
+        ]
         self.curBranch = None
         self.dlvl = -1
 
@@ -17,7 +22,7 @@ class Dungeon(EeekObject):
     def update(self):
         if not self.curBranch or self.curBranch.curLevel.dlvl != self.dlvl:
             self.curBranch = self.guessBranch()
-            Kernel.instance.sendSignal("new_dlvl")
+            self.kernel().sendSignal("new_dlvl")
 
         self.curBranch.update()
 

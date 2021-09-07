@@ -3,27 +3,27 @@ from nethack_raph.Pathing import dijkastra
 
 
 class TestBrain(Brain):
-    def __init__(self):
-        Brain.__init__(self, "TestBrain")
+    def __init__(self, kernel):
+        Brain.__init__(self, "TestBrain", kernel)
 
         self.actions = [
-                            AttackMonster(),
-                            Eat(),
-                            WearArmor(),
-                            FixStatus(),
-                            RestoreHP(),
-                            SearchSpot(),
-                            OpenDoors(),
+                            AttackMonster(kernel),
+                            Eat(kernel),
+                            WearArmor(kernel),
+                            FixStatus(kernel),
+                            RestoreHP(kernel),
+                            SearchSpot(kernel),
+                            OpenDoors(kernel),
                             # [DipForExcalibur(), 1600],
                             #[GetPhatz(),        1500],
-                            Explore(),
-                            Descend(),
-                            Search(),
-                            RandomWalk(),
+                            Explore(kernel),
+                            Descend(kernel),
+                            Search(kernel),
+                            RandomWalk(kernel),
                        ]
 
     def executeNext(self):
-        Kernel.instance.log(self.actions)
+        self.kernel().log(self.actions)
         condition_fns = []
         enabled_coords = []
         enabled_actions = []
@@ -34,14 +34,14 @@ class TestBrain(Brain):
                 condition_fns.append(lambda coords_id, tile: enabled_coords[coords_id][tile.coords()])
                 enabled_actions.append(action)
 
-                path = dijkastra(Kernel.instance.curTile(), [lambda _, tile: coords[tile.coords()]])[0]
+                path = dijkastra(self.kernel().curTile(), [lambda _, tile: coords[tile.coords()]])[0]
                 action.after_search(path)
 
                 if path is not None:
-                    Kernel.instance.log(f'found path: {path} for {action}')
+                    self.kernel().log(f'found path: {path} for {action}')
                     action.execute(path)
                     return
 
     def s_isWeak(self):
-        Kernel.instance.log("Praying because I'm weak")
-        Kernel.instance.send("#pray\r")
+        self.kernel().log("Praying because I'm weak")
+        self.kernel().send("#pray\r")

@@ -1,22 +1,22 @@
-from nethack_raph.Kernel import *
-from nethack_raph.SignalReceiver import *
+from nethack_raph.myconstants import HEIGHT, WIDTH, COLOR_BG_BLUE
+
 import numpy as np
 
 
-class Explore(SignalReceiver):
-    def __init__(self):
-        SignalReceiver.__init__(self)
+class Explore:
+    def __init__(self, kernel):
+        self.kernel = kernel
 
     def can(self):
         goal_coords = np.zeros((HEIGHT, WIDTH))
 
-        if Kernel.instance.curLevel().explored:
-            Kernel.instance.log("Level is explored.")
+        if self.kernel().curLevel().explored:
+            self.kernel().log("Level is explored.")
             return False, goal_coords
 
-        Kernel.instance.log("No goals defined in Explore, finding one ..")
+        self.kernel().log("No goals defined in Explore, finding one ..")
         found_unexplored = False
-        for tile in filter(lambda t: not t.explored and t.isWalkable() and not t.isHero(), Kernel.instance.curLevel().tiles):
+        for tile in filter(lambda t: not t.explored and t.isWalkable() and not t.isHero(), self.kernel().curLevel().tiles):
             goal_coords[tile.coords()] = True
             found_unexplored = True
 
@@ -24,10 +24,10 @@ class Explore(SignalReceiver):
 
     def after_search(self, path):
         if path is None:
-            Kernel.instance.log("Didn't find any goals.")
-            Kernel.instance.curLevel().explored = True
+            self.kernel().log("Didn't find any goals.")
+            self.kernel().curLevel().explored = True
 
     def execute(self, path):
-        Kernel.instance.log("Found self.path (%s)" % str(path))
+        self.kernel().log("Found self.path (%s)" % str(path))
         path.draw(color=COLOR_BG_BLUE)
-        Kernel.instance.Hero.move(path[1].tile)
+        self.kernel().hero.move(path[1].tile)

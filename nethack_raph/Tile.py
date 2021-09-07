@@ -1,7 +1,6 @@
 from nethack_raph.Item import *
 from nethack_raph.Monster import *
 from nethack_raph.TermColor import *
-from nethack_raph.Kernel import Kernel
 from nethack_raph.Findable import *
 
 
@@ -21,8 +20,9 @@ class Tile(Findable):
                     '^': 100,
                     ' ': 1}  #glyph: weight
 
-    def __init__(self, y, x, level):
+    def __init__(self, y, x, level, kernel):
         Findable.__init__(self)
+        self.kernel = kernel
 
         self.y = y
         self.x = x
@@ -46,6 +46,8 @@ class Tile(Findable):
         self.shopkeepDoor = False
         self.is_door = False
 
+        self.kernel = kernel
+
     def coords(self):
         return self.y, self.x
 
@@ -64,20 +66,20 @@ class Tile(Findable):
             self.explored = self.explored or (glyph != ' ')
 
             if self.items:
-                Kernel.instance.log("Removing items on %s because I only see a dngFeature-tile" % str(self.coords()))
+                self.kernel().log("Removing items on %s because I only see a dngFeature-tile" % str(self.coords()))
                 self.items = []
 
             if glyph not in Tile.walkables.keys() and not self.isDoor():
-                Kernel.instance.log("Setting %s to unwalkable." % self)
+                self.kernel().log("Setting %s to unwalkable." % self)
                 self.walkable = False
             if glyph in Tile.walkables.keys() and glyph not in [' ']:
                 self.walkable = True
-            #Kernel.instance.log("Found feature: %s, Color: %s, at (%d,%d). Tile is now: %s" % (glyph, str(color), self.y, self.x, str(self)))
+            #self.kernel().log("Found feature: %s, Color: %s, at (%d,%d). Tile is now: %s" % (glyph, str(color), self.y, self.x, str(self)))
 
         elif glyph in Tile.dngItems:
             it = Item(None, glyph, color)
             if not self.items:
-                Kernel.instance.log("Added item(%s) to tile(%s)" % (str(it), str(self)))
+                self.kernel().log("Added item(%s) to tile(%s)" % (str(it), str(self)))
                 self.items.append(it)
             else:
                 self.items[0] = it
@@ -86,9 +88,9 @@ class Tile(Findable):
                 self.walkable = False
             else:
                 self.walkable = True
-            #Kernel.instance.log("Found item: %s, Color: %s, at (%d,%d). Tile is now: %s" % (str(it), str(color), self.y, self.x, str(self)))
+            #self.kernel().log("Found item: %s, Color: %s, at (%d,%d). Tile is now: %s" % (str(it), str(color), self.y, self.x, str(self)))
 
-        elif self.coords() == Kernel.instance.curTile().coords():
+        elif self.coords() == self.kernel().curTile().coords():
             self.explored = True
             self.walkable = True
 
@@ -99,20 +101,20 @@ class Tile(Findable):
                 self.glyph = None
 
         elif glyph in Tile.dngMonsters:
-            self.monster  = Monster(glyph, color)
+            self.monster  = Monster(glyph, color, self.kernel)
             self.walkable = True
             if self.glyph == '+':
-                if Kernel.instance.Dungeon.tile(self.y-1, self.x).glyph == '|':
+                if self.kernel().dungeon.tile(self.y-1, self.x).glyph == '|':
                     self.glyph = '-'
                 else:
                     self.glyph = '|'
                 self.color = TermColor(33, 0, False, False)
 
-            #Kernel.instance.log("Found monster:%s, Color: %s, at (%d,%d). Tile is now: %s" % (str(self.monster), str(color), self.y, self.x, str(self)))
+            #self.kernel().log("Found monster:%s, Color: %s, at (%d,%d). Tile is now: %s" % (str(self.monster), str(color), self.y, self.x, str(self)))
         else:
             self.glyph = glyph
             return #FIXME DIMA
-            Kernel.instance.die("Couldn't parse tile: " + glyph)
+            self.kernel().die("Couldn't parse tile: " + glyph)
 
     def appearance(self):
         if self.monster:
@@ -176,10 +178,10 @@ class Tile(Findable):
         return ret
 
     def isHero(self):
-        return self.coords() == Kernel.instance.curTile().coords()
+        return self.coords() == self.kernel().curTile().coords()
 
     def tilesFromCurrent(self):
-        return abs(Kernel.instance.Hero.x - self.x) + abs(Kernel.instance.Hero.y - self.y)
+        return abs(self.kernel().hero.x - self.x) + abs(self.kernel().hero.y - self.y)
 
     def __str__(self):
         return "(%s,%s)->g:%s, c:(%s), e:%s, @:%s, m:(%s), i:(%s) w:%s(is:%s) sea:%s" % tuple(map(str, (self.y, self.x, self.glyph, self.color, self.explored, self.isHero(), self.monster, map(str, self.items), self.walkable, self.isWalkable(), self.searches)))

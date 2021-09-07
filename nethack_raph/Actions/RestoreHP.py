@@ -1,13 +1,14 @@
-from nethack_raph.Kernel import *
+from nethack_raph.myconstants import HEIGHT, WIDTH
+
 import numpy as np
 
 
 class RestoreHP:
-    def __init__(self):
-        pass
+    def __init__(self, kernel):
+        self.kernel = kernel
 
     def can(self):
-        if Kernel.instance.Hero.curhp <= (Kernel.instance.Hero.maxhp/2):
+        if self.kernel().hero.curhp <= (self.kernel().hero.maxhp/2):
             return True, np.ones((HEIGHT, WIDTH))
         return False, np.zeros((HEIGHT, WIDTH))
 
@@ -15,5 +16,5 @@ class RestoreHP:
         pass
 
     def execute(self, path):
-        Kernel.instance.log("Searching for 10 turns becuase my HP is low")
-        Kernel.instance.Hero.search(10)
+        self.kernel().log("Searching for 10 turns becuase my HP is low")
+        self.kernel().hero.search(10)

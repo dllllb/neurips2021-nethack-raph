@@ -1,13 +1,14 @@
-from nethack_raph.Kernel import *
+from nethack_raph.myconstants import HEIGHT, WIDTH
+
 import numpy as np
 
 
 class FixStatus:
-    def __init__(self):
-        pass
+    def __init__(self, kernel):
+        self.kernel = kernel
 
     def can(self):
-        if Kernel.instance.Hero.blind or Kernel.instance.Hero.isPolymorphed:
+        if self.kernel().hero.blind or self.kernel().hero.isPolymorphed:
             return True, np.ones((HEIGHT, WIDTH))
         return False, np.zeros((HEIGHT, WIDTH))
 
@@ -15,4 +16,4 @@ class FixStatus:
         pass
 
     def execute(self, path):
-        Kernel.instance.Hero.search(5)
+        self.kernel().hero.search(5)

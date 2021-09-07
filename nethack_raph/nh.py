@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # Brains
     curBrain = TestBrain()
 
-    Kernel.instance.Personality.setBrain(curBrain)  # Default brain
+    self.kernel().Personality.setBrain(curBrain)  # Default brain
 
     done = False
     reward = 0
@@ -51,11 +51,11 @@ if __name__ == '__main__':
     }
 
     while not done:
-        aciton = Kernel.instance.step(obs)
-        for ch in Kernel.instance.action:
-            Kernel.instance.log("Sent string:" + ch + ' ' + str(type(ch)))
-            Kernel.instance.log("Sent string:" + ch + ' ' + str(action2id.get(ch)))
+        aciton = self.kernel().step(obs)
+        for ch in self.kernel().action:
+            self.kernel().log("Sent string:" + ch + ' ' + str(type(ch)))
+            self.kernel().log("Sent string:" + ch + ' ' + str(action2id.get(ch)))
             obs, rew, done, info = env.step(action2id.get(ch))
             reward += rew
-        Kernel.instance.drawString(f"reward {reward}")
+        self.kernel().drawString(f"reward {reward}")
     input(f'GAME OVER: {reward}')

@@ -1,11 +1,12 @@
+from nethack_raph.TermColor import TermColor
+
 import inspect
+import re
 
-from nethack_raph.Kernel import *
-from nethack_raph.EeekObject import *
 
-class Senses(EeekObject):
-    def __init__(self):
-        EeekObject.__init__(self)
+class Senses:
+    def __init__(self, kernel):
+        self.kernel = kernel
         self.messages = []
 
         self.events = {
@@ -56,264 +57,265 @@ class Senses(EeekObject):
         }
 
     def update(self):
-        if Kernel.instance.Hero.isEngulfed and Kernel.instance.searchTop("You destroy the (.+)"):
+        if self.kernel().hero.isEngulfed and self.kernel().searchTop("You destroy the (.+)"):
             self.no_poly()
 
-        if Kernel.instance.searchTop("You die"):
-            Kernel.instance.die("You died :(")
+        if self.kernel().searchTop("You die"):
+            self.kernel().die("You died :(")
 
-        top = Kernel.instance.top_line().replace("--More--", "")
+        top = self.kernel().top_line().replace("--More--", "")
         self.messages = self.messages + top.strip().split("  ")
-        Kernel.instance.log(str(self.messages))
+        self.kernel().log(str(self.messages))
 
-        if '--More--' in Kernel.instance.top_line():
-            Kernel.instance.send(' ')
+        if '--More--' in self.kernel().top_line():
+            self.kernel().send(' ')
 
-        match = Kernel.instance.searchTop("(.+) engulfs you")
+        match = self.kernel().searchTop("(.+) engulfs you")
         if match:
             self.got_engulfed(match)
 
-        match = Kernel.instance.searchTop("Call a (.+) potion")
+        match = self.kernel().searchTop("Call a (.+) potion")
         if match:
             self.call_potion(match)
 
-        match = Kernel.instance.searchTop("(Illegal objects|Weapons|Armor|Rings|Amulets|Tools|Comestibles|Potions|Scrolls|Spellbooks|Wands|Coins|Gems|Boulders/Statues|Iron balls|Chains|Venoms)       ")
+        match = self.kernel().searchTop("(Illegal objects|Weapons|Armor|Rings|Amulets|Tools|Comestibles|Potions|Scrolls|Spellbooks|Wands|Coins|Gems|Boulders/Statues|Iron balls|Chains|Venoms)       ")
         if match:
-            Kernel.instance.log("Inventory is open.")
-            Kernel.instance.Inventory.parseFrame(match)
-            Kernel.instance.dontUpdate()
+            self.kernel().log("Inventory is open.")
+            self.kernel().Inventory.parseFrame(match)
+            self.kernel().dontUpdate()
 
-        if Kernel.instance.searchTop("Things that are here:"):
-            Kernel.instance.log("Found some items. (Row 3)")
-            Kernel.instance.send("    ")
-            Kernel.instance.dontUpdate()
+        if self.kernel().searchTop("Things that are here:"):
+            self.kernel().log("Found some items. (Row 3)")
+            self.kernel().send("    ")
+            self.kernel().dontUpdate()
 
-        elif Kernel.instance.get_row_line(3).find("Things that are here:") >= 0:
+        elif self.kernel().get_row_line(3).find("Things that are here:") >= 0:
             self.messages.append("Things that are here:")
-            Kernel.instance.log("Found some items (row 3).")
-            Kernel.instance.send("    ")
-            Kernel.instance.dontUpdate()
+            self.kernel().log("Found some items (row 3).")
+            self.kernel().send("    ")
+            self.kernel().dontUpdate()
 
-        if Kernel.instance.searchTop("Really attack"):
-            Kernel.instance.log("Asked if I really want to attack.")
-            Kernel.instance.send("y")
-            Kernel.instance.dontUpdate()
+        if self.kernel().searchTop("Really attack"):
+            self.kernel().log("Asked if I really want to attack.")
+            self.kernel().send("y")
+            self.kernel().dontUpdate()
 
-        if Kernel.instance.searchTop("In what direction?"):
-            Kernel.instance.log("Getting rid if 'In what direction?' prompt")
-            Kernel.instance.send("\x1b")
-            Kernel.instance.dontUpdate()
+        if self.kernel().searchTop("In what direction?"):
+            self.kernel().log("Getting rid if 'In what direction?' prompt")
+            self.kernel().send("\x1b")
+            self.kernel().dontUpdate()
 
-        match = Kernel.instance.searchTop(r"What do you want to eat\? \[(.*) or \?\*\]")
-        match2 = Kernel.instance.searchTop(r".* eat .*\? \[ynq\] \(n\)")
+        match = self.kernel().searchTop(r"What do you want to eat\? \[(.*) or \?\*\]")
+        match2 = self.kernel().searchTop(r".* eat .*\? \[ynq\] \(n\)")
         if match:
             self.eat(match)
         elif match2:
-            self.eat_it(Kernel.instance.top_line())
-        elif Kernel.instance.searchTop("What do you want to wear? [*]"):
+            self.eat_it(self.kernel().top_line())
+        elif self.kernel().searchTop("What do you want to wear? [*]"):
             self.what_to_wear()
-        elif Kernel.instance.searchTop("\? \[(.*?)\]"):
-            Kernel.instance.log("Found a prompt we can't handle: %s" % Kernel.instance.top_line())
-            Kernel.instance.send(" ")
-            Kernel.instance.dontUpdate()
+        elif self.kernel().searchTop("\? \[(.*?)\]"):
+            self.kernel().log("Found a prompt we can't handle: %s" % self.kernel().top_line())
+            self.kernel().send(" ")
+            self.kernel().dontUpdate()
 
     def no_poly(self):
-        Kernel.instance.Hero.isPolymorphed = False
+        self.kernel().hero.isPolymorphed = False
 
     def got_expelled(self):
-        Kernel.instance.log("Got expelled. Phew!")
-        Kernel.instance.Hero.isEngulfed = False
+        self.kernel().log("Got expelled. Phew!")
+        self.kernel().hero.isEngulfed = False
     def got_engulfed(self, match):
-        Kernel.instance.log("We just got engulfed. This will confuze me a whole lot :(")
-        Kernel.instance.Hero.isEngulfed = True
+        self.kernel().log("We just got engulfed. This will confuze me a whole lot :(")
+        self.kernel().hero.isEngulfed = True
 
     def shopkeep_door(self):
-        #FIXME exception [tile for tile in Kernel.instance.curTile().neighbours() if tile.is_door][0]
-        for tile in Kernel.instance.curTile().neighbours():
+        #FIXME exception [tile for tile in self.kernel().curTile().neighbours() if tile.is_door][0]
+        for tile in self.kernel().curTile().neighbours():
             if tile.is_door:
                 tile.shopkeepDoor = True
                 break
 
     def locked_door(self):
-        if Kernel.instance.Hero.lastActionedTile and Kernel.instance.Hero.lastActionedTile.is_door:
-            Kernel.instance.Hero.lastActionedTile.locked = True
+        if self.kernel().hero.lastActionedTile and self.kernel().hero.lastActionedTile.is_door:
+            self.kernel().hero.lastActionedTile.locked = True
 
     def found_trap(self, type):
-        Kernel.instance.log("I found a trap. Setting glyph to ^")
-        Kernel.instance.curTile().glyph = '^'
+        self.kernel().log("I found a trap. Setting glyph to ^")
+        self.kernel().curTile().glyph = '^'
 
     def fell_into_pit(self):
-        Kernel.instance.log("I fell into a pit :(")
-        Kernel.instance.Hero.inPit = True
-        Kernel.instance.curTile().glyph = '^'
+        self.kernel().log("I fell into a pit :(")
+        self.kernel().hero.inPit = True
+        self.kernel().curTile().glyph = '^'
     def found_beartrap(self):
-        Kernel.instance.log("Found a beartrap. Setting tile to ^")
-        Kernel.instance.curTile().glyph = '^'
+        self.kernel().log("Found a beartrap. Setting tile to ^")
+        self.kernel().curTile().glyph = '^'
     def stepped_in_beartrap(self):
-        Kernel.instance.log("Just stepped into a beartrap :(")
-        Kernel.instance.Hero.inBearTrap = True
-        Kernel.instance.curTile().glyph = '^'
+        self.kernel().log("Just stepped into a beartrap :(")
+        self.kernel().hero.inBearTrap = True
+        self.kernel().curTile().glyph = '^'
     def trigger_trap(self):
         #TODO
-        Kernel.instance.log("Triggered a trap, setting glyph to ^.. Not changing color yet")
-        Kernel.instance.curTile().glyph = '^'
+        self.kernel().log("Triggered a trap, setting glyph to ^.. Not changing color yet")
+        self.kernel().curTile().glyph = '^'
 
     def blinded(self):
-        Kernel.instance.log("I got blinded.")
-        Kernel.instance.Hero.blind = True
+        self.kernel().log("I got blinded.")
+        self.kernel().hero.blind = True
 
     def gain_instrinct(self, type):
         pass
     def skill_up(self, match):
         if match.groups()[0] == 'weapon':
-            Kernel.instance.log("Enhanced weaponskill!")
+            self.kernel().log("Enhanced weaponskill!")
             pass
 
     def open_door_here(self):
-        Kernel.instance.log("Setting tile to '-' with door colors")
-        Kernel.instance.curTile().glyph = '-'
-        Kernel.instance.curTile().color = TermColor(33, 0, False, False)
+        self.kernel().log("Setting tile to '-' with door colors")
+        self.kernel().curTile().glyph = '-'
+        self.kernel().curTile().color = TermColor(33, 0, False, False)
 
     def call_potion(self, match):
-        Kernel.instance.send("\x1b")
-        Kernel.instance.dontUpdate()
+        self.kernel().send("\x1b")
+        self.kernel().dontUpdate()
 
     def eat_it(self, msg):
         # FIXME: (dima) should be in Eat.py
-        if Kernel.instance.Hero.hunger == 0:
-            Kernel.instance.send('n')
+        if self.kernel().hero.hunger == 0:
+            self.kernel().send('n')
             return
 
         #FIXME strange fwd bkwd happens
         if 'corpse' in msg:
-            Kernel.instance.log('corpse: eating aborted')
-            Kernel.instance.send('n')
-            for item in Kernel.instance.curTile().items:
+            self.kernel().log('corpse: eating aborted')
+            self.kernel().send('n')
+            for item in self.kernel().curTile().items:
                 if item.glyph == '%':
                     item.name = 'corpse'
         else:
-            Kernel.instance.log('eating...')
-            Kernel.instance.send('y')
-        # Kernel.instance.dontUpdate()
+            self.kernel().log('eating...')
+            self.kernel().send('y')
+        # self.kernel().dontUpdate()
 
     def no_door(self):
-        Kernel.instance.Hero.lastActionedTile.is_door = False
+        self.kernel().hero.lastActionedTile.is_door = False
 
     def eat(self, matched):
         # FIXME: (dima) should be in Eat.py
-        if Kernel.instance.Hero.hunger == 0:
-            Kernel.instance.send(' ')
+        if self.kernel().hero.hunger == 0:
+            self.kernel().send(' ')
             return
 
         options = matched.groups()[0]
-        Kernel.instance.log('eating...' + options)
+        self.kernel().log('eating...' + options)
         if 'f' in options:
-            Kernel.instance.send('f')
+            self.kernel().send('f')
         else:
-            Kernel.instance.send(options[0])
+            self.kernel().send(options[0])
 
     def is_weak(self):
-        Kernel.instance.sendSignal("s_isWeak")
+        self.kernel().personality.curBrain.s_isWeak()
+        # self.kernel().sendSignal("s_isWeak")
 
     def is_staircase_here(self, match):
-        Kernel.instance.log("Found staircase under some items..")
+        self.kernel().log("Found staircase under some items..")
 
         if match.groups()[0] == 'down':
-            Kernel.instance.curTile().glyph = '>'
-            Kernel.instance.curTile().color = TermColor(37, 0, False, False)
+            self.kernel().curTile().glyph = '>'
+            self.kernel().curTile().color = TermColor(37, 0, False, False)
         else:
-            Kernel.instance.curTile().glyph = '<'
-            Kernel.instance.curTile().color = TermColor(37, 0, False, False)
+            self.kernel().curTile().glyph = '<'
+            self.kernel().curTile().color = TermColor(37, 0, False, False)
 
     def leg_no_shape(self):
-        Kernel.instance.log("Leg is not in shape :'(")
-        Kernel.instance.Hero.legShape = False
+        self.kernel().log("Leg is not in shape :'(")
+        self.kernel().hero.legShape = False
 
     def leg_feels_better(self):
-        Kernel.instance.log("Leg is fine again.")
-        Kernel.instance.Hero.legShape = True
+        self.kernel().log("Leg is fine again.")
+        self.kernel().hero.legShape = True
 
     def found_items(self, tmp, msg):
-        Kernel.instance.log("Found some item(s)..")
-        Kernel.instance.sendSignal("foundItemOnFloor")
-        if Kernel.instance.Dungeon.curBranch:
-            Kernel.instance.log("Updating items on (%s)" % Kernel.instance.curTile())
-            for item in Kernel.instance.curTile().items:
+        self.kernel().log("Found some item(s)..")
+        self.kernel().sendSignal("foundItemOnFloor")
+        if self.kernel().dungeon.curBranch:
+            self.kernel().log("Updating items on (%s)" % self.kernel().curTile())
+            for item in self.kernel().curTile().items:
                 item.appearance = "Dummy"
                 if 'corpse' in msg:
                     item.appearance = 'corpse'
 
     def shop_entrance(self):
-        Kernel.instance.log("Found a shop.")
+        self.kernel().log("Found a shop.")
 
         #FIXME (dima) some loop here
-        Kernel.instance.Hero.lastActionedTile.walkable = False
+        self.kernel().hero.lastActionedTile.walkable = False
         return
 
-        buf = [Kernel.instance.curTile()]
+        buf = [self.kernel().curTile()]
         while buf:
             for tile in buf.pop().neighbours():
                 # This could break once a year or so (if a monster is standing in a non-shop square after you login?)
                 if (tile.glyph == '.' or tile.monster or tile.items) and not tile.inShop:
                     buf.append(tile)
 
-                    Kernel.instance.log("Setting %s to be inside a shop." % tile)
+                    self.kernel().log("Setting %s to be inside a shop." % tile)
                     tile.inShop = True
 
     def food_is_eaten(self):
-        Kernel.instance.curTile().items = []
+        self.kernel().curTile().items = []
 
     def no_food(self):
-        if not Kernel.instance.Hero.have_food:
-            for item in Kernel.instance.curTile().items:
+        if not self.kernel().hero.have_food:
+            for item in self.kernel().curTile().items:
                 if item.glyph == '%':
                     item.name = 'corpse' #FIXME
 
-        Kernel.instance.Hero.have_food = False
+        self.kernel().hero.have_food = False
 
     def no_wear(self):
-        for item in Kernel.instance.curTile().items:
+        for item in self.kernel().curTile().items:
             if item.glyph == '[':
                 item.name = 'absent' #FIXME
 
     def what_to_wear(self):
-        Kernel.intance.send('*')
+        self.kernel().send('*')
 
     def is_statue(self):
-        Kernel.instance.log(str(Kernel.instance.Hero.lastActionedTile))
-        Kernel.instance.Hero.lastActionedTile.monster.is_statue = True
-        Kernel.instance.log(str( Kernel.instance.Hero.lastActionedTile))
+        self.kernel().log(str(self.kernel().hero.lastActionedTile))
+        self.kernel().hero.lastActionedTile.monster.is_statue = True
+        self.kernel().log(str( self.kernel().hero.lastActionedTile))
 
     def not_walkable(self):
-        Kernel.instance.Hero.lastActionedTile.walkable = False
+        self.kernel().hero.lastActionedTile.walkable = False
 
     def scroll(self):
-        Kernel.instance.send('r')
+        self.kernel().send('r')
 
     def carrying_too_mach(self):
         # FIXME (dima) drop smth
-        Kernel.instance.Hero.lastActionedTile.walkable = False
+        self.kernel().hero.lastActionedTile.walkable = False
 
     def intact_doorway(self):
         # FIXME (dima) hack
-        Kernel.instance.Hero.lastActionedTile.walkable = False
+        self.kernel().hero.lastActionedTile.walkable = False
 
     def croesus(self):
         # FIXME (dima) or respond croesus?
-        Kernel.instance.Hero.lastActionedTile.walkable = False
+        self.kernel().hero.lastActionedTile.walkable = False
 
     def graffiti_on_floor(self):
-        Kernel.instance.log("Found grafitti!")
+        self.kernel().log("Found grafitti!")
 
     def parseMessages(self):
         for msg in self.messages:
             for event in self.events:
                 match = re.search(event, msg)
                 if match:
-                    Kernel.instance.log("Found message: %s" % event)
+                    self.kernel().log("Found message: %s" % event)
                     for member in inspect.getmembers(self):
                         if member[0] == self.events[event][0]:
-                            Kernel.instance.log("Calling method (%s)" % event)
+                            self.kernel().log("Calling method (%s)" % event)
                             func = member[1]
                             if len(inspect.getargspec(func)[0]) > 2:
                                 func(match, msg)
@@ -325,5 +327,5 @@ class Senses(EeekObject):
         self.messages = []
 
     def dontUpdate(self):
-        Kernel.instance.log("Someone told the Senses not to update this tick! Probably myself")
+        self.kernel().log("Someone told the Senses not to update this tick! Probably myself")
         self.updateNext = False

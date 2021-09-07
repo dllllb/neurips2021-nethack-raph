@@ -4,7 +4,7 @@ from nethack_raph.Kernel import *
 
 class SignalReceiver:
     def __init__(self):
-        Kernel.instance.addSignalReceiver(self)
+        self.kernel().addSignalReceiver(self)
 
     def signal(self, s, *args, **args2):
         for x in inspect.getmembers(self):

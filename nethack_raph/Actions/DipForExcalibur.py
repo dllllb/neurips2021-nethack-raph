@@ -6,8 +6,8 @@ class DipForExcalibur:
         self.dip = False
 
     def can(self):
-        if Kernel.instance.curTile().glyph == '}':
-            excal = Kernel.instance.Inventory.search({'appearance': 'long sword'}, getFirst=True)
+        if self.kernel().curTile().glyph == '}':
+            excal = self.kernel().Inventory.search({'appearance': 'long sword'}, getFirst=True)
             if excal:
                 self.item = excal
                 self.path = None
@@ -17,9 +17,9 @@ class DipForExcalibur:
         if self.path and self.path.isWalkable():
             return True
 
-        if Kernel.instance.Hero.xp >= 5 and not Kernel.instance.ItemDB.find({'appearance': 'Excalibur'}):
-            for tile in Kernel.instance.curLevel().find({'glyph': '{'}):
-                path = Kernel.instance.Pathing.path(end=tile)
+        if self.kernel().hero.xp >= 5 and not self.kernel().ItemDB.find({'appearance': 'Excalibur'}):
+            for tile in self.kernel().curLevel().find({'glyph': '{'}):
+                path = self.kernel().pathing.path(end=tile)
                 if path:
                     self.path = path
         else:
@@ -30,9 +30,9 @@ class DipForExcalibur:
 
     def execute(self):
         if self.dip:
-            Kernel.instance.log("Dipping for excalibur.")
-            Kernel.instance.Hero.dip( self.item )
+            self.kernel().log("Dipping for excalibur.")
+            self.kernel().hero.dip( self.item )
         else:
             self.path.draw(color=COLOR_GREEN)
-            Kernel.instance.log("Walking towards a fountain.")
-            Kernel.instance.Hero.move(self.path[-2].tile)
+            self.kernel().log("Walking towards a fountain.")
+            self.kernel().hero.move(self.path[-2].tile)

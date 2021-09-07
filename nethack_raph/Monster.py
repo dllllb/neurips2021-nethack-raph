@@ -1,4 +1,3 @@
-from nethack_raph.Kernel import Kernel
 from nethack_raph.TermColor import *
 
 
@@ -11,12 +10,13 @@ class Monster:
         ['e', COLOR_BLUE],        # floating eye I think
     ]
 
-    def __init__(self, glyph, color):
+    def __init__(self, glyph, color, kernel):
         self.glyph = glyph
         self.color = color
         self.name = "unknown"
         self.is_statue = False
         self.spoiler = {}
+        self.kernel = kernel
 
         # Exceptions
         if glyph == 'I':
@@ -25,15 +25,15 @@ class Monster:
             self.name = "mimic"
             return
 
-        # ret = Kernel.instance.MonsterSpoiler.fromGlyphColor(glyph, color.getId())
+        # ret = self.kernel().MonsterSpoiler.fromGlyphColor(glyph, color.getId())
 
         # if len(ret) == 1:
         #     (self.name, self.spoiler) = ret[0]
-        #     Kernel.instance.log("Got %s" % str([self.name, self.spoiler]))
+        #     self.kernel().log("Got %s" % str([self.name, self.spoiler]))
         # elif len(ret) > 1:
-        #     Kernel.instance.log("Got several monsters with g:%s c:%s (%s)" % (glyph, str(color), str(ret)))
+        #     self.kernel().log("Got several monsters with g:%s c:%s (%s)" % (glyph, str(color), str(ret)))
         # elif glyph != 'I':
-        #     Kernel.instance.die("Could not find monster with g:%s c:%s" % (glyph, str(color)))
+        #     self.kernel().die("Could not find monster with g:%s c:%s" % (glyph, str(color)))
 
     def isAttackable(self):
         if self.is_statue:
@@ -41,9 +41,9 @@ class Monster:
 
         for peaceful in Monster.peacefuls:
             if self.glyph == peaceful[0] and self.color.getId() == peaceful[1]:
-                Kernel.instance.log("%s is not attacakble." % self)
+                self.kernel().log("%s is not attacakble." % self)
                 return False
-        Kernel.instance.log("%s is attackable")
+        self.kernel().log("%s is attackable")
         return True
 
     def __str__(self):

@@ -1,27 +1,26 @@
-from nethack_raph.Kernel import *
 from nethack_raph.Tile import *
 import numpy as np
 
 
 class AttackMonster:
-    def __init__(self):
-        pass
+    def __init__(self, kernel):
+        self.kernel = kernel
 
     def can(self):
-        if Kernel.instance.Hero.isEngulfed:
-            Kernel.instance.log("Attacking while engulfed..")
+        if self.kernel().hero.isEngulfed:
+            self.kernel().log("Attacking while engulfed..")
             return True, np.ones((HEIGHT, WIDTH))
 
 
         # O(n)
-        monsters = Kernel.instance.curLevel().findAttackableMonsters()
-        Kernel.instance.log(f"We found {len(monsters)} monsters")
+        monsters = self.kernel().curLevel().findAttackableMonsters()
+        self.kernel().log(f"We found {len(monsters)} monsters")
         target_tiles = np.zeros((HEIGHT, WIDTH))
 
         # O(n)
         found_monsters = False
         for monster in monsters:
-            Kernel.instance.log(f'monster: {monster}, self: {Kernel.instance.curTile()}')
+            self.kernel().log(f'monster: {monster}, self: {self.kernel().curTile()}')
             for neighbour in monster.walkableNeighbours():
                 target_tiles[neighbour.coords()] = True
                 found_monsters = True
@@ -31,18 +30,18 @@ class AttackMonster:
         pass
 
     def execute(self, path):
-        Kernel.instance.log(f'len path: {len(path)}')
+        self.kernel().log(f'len path: {len(path)}')
         if len(path) == 1:
-            assert path.tile == Kernel.instance.curTile()
-            for tile in Kernel.instance.curTile().neighbours():
+            assert path.tile == self.kernel().curTile()
+            for tile in self.kernel().curTile().neighbours():
                 if tile.monster and tile.monster.isAttackable():
-                    Kernel.instance.Hero.attack(tile)
+                    self.kernel().hero.attack(tile)
                     return
-            Kernel.instance.log('monster is absent')
-            Kernel.instance.send(' ')
+            self.kernel().log('monster is absent')
+            self.kernel().send(' ')
             return
 
-        Kernel.instance.sendSignal("interrupt_action", self)
+        self.kernel().sendSignal("interrupt_action", self)
         path.draw(color=COLOR_BG_RED)
-        Kernel.instance.log("Going towards monster")
-        Kernel.instance.Hero.move(path[1].tile)
+        self.kernel().log("Going towards monster")
+        self.kernel().hero.move(path[1].tile)

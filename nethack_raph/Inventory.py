@@ -26,23 +26,23 @@ class Inventory(EeekObject):
 
     def parseFrame(self, match):
         first = match.groups()[0]
-        (row, start) = (1, Kernel.instance.FramebufferParser.topLine().find(first))
+        (row, start) = (1, self.kernel().FramebufferParser.topLine().find(first))
 
         while True:
-            line = Kernel.instance.FramebufferParser.getRowLine(row)
+            line = self.kernel().FramebufferParser.getRowLine(row)
             if line.find("(end)") != -1:
                 break
 
             if line[start+1] == ' ':
-                Kernel.instance.log(line)
+                self.kernel().log(line)
                 match = re.search("(\w) - (a|an|\d+)( (uncursed|cursed|blessed)|)( (\+\d+|-\d+|)|) (.+)( \((.+)\)|)", line)
                 if match:
-                    Kernel.instance.log(str(match.groups()))
+                    self.kernel().log(str(match.groups()))
                     (slot, qty, trash, buc, trash, enchant, item, trash, info) = map(lambda x:x and x.strip(), match.groups())
                     it = Item()
-                    Kernel.instance.Inventory.add
+                    self.kernel().Inventory.add
                 else:
-                    Kernel.instance.die("Unparsed inventory item: %s" % line)
+                    self.kernel().die("Unparsed inventory item: %s" % line)
 
             row = row + 1
-        Kernel.instance.send(" ")
+        self.kernel().send(" ")

@@ -1,13 +1,9 @@
-import nethack_raph.Kernel
-
-from nethack_raph.Kernel import *
-from nethack_raph.EeekObject import *
+from nethack_raph.TermColor import TermColor
 
 
-class Hero(EeekObject):
-    def __init__(self):
-        EeekObject.__init__(self)
-
+class Hero:
+    def __init__(self, kernel):
+        self.kernel = kernel
         self.x = None
         self.y = None
         self.beforeMove = None
@@ -30,14 +26,14 @@ class Hero(EeekObject):
         return self.y, self.x
 
     def attack(self, tile):
-        dir = Kernel.instance.Pathing.getDirection(tile)
-        Kernel.instance.drawString("Attacking -> %s (%s)" % (dir, tile))
-        Kernel.instance.send("F"+dir)
+        dir = self.kernel().pathing.getDirection(tile)
+        self.kernel().drawString("Attacking -> %s (%s)" % (dir, tile))
+        self.kernel().send("F"+dir)
         self.lastActionedTile = tile
 
     def move(self, tile):
         if self.beforeMove == (self.x,self.y) and self.tmpCount < 5 and not (self.inBearTrap or self.inPit):
-            Kernel.instance.log("Hero asked to move, but I still havn't moved after last update, ignoring this")
+            self.kernel().log("Hero asked to move, but I still havn't moved after last update, ignoring this")
             self.tmpCount = self.tmpCount + 1
         else:
             if self.beforeMove != (self.x, self.y):
@@ -46,46 +42,46 @@ class Hero(EeekObject):
             else:
                 if self.tmpCount > 3:
                     if not tile.glyph:
-                        Kernel.instance.log("Made a door at %s" % tile)
+                        self.kernel().log("Made a door at %s" % tile)
                         tile.glyph = '-'
                         tile.color = TermColor(33, 0, False, False)
-                        Kernel.instance.sendSignal("interrupt_action")
+                        self.kernel().sendSignal("interrupt_action")
 
-            dir = Kernel.instance.Pathing.getDirection(tile)
-            Kernel.instance.drawString("Walking -> %s (%s)" % (dir, tile))
+            dir = self.kernel().pathing.getDirection(tile)
+            self.kernel().drawString("Walking -> %s (%s)" % (dir, tile))
 
             self.beforeMove = (self.x,self.y)
             self.tmpCount   = 0
 
             self.lastActionedTile = tile
-            Kernel.instance.send(dir)
+            self.kernel().send(dir)
 
     def descend(self):
-        Kernel.instance.log("Hero is descending..")
-        Kernel.instance.send(">")
-        Kernel.instance.dontUpdate()
+        self.kernel().log("Hero is descending..")
+        self.kernel().send(">")
+        self.kernel().dontUpdate()
 
     def open(self, tile):
-        dir = Kernel.instance.Pathing.getDirection(tile)
-        Kernel.instance.log("Hero is opening a door..")
-        Kernel.instance.send("o%s" % dir)
+        dir = self.kernel().pathing.getDirection(tile)
+        self.kernel().log("Hero is opening a door..")
+        self.kernel().send("o%s" % dir)
         self.lastActionedTile = tile
 
     def kick(self, tile):
-        dir = Kernel.instance.Pathing.getDirection(tile)
-        Kernel.instance.log("Hero is kicking a door..")
-        Kernel.instance.send("\x04%s" % dir)
+        dir = self.kernel().pathing.getDirection(tile)
+        self.kernel().log("Hero is kicking a door..")
+        self.kernel().send("\x04%s" % dir)
 
     def search(self, times=2):
-        Kernel.instance.send("%ds" % times)
-        for neighbour in Kernel.instance.curTile().neighbours():
+        self.kernel().send("%ds" % times)
+        for neighbour in self.kernel().curTile().neighbours():
             neighbour.searches = neighbour.searches + 1
-            if neighbour.searches == Kernel.instance.curLevel().maxSearches:
+            if neighbour.searches == self.kernel().curLevel().maxSearches:
                 neighbour.searched = True
 
     def eat(self):
-        Kernel.instance.log("Hero::eat")
-        Kernel.instance.send("e")
+        self.kernel().log("Hero::eat")
+        self.kernel().send("e")
 
     def can_eat(self, tile):
         return len([item for item in tile.items if item.is_food()]) > 0
@@ -95,4 +91,4 @@ class Hero(EeekObject):
         return False
 
     def canOpen(self, tile):
-        return not tile.shopkeepDoor and tile.is_door and (tile.locked or Kernel.instance.Hero.legShape) and tile.isAdjacent(Kernel.instance.curTile())
+        return not tile.shopkeepDoor and tile.is_door and (tile.locked or self.kernel().hero.legShape) and tile.isAdjacent(self.kernel().curTile())

@@ -5,7 +5,7 @@ from nethack_raph.myconstants import *
 
 class MonsterSpoiler(EeekObject):
     def fromGlyphColor(self, g, c):
-        Kernel.instance.log("Trying %s (%s)" % (g, str(c)))
+        self.kernel().log("Trying %s (%s)" % (g, str(c)))
         return [(name, self.monsters[name]) for name in self.monsters if self.monsters[name]['glyph'] == g and self.monsters[name]['color'] == c]
 
     def __init__(self):
