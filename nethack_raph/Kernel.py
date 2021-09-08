@@ -169,6 +169,9 @@ class Kernel:
     def send(self, line):
         self.action = self.action + line
 
+    def force_action(self, line):
+        self.action = line
+
     def log(self, str):
         if self.verbose:
             self._file.write("%s"%str+"\n")

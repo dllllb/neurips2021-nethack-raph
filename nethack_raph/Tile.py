@@ -113,6 +113,8 @@ class Tile(Findable):
             #self.kernel().log("Found monster:%s, Color: %s, at (%d,%d). Tile is now: %s" % (str(self.monster), str(color), self.y, self.x, str(self)))
         else:
             self.glyph = glyph
+            # FIXME probably --More-- on the map!
+            self.kernel().force_action(' ')
             return #FIXME DIMA
             self.kernel().die("Couldn't parse tile: " + glyph)
 
@@ -191,3 +193,6 @@ class Tile(Findable):
 
     def __ne__(self, other):
         return self.coords() != other.coords()
+
+    def __repr__(self):
+        return str(self)

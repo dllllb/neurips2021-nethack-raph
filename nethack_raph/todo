@@ -10,12 +10,11 @@ Make .can() return the number of moves needed untill it's action can start perfo
 
 DIMA
 1. diagonal moves (!) (check)
-2. fix bugs
 3. make it eat (done, but not crops)
 4. status and msg from nle, not from tty (nle's message is not full)
 5. You are carrying too much to get through. - temp fixed
 6. You can't move diagonally into an intact doorway. - temp fixed
-7. "Will you please leave your pick-axe outside?"
+7. "Will you please leave your pick-axe outside?" - temp fixed
 8. Never mind.                   What do you want to wear? [*} - loops
 9. Call an orange potion - loops
 10 Get stack in shops
