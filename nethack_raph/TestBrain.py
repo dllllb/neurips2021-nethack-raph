@@ -9,7 +9,7 @@ class TestBrain(Brain):
         self.actions = [
                             AttackMonster(kernel),
                             Eat(kernel),
-                            WearArmor(kernel),
+                            # WearArmor(kernel),
                             FixStatus(kernel),
                             RestoreHP(kernel),
                             SearchSpot(kernel),

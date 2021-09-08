@@ -8,18 +8,18 @@ import multiprocessing as mp
 
 
 class Agent:
-    def __init__(self):
+    def __init__(self, silent):
         super().__init__()
 
         self.action2id = {
             chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
         }
-
-        self.kernel = Kernel(silent=True)
+        self.silent = silent
+        self.kernel = Kernel(silent=self.silent)
 
     def reset(self):
         del self.kernel
-        self.kernel = Kernel(silent=True)
+        self.kernel = Kernel(silent=self.silent)
 
     def step(self, obs):
         action = self.kernel.step(obs)
@@ -41,11 +41,10 @@ class Process(mp.Process):
         super().__init__(daemon=daemon)
         self.remote = remote
         self.parent_remote = parent_remote
-        self.agent = None#Agent()
+        self.agent = None
 
     def run(self):
-        if self.agent is None:
-            self.agent = Agent()
+        self.agent = Agent(silent=True)
         self.parent_remote.close()
         while True:
             try:
@@ -115,12 +114,7 @@ class CustomAgent(BatchedAgent):
     def __init__(self, num_envs, num_actions):
         """Set up and load you model here"""
         super().__init__(num_envs, num_actions)
-        self.kernel = Kernel(silent=False)
-
-        self.action2id = {
-            chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
-        }
-
+        self.agent = Agent(silent=False)
         self.maxtime = 0
         self.reward = 0
 
@@ -135,32 +129,15 @@ class CustomAgent(BatchedAgent):
         assert len(dones) == 1
         self.reward += rewards[0]
 
-
         if int(dones[0]):
-            input(f'tot reward: {self.reward}')
-            del self.kernel
-            self.kernel = Kernel(silent=False)
+            # input(f'tot reward: {self.reward}')
+            self.agent.reset()
             self.reward = 0
 
-
         before = time.time()
-
-        action = self.kernel.step(observations[0])
-        if len(action):
-            ch = action[0]
-        else:
-            #TODO check if it happens
-            ch = ' '
-
-        action = self.action2id.get(ch)
-        if action is None:
-            #TODO check if it happens
-            action = 0
-
+        action = self.agent.step(observations[0])
         after = time.time()
-        self.maxtime = max(self.maxtime, after - before)
 
-        self.kernel.log("Sent string:" + ch + ' ' + str(type(ch)))
-        self.kernel.log("Sent string:" + ch + ' ' + str(action))
-        self.kernel.log(f'action time: {after - before}, maxtime: {self.maxtime}')
+        self.maxtime = max(self.maxtime, after - before)
+        self.agent.kernel.log(f'action time: {after - before}, maxtime: {self.maxtime}')
         return [action]

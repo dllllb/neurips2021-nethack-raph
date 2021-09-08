@@ -22,8 +22,8 @@ class Kernel:
             self._frames_log = open("logs/frames.txt", "w")
 
         # Stuff
-        self.console = Console(weakref.ref(self))
-        self.cursor = Cursor(weakref.ref(self))
+        # self.console = Console(weakref.ref(self))
+        # self.cursor = Cursor(weakref.ref(self))
         self.dungeon = Dungeon(weakref.ref(self))
         self.hero = Hero(weakref.ref(self))
 
@@ -92,14 +92,14 @@ class Kernel:
         #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, unk
 
         self.hero.x, self.hero.y, strength_percentage, \
-        self.hero.str, self.hero.dex, self.hero.con, \
-        self.hero.int, self.hero.wis, self.hero.cha, \
-        self.hero.score, self.hero.curhp, self.hero.maxhp, \
-        self.dungeon.dlvl, self.hero.gold, self.hero.curpw, \
-        self.hero.maxpw, self.hero.ac, monster_level, \
-        self.hero.xp, self.hero.xp_next, self.hero.turns, \
-        self.hero.hunger, carrying_capacity, dungeon_number, \
-        level_number, unk = obs['blstats']
+            self.hero.str, self.hero.dex, self.hero.con, \
+            self.hero.int, self.hero.wis, self.hero.cha, \
+            self.hero.score, self.hero.curhp, self.hero.maxhp, \
+            self.dungeon.dlvl, self.hero.gold, self.hero.curpw, \
+            self.hero.maxpw, self.hero.ac, monster_level, \
+            self.hero.xp, self.hero.xp_next, self.hero.turns, \
+            self.hero.hunger, carrying_capacity, dungeon_number, \
+            level_number, unk = obs['blstats']
 
         # unk == 64 -> Deaf
 
@@ -111,10 +111,10 @@ class Kernel:
         if self.searchBot("the Werejackal"):
             self.hero.isPolymorphed = True
 
-        #FIXME --more-- in the middle
-        #if '--More--' in self.frame_buffer.allLines():
-        #    self.action += ' '
-        #    return self.action
+        # FIXME --more-- in the middle
+        if '--More--' in "".join([chr(ch) for ch in self.state[0].reshape(-1) if ch not in (ord('\n'), ord('\r'))]):
+            self.action += ' '
+            return self.action
 
         self.log("Updates starting: \n\n")
         self.log("--------- DUNGEON ---------")

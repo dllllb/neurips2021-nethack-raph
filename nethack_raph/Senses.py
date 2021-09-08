@@ -46,14 +46,15 @@ class Senses:
             "You are carrying too much to get through.": ['not_walkable'],
             "You can't move diagonally into an intact doorway.": ['not_walkable'],
             "You can't move diagonally out of an intact doorway.": ['not_walkable'],
-            "Hello stranger, who are you?": ['not_walkable'],
+            "Hello stranger, who are you?": ['who_are_you'],
             "It's solid stone.": ['not_walkable'],
             "Will you please leave your pick-axe outside?": ['not_walkable'],
             "Call a scroll .*": ['scroll'],
             "You don't have anything to eat.": ['no_food'],
             "You don't have anything else to wear.": ['no_wear'],
             "You don't have anything else to put on.": ['no_wear'],
-            "What do you want to wear? [*]": ['what_to_wear']
+            "What do you want to wear? [*]": ['what_to_wear'],
+            "Call a scroll labeled .*": ['read_scroll']
         }
 
     def update(self):
@@ -111,7 +112,7 @@ class Senses:
             self.eat(match)
         elif match2:
             self.eat_it(self.kernel().top_line())
-        elif self.kernel().searchTop("What do you want to wear? [*]"):
+        elif self.kernel().searchTop("What do you want to wear\? \[\*\]"):
             self.what_to_wear()
         elif self.kernel().searchTop("\? \[(.*?)\]"):
             self.kernel().log("Found a prompt we can't handle: %s" % self.kernel().top_line())
@@ -228,6 +229,7 @@ class Senses:
             self.kernel().curTile().color = TermColor(37, 0, False, False)
 
     def leg_no_shape(self):
+        #TODO DONT WORK
         self.kernel().log("Leg is not in shape :'(")
         self.kernel().hero.legShape = False
 
@@ -279,7 +281,12 @@ class Senses:
                 item.name = 'absent' #FIXME
 
     def what_to_wear(self):
-        self.kernel().send('*')
+        # action = input('ENTER ACTION')
+        self.kernel().send(' ')
+
+    def read_scroll(self):
+        # action = input('SCROLL!')
+        self.kernel().send('r')
 
     def is_statue(self):
         self.kernel().log(str(self.kernel().hero.lastActionedTile))
@@ -288,6 +295,11 @@ class Senses:
 
     def not_walkable(self):
         self.kernel().hero.lastActionedTile.walkable = False
+
+    def who_are_you(self):
+        #TODO check if it help
+        # action = input()
+        self.kernel().send('Croesus\r')
 
     def scroll(self):
         self.kernel().send('r')
