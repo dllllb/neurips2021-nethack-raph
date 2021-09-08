@@ -15,11 +15,11 @@ import weakref
 
 
 class Kernel:
-    def __init__(self, silent):
-        self.silent = silent
-        if not self.silent:
-            self._file = open("logs/log.txt", "w")
-            self._frames_log = open("logs/frames.txt", "w")
+    def __init__(self, verbose):
+        self._file = None
+        self._frames_log = None
+        self.verbose = False
+        self.set_verbose(verbose)
 
         # Stuff
         # self.console = Console(weakref.ref(self))
@@ -44,6 +44,14 @@ class Kernel:
         self.state = None
         self.bot = None
         self.top = None
+        self.inv_strs = None
+        self.inv_letters = None
+
+    def set_verbose(self, value):
+        if not self.verbose and value:
+            self._file = open("logs/log.txt", "w")
+            self._frames_log = open("logs/frames.txt", "w")
+        self.verbose = value
 
     def curLevel(self):
         return self.dungeon.curBranch.curLevel
@@ -68,18 +76,29 @@ class Kernel:
             return ""
         return "".join(chr(ch) for ch in self.state[0].reshape(-1)[(row-1)*WIDTH:row*WIDTH])
 
+    def get_inventory_letter(self, inv_name):
+        for letter, s in zip(self.inv_letters, self.inv_strs):
+            descr = "".join([chr(ch) for ch in s])
+            letter = chr(letter)
+            if inv_name in descr:
+                self.log(f'FOUND {inv_name}: {letter}, {descr}')
+                return letter
+        return ' '
+
     def step(self, obs):
         self.state = np.zeros((2, HEIGHT, WIDTH), dtype=np.uint8)
         self.state[0] = obs['tty_chars']
         self.state[1] = obs['tty_colors']
         self.bot = "".join(chr(ch) for ch in self.state[0].reshape(-1)[22*WIDTH:])
         self.top = "".join(chr(ch) for ch in self.state[0].reshape(-1)[:WIDTH])
+        self.inv_strs = obs['inv_strs']
+        self.inv_letters = obs['inv_letters']
 
         if len(self.action) != 0:
             self.action = self.action[1:]
 
         # self.frame_buffer.parse(obs)
-        if not self.silent:
+        if self.verbose:
             TTY_BRIGHT = 8
             for y in range(0, HEIGHT):
                 for x in range(0, WIDTH):
@@ -112,9 +131,9 @@ class Kernel:
             self.hero.isPolymorphed = True
 
         # FIXME --more-- in the middle
-        if '--More--' in "".join([chr(ch) for ch in self.state[0].reshape(-1) if ch not in (ord('\n'), ord('\r'))]):
-            self.action += ' '
-            return self.action
+        #if '--More--' in "".join([chr(ch) for ch in self.state[0].reshape(-1) if ch not in (ord('\n'), ord('\r'))]):
+        #    self.action += ' '
+        #    return self.action
 
         self.log("Updates starting: \n\n")
         self.log("--------- DUNGEON ---------")
@@ -129,7 +148,7 @@ class Kernel:
             return self.action
 
         self.log("-------- MESSAGES -------- ")
-        self.senses.parseMessages()
+        self.senses.parse_messages()
         if len(self.action):
             return self.action
 
@@ -151,27 +170,27 @@ class Kernel:
         self.action = self.action + line
 
     def log(self, str):
-        if not self.silent:
+        if self.verbose:
             self._file.write("%s"%str+"\n")
             self._file.flush()
 
     def die(self, msg):
-        if not self.silent:
+        if self.verbose:
             self.stdout("\x1b[35m\x1b[3;1H%s\x1b[m\x1b[25;0f" % msg)
             self.log(msg)
         self.action = '#quit\ry'
 
     def drawString(self, msg):
-        if not self.silent:
+        if self.verbose:
             self.log("Currently -> "+msg)
             self.stdout("\x1b[35m\x1b[25;0H%s\x1b[m" % msg + " "*(240-len(msg)))
 
     def addch(self, y, x, char, c=None):
-        if not self.silent:
+        if self.verbose:
             self.stdout("%s\x1b[%d;%dH%s\x1b[m" % (c and "\x1b[%dm" % c or "", y, x, char))
 
     def draw_path(self, path, color=41):
-        if not self.silent:
+        if self.verbose:
             for tile in path:
                 self.stdout("\x1b[%dm\x1b[%d;%dH%s\x1b[m" % (color, tile.y + 2, tile.x + 1, tile.appearance()))
 
@@ -182,7 +201,7 @@ class Kernel:
         # self.Senses.dontUpdate()
 
     def logScreen(self):
-        if self.silent:
+        if not self.verbose:
             return
 
         for y in range(0, HEIGHT):
@@ -196,7 +215,7 @@ class Kernel:
         self._frames_log.flush()
 
     def stdout(self, msg):
-        if not self.silent:
+        if self.verbose:
             sys.stdout.write(msg)
             sys.stdout.flush()
 

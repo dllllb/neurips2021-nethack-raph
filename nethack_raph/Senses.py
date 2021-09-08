@@ -48,42 +48,25 @@ class Senses:
             "You can't move diagonally out of an intact doorway.": ['not_walkable'],
             "Hello stranger, who are you?": ['who_are_you'],
             "It's solid stone.": ['not_walkable'],
-            "Will you please leave your pick-axe outside?": ['not_walkable'],
+            "Will you please leave your (.*) outside\?": ['leave_pick'],
             "Call a scroll .*": ['scroll'],
             "You don't have anything to eat.": ['no_food'],
             "You don't have anything else to wear.": ['no_wear'],
             "You don't have anything else to put on.": ['no_wear'],
             "What do you want to wear? [*]": ['what_to_wear'],
-            "Call a scroll labeled .*": ['read_scroll']
+            "Call a scroll labeled .*": ['read_scroll'],
+            "You destroy the (.+)": ['no_poly'],
+            "(.+) engulfs you": ['got_engulfed'],
+            "Call a (.+) potion": ['call_potion'],
         }
 
     def update(self):
-        if self.kernel().hero.isEngulfed and self.kernel().searchTop("You destroy the (.+)"):
-            self.no_poly()
-
-        if self.kernel().searchTop("You die"):
-            self.kernel().die("You died :(")
-
         top = self.kernel().top_line().replace("--More--", "")
         self.messages = self.messages + top.strip().split("  ")
         self.kernel().log(str(self.messages))
 
         if '--More--' in self.kernel().top_line():
             self.kernel().send(' ')
-
-        match = self.kernel().searchTop("(.+) engulfs you")
-        if match:
-            self.got_engulfed(match)
-
-        match = self.kernel().searchTop("Call a (.+) potion")
-        if match:
-            self.call_potion(match)
-
-        match = self.kernel().searchTop("(Illegal objects|Weapons|Armor|Rings|Amulets|Tools|Comestibles|Potions|Scrolls|Spellbooks|Wands|Coins|Gems|Boulders/Statues|Iron balls|Chains|Venoms)       ")
-        if match:
-            self.kernel().log("Inventory is open.")
-            self.kernel().Inventory.parseFrame(match)
-            self.kernel().dontUpdate()
 
         if self.kernel().searchTop("Things that are here:"):
             self.kernel().log("Found some items. (Row 3)")
@@ -100,6 +83,8 @@ class Senses:
             self.kernel().log("Asked if I really want to attack.")
             self.kernel().send("y")
             self.kernel().dontUpdate()
+
+        #TODO MOVE THE ABOWE TO UPDATE
 
         if self.kernel().searchTop("In what direction?"):
             self.kernel().log("Getting rid if 'In what direction?' prompt")
@@ -120,7 +105,8 @@ class Senses:
             self.kernel().dontUpdate()
 
     def no_poly(self):
-        self.kernel().hero.isPolymorphed = False
+        if self.kernel().hero.isEngulfed:
+            self.kernel().hero.isPolymorphed = False
 
     def got_expelled(self):
         self.kernel().log("Got expelled. Phew!")
@@ -281,25 +267,26 @@ class Senses:
                 item.name = 'absent' #FIXME
 
     def what_to_wear(self):
-        # action = input('ENTER ACTION')
-        self.kernel().send(' ')
+        action = input('ENTER ACTION\n')
+        self.kernel().send(action)
 
     def read_scroll(self):
-        # action = input('SCROLL!')
-        self.kernel().send('r')
+        self.kernel().send('r\r') # 'r\r' seems to work
 
     def is_statue(self):
         self.kernel().log(str(self.kernel().hero.lastActionedTile))
         self.kernel().hero.lastActionedTile.monster.is_statue = True
-        self.kernel().log(str( self.kernel().hero.lastActionedTile))
+        self.kernel().log(str(self.kernel().hero.lastActionedTile))
 
     def not_walkable(self):
         self.kernel().hero.lastActionedTile.walkable = False
 
+    def leave_pick(self, match):
+        #FIXME (dima) do i really need do that?
+        self.kernel().send('d' + self.kernel().get_inventory_letter(match.groups()[0]))
+
     def who_are_you(self):
-        #TODO check if it help
-        # action = input()
-        self.kernel().send('Croesus\r')
+        self.kernel().send('Croseus\r')
 
     def scroll(self):
         self.kernel().send('r')
@@ -319,7 +306,7 @@ class Senses:
     def graffiti_on_floor(self):
         self.kernel().log("Found grafitti!")
 
-    def parseMessages(self):
+    def parse_messages(self):
         for msg in self.messages:
             for event in self.events:
                 match = re.search(event, msg)

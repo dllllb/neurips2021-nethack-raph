@@ -8,18 +8,18 @@ import multiprocessing as mp
 
 
 class Agent:
-    def __init__(self, silent):
+    def __init__(self, verbose):
         super().__init__()
 
         self.action2id = {
             chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
         }
-        self.silent = silent
-        self.kernel = Kernel(silent=self.silent)
+        self.verbose = verbose
+        self.kernel = Kernel(verbose=self.verbose)
 
     def reset(self):
         del self.kernel
-        self.kernel = Kernel(silent=self.silent)
+        self.kernel = Kernel(verbose=self.verbose)
 
     def step(self, obs):
         action = self.kernel.step(obs)
@@ -44,7 +44,7 @@ class Process(mp.Process):
         self.agent = None
 
     def run(self):
-        self.agent = Agent(silent=True)
+        self.agent = Agent(verbose=False)
         self.parent_remote.close()
         while True:
             try:
@@ -114,7 +114,7 @@ class CustomAgent(BatchedAgent):
     def __init__(self, num_envs, num_actions):
         """Set up and load you model here"""
         super().__init__(num_envs, num_actions)
-        self.agent = Agent(silent=False)
+        self.agent = Agent(verbose=False)
         self.maxtime = 0
         self.reward = 0
 
@@ -139,5 +139,6 @@ class CustomAgent(BatchedAgent):
         after = time.time()
 
         self.maxtime = max(self.maxtime, after - before)
+        self.agent.kernel.log(f'action full: {self.agent.kernel.action}')
         self.agent.kernel.log(f'action time: {after - before}, maxtime: {self.maxtime}')
         return [action]
