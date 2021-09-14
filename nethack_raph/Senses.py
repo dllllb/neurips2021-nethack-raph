@@ -19,8 +19,8 @@ class Senses:
             "There are (several|many) objects here":                         ['found_items'],
             "There's some graffiti on the floor here":                       ['graffiti_on_floor'],
             "You read: (.*?)":                                               ['graffiti_on_floor'],
-            "Velkommen, [^,]+!":                                                     ['shop_entrance'],
-            ".* Welcome to .*":  ['shop_entrance'],
+            "Velkommen, [^,]+!":                                             ['shop_entrance'],
+            ".*elcome to .* store.*":                                        ['shop_entrance'],
             "There is an open door here":                                    ['open_door_here'],
             "There is a bear trap here|You are caught in a bear trap":       ['found_beartrap'],
             "You feel more confident in your ([^ ]+) ":                      ['skill_up'],
@@ -233,12 +233,14 @@ class Senses:
                 if 'corpse' in msg:
                     item.appearance = 'corpse'
 
-    def shop_entrance(self):
+    def shop_entrance(self, match, msg):
         self.kernel().log("Found a shop.")
+        # input('IN STORE ' + msg)
+        # self.kernel().set_verbose(True)
 
         #FIXME (dima) some loop here
-        self.kernel().hero.lastActionedTile.walkable = False
-        return
+        # self.kernel().hero.lastActionedTile.walkable = False
+        # return
 
         buf = [self.kernel().curTile()]
         while buf:

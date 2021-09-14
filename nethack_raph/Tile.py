@@ -130,6 +130,9 @@ class Tile(Findable):
     def isWalkable(self): #TODO: Shops might be good to visit sometime ..:)
 #        if not self.adjacent({'explored': True}):
 #            return False
+        if self.inShop:
+            return False
+
         if not self.glyph:
             return not self.monster and self.walkable
         else:
