@@ -94,6 +94,10 @@ class Kernel:
         self.inv_strs = obs['inv_strs']
         self.inv_letters = obs['inv_letters']
 
+        if np.sum(self.state[0][1:-2, :DUNGEON_WIDTH - 1] != obs['chars']):
+            return ' '
+
+
         if len(self.action) != 0:
             self.action = self.action[1:]
 

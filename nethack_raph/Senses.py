@@ -283,7 +283,8 @@ class Senses:
 
     def leave_pick(self, match):
         #FIXME (dima) do i really need do that?
-        self.kernel().send('d' + self.kernel().get_inventory_letter(match.groups()[0]))
+        # self.kernel().send('d' + self.kernel().get_inventory_letter(match.groups()[0]))
+        pass
 
     def who_are_you(self):
         self.kernel().send('Croseus\r')
