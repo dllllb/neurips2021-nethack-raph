@@ -185,7 +185,8 @@ class Senses:
         # self.kernel().dontUpdate()
 
     def no_door(self):
-        self.kernel().hero.lastActionedTile.is_door = False
+        if self.kernel().hero.lastActionedTile:
+            self.kernel().hero.lastActionedTile.is_door = False
 
     def eat(self, matched):
         # FIXME: (dima) should be in Eat.py
@@ -276,12 +277,12 @@ class Senses:
         self.kernel().send('r\r') # 'r\r' seems to work
 
     def is_statue(self):
-        self.kernel().log(str(self.kernel().hero.lastActionedTile))
-        self.kernel().hero.lastActionedTile.monster.is_statue = True
-        self.kernel().log(str(self.kernel().hero.lastActionedTile))
+        if self.kernel().hero.lastActionedTile and self.kernel().hero.lastActionedTile.monster:
+            self.kernel().hero.lastActionedTile.monster.is_statue = True
 
     def not_walkable(self):
-        self.kernel().hero.lastActionedTile.walkable = False
+        if self.kernel().hero.lastActionedTile:
+            self.kernel().hero.lastActionedTile.walkable = False
 
     def leave_pick(self, match):
         #FIXME (dima) do i really need do that?
@@ -296,15 +297,13 @@ class Senses:
 
     def carrying_too_mach(self):
         # FIXME (dima) drop smth
-        self.kernel().hero.lastActionedTile.walkable = False
+        if self.kernel().hero.lastActionedTile:
+            self.kernel().hero.lastActionedTile.walkable = False
 
     def intact_doorway(self):
         # FIXME (dima) hack
-        self.kernel().hero.lastActionedTile.walkable = False
-
-    def croesus(self):
-        # FIXME (dima) or respond croesus?
-        self.kernel().hero.lastActionedTile.walkable = False
+        if self.kernel().hero.lastActionedTile:
+            self.kernel().hero.lastActionedTile.walkable = False
 
     def graffiti_on_floor(self):
         self.kernel().log("Found grafitti!")
