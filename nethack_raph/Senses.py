@@ -18,7 +18,7 @@ class Senses:
             "Things that are here":                                          ['found_items'],
             "There are (several|many) objects here":                         ['found_items'],
             "There's some graffiti on the floor here":                       ['graffiti_on_floor'],
-            "You read: (.*?)":                                               ['graffiti_on_floor'],
+            'You read: "(.*)"':                                              ['you_read'],
             "Velkommen, [^,]+!":                                             ['shop_entrance'],
             ".*elcome to .* (store|dealership|bookstore|emporium|outlet|delicatessen|jewelers|accessories|hardware|books|food|lighting).*":  ['shop_entrance'],
             "There is an open door here":                                    ['open_door_here'],
@@ -91,12 +91,22 @@ class Senses:
             self.kernel().send("\x1b")
             self.kernel().dontUpdate()
 
+
+        #TODO add
+        # TODO You read: "Elbereth".
         match = self.kernel().searchTop(r"What do you want to eat\? \[(.*) or \?\*\]")
-        match2 = self.kernel().searchTop(r".* eat .*\? \[ynq\] \(n\)")
         if match:
             self.eat(match)
-        elif match2:
+            return
+        elif self.kernel().searchTop(r".* eat .*\? \[ynq\] \(n\)"):
             self.eat_it(self.kernel().top_line())
+            return
+        elif self.kernel().searchTop(r"What do you want to write in the dust here\?"):
+            self.kernel().send('Elbereth\r')
+            return
+        elif self.kernel().searchTop(r"Do you want to add to the current engraving\? \[ynq\] \(y\)"):
+            self.kernel().send('n')
+            return
         elif self.kernel().searchTop("What do you want to wear\? \[\*\]"):
             self.what_to_wear()
         elif self.kernel().searchTop("\? \[(.*?)\]"):
@@ -307,6 +317,10 @@ class Senses:
 
     def graffiti_on_floor(self):
         self.kernel().log("Found grafitti!")
+
+    def you_read(self, match):
+        self.kernel().log(f'YOU READ {match.groups()[0]}')
+        self.kernel().curBrain.actions[0].has_elbereth = match.groups()[0] == 'Elbereth'
 
     def parse_messages(self):
         for msg in self.messages:

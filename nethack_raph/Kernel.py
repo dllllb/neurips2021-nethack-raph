@@ -148,8 +148,6 @@ class Kernel:
 
         self.log("--------- SENSES --------- ")
         self.senses.update()
-        if len(self.action):
-            return self.action
 
         self.log("-------- MESSAGES -------- ")
         self.senses.parse_messages()
