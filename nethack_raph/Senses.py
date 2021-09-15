@@ -59,9 +59,7 @@ class Senses:
             "(.+) engulfs you": ['got_engulfed'],
             "Call a (.+) potion": ['call_potion'],
             "Hello Agent, welcome to NetHack!": ['start_message'],
-            "There is a doorway here.": ['cant_eat'],
-            "There is a fountain here.": ['cant_eat'],
-            "Other things that are here": ['skip_msg'],
+            "You kill .*": ["killed_monster"],
         }
 
     def update(self):
@@ -170,7 +168,6 @@ class Senses:
         self.kernel().log("Setting tile to '-' with door colors")
         self.kernel().curTile().char = '-'
         self.kernel().curTile().color = TermColor(33, 0, False, False)
-        self.cant_eat()  # bug_fix
 
     def call_potion(self, match):
         self.kernel().send("\x1b")
@@ -188,21 +185,10 @@ class Senses:
             self.kernel().send('y')
         # self.kernel().dontUpdate()
 
-    def cant_eat(self):
-        # bug fix. For some reason agent can't eat food, located in the doorway
-        for item in self.kernel().curTile().items:
-            if item.char == '%':
-                item.is_food = False
-
     def no_door(self):
         self.kernel().hero.lastActionedTile.is_door = False
 
     def eat(self, matched):
-        # FIXME: (dima) should be in Eat.py
-        if self.kernel().hero.hunger == 0:
-            self.kernel().send(' ')
-            return
-
         options = matched.groups()[0]
         self.kernel().log('eating...' + options)
         if 'f' in options:
@@ -257,15 +243,13 @@ class Senses:
                     tile.inShop = True
 
     def food_is_eaten(self):
-        self.kernel().curTile().items = []
+        pass
+        # self.kernel().curTile().items = []
 
     def no_food(self):
-        if not self.kernel().hero.have_food:
-            for item in self.kernel().curTile().items:
-                if item.char == '%':
-                    item.is_food = False
-
-        self.kernel().hero.have_food = False
+        for item in self.kernel().curTile().items:
+            if item.char == '%':
+                item.is_food = False
 
     def no_wear(self):
         for item in self.kernel().curTile().items:
@@ -317,6 +301,11 @@ class Senses:
         msg = ' '.join(self.messages[1:])
         self.kernel().hero.set_attributes(msg)
         self.kernel().log(str(self.messages))
+
+    def killed_monster(self, msg):
+        for item in self.kernel().hero.lastActionedTile.items:
+            if item.corpse:  # FIXME (nikita) check glyph of killed monster
+                item.turn_of_death = self.kernel().hero.turns
 
     def parse_messages(self):
         for msg in self.messages:

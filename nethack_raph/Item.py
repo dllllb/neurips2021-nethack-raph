@@ -39,6 +39,9 @@ class Item(Findable):
         self.kernel = kernel
         self.is_food = self.check_if_food()
 
+        self.corpse = False
+        self.turn_of_death = -1000
+
     def __str__(self):
         return "?:%s, ch:%s, c:%s, g:%s" % tuple(map(str, (self.name, self.char, self.color, self.glyph)))
 
@@ -54,6 +57,7 @@ class Item(Findable):
     def check_if_food(self):
         if self.char != '%': return False
         if 1144 <= self.glyph <= 1524:  # corpse
+            self.corpse = True
             return False
             monster_corpse = MONSTERS_GLOSSARY[self.glyph - 1144]['corpse']
 
@@ -71,3 +75,8 @@ class Item(Findable):
         else:
             self.kernel().log("%s is food" % self)
             return True
+
+    def is_tainted(self):
+        tainted = self.corpse and self.kernel().hero.turns - self.turn_of_death >= 30
+        if tainted: self.kernel().log("%s is tainted" % self)
+        return tainted
