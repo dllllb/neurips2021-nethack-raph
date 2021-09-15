@@ -17,8 +17,13 @@ class Hero:
         self.isEngulfed = False
         self.isPolymorphed = False
 
-        self.hanger = None
+        self.hunger = None
         self.have_food = True
+
+        self.role = None
+        self.race = None
+        self.gender = None
+        self.moral = None
 
         self.lastActionedTile = None # I sersiouly need to #enhance my english skills :'(
 
@@ -41,9 +46,9 @@ class Hero:
                 self.inPit = False
             else:
                 if self.tmpCount > 3:
-                    if not tile.glyph:
+                    if not tile.char:
                         self.kernel().log("Made a door at %s" % tile)
-                        tile.glyph = '-'
+                        tile.char = '-'
                         tile.color = TermColor(33, 0, False, False)
                         self.kernel().sendSignal("interrupt_action")
 
@@ -112,3 +117,66 @@ class Hero:
             return 'k'
         if source.y > target.y and source.x > target.x:
             return 'y'
+
+    def set_attributes(self, msg):
+        # archaeologist, barbarian, cave(wo)man, healer, knight, priest(ess), ranger, rogue, samurai, tourist,
+        # valkyrie, and wizard)
+        if 'Archeologist' in msg:
+            self.role = 'arc'
+        elif 'Barbarian' in msg:
+            self.role = 'bar'
+        elif 'Caveman' in msg or 'Cavewoman' in msg:
+            self.role = 'cav'
+        elif 'Healer' in msg:
+            self.role = 'hea'
+        elif 'Knight' in msg:
+            self.role = 'kni'
+        elif 'Monk' in msg:
+            self.role = 'mon'
+        elif 'Priest' in msg or 'Priestest' in msg:
+            self.role = 'pri'
+        elif 'Ranger' in msg:
+            self.role = 'ran'
+        elif 'Rogue' in msg:
+            self.role = 'rogue'
+        elif 'Samurai' in msg:
+            self.role = 'sam'
+        elif 'Tourist' in msg:
+            self.role = 'tou'
+        elif 'Valkyrie' in msg:
+            self.role = 'val'
+        elif 'Wizard' in msg:
+            self.role = 'wiz'
+        # else:
+        #    raise Exception(f"Unknown role from '{msg}'")
+
+        if 'human' in msg:
+            self.race = 'hum'
+        elif 'elf' in msg or 'elven' in msg:
+            self.race = 'elf'
+        elif 'dwar' in msg:
+            self.race = 'dwa'
+        elif 'gnom' in msg:
+            self.race = 'gno'
+        elif 'orc' in msg:
+            self.race = 'orc'
+        # else:
+        #    raise Exception(f"Unknown race from '{msg}'")
+
+        if 'female' in msg or 'woman' in msg or 'Priestess' in msg:
+            self.gender = 'fem'
+        elif 'male' in msg or 'man' in msg or 'Priest' in msg:
+            self.gender = 'mal'
+        else:
+            raise Exception(f"Unknown gender from '{msg}'")
+
+        if 'neutral' in msg:
+            self.moral = 'neu'
+        elif 'lawful' in msg:
+            self.moral = 'law'
+        elif 'chaotic' in msg:
+            self.moral = 'cha'
+        # else:
+        #    raise Exception(f"Unknown moral from '{msg}'")
+
+        self.kernel().log(f"Hero is {self.role}-{self.race}-{self.moral}-{self.gender}")

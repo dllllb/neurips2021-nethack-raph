@@ -43,12 +43,14 @@ class Level:
         return [tile for tile in self.tiles if tile.find(query)]
 
     def update(self):
-        chars, colors = self.kernel().state
+        chars, colors, glyphs = self.kernel().state
         chars = chars.reshape(-1)
         colors = colors.reshape(-1)
+        glyphs = glyphs.reshape(-1)
         for x in range(0, len(self.tiles)):
             tile_id = x + WIDTH
             char = chr(chars[tile_id])
+            glyph = glyphs[tile_id]
             if self.tiles[x].appearance() != char:
 
                 color = 30 + (colors[tile_id] & ~TTY_BRIGHT)
@@ -57,7 +59,7 @@ class Level:
 
                 tmp = self.tiles[x].appearance()
                 self.kernel().log("\n   <--- %s\n   ---> %s" % (str(self.tiles[x].appearance()), str(char)))
-                self.tiles[x].setTile(char, color)
+                self.tiles[x].setTile(char, color, glyph)
                 if not (self.tiles[x].isHero()):
                     self.kernel().log("\n   <!!! %s(%s)\n   !!!> %s" % (tmp, str(self.tiles[x].coords()), str(char)))
                     self.explored = False

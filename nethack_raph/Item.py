@@ -7,7 +7,7 @@ class Item(Findable):
     BLESSED = 2
     UNKNOWNBUC = 3
 
-    def __init__(self, name, glyph, color, heavy=False):
+    def __init__(self, name, char, color, glyph, kernel, heavy=False):
         Findable.__init__(self)
 
         self.name = name
@@ -18,21 +18,24 @@ class Item(Findable):
         self.slot = None
         self.page = None
 
-        self.glyph = glyph
+        self.char = char
         self.color = color
-        self.heavy = heavy or self.glyph in ['0']
+        self.heavy = heavy or self.char in ['0']
+
+        self.glyph = glyph
+        self.kernel = kernel
 
     def __str__(self):
-        return "?:%s, g:%s, c:%s" % tuple(map(str, (self.name, self.glyph, self.color)))
+        return "?:%s, ch:%s, c:%s, g:%s" % tuple(map(str, (self.name, self.char, self.color, self.glyph)))
 
     def isHeavy(self):
-        return self.glyph in ['`', '0']
+        return self.char in ['`', '0']
 
     def canPickup(self):
-        return self.glyph not in ['_', '\\']
+        return self.char not in ['_', '\\']
 
     def identified(self, id):
         self.name = id
 
     def is_food(self):
-        return self.glyph == '%' and self.name != 'corpse'
+        return self.char == '%' and self.name != 'corpse'

@@ -13,7 +13,7 @@ class Search:
 
         self.kernel().log("Finding possible searchwalktos")
 
-        for tile in filter(lambda t: not t.isWalkable() and not t.searched and t.glyph in {'|', '-', ' '}, self.kernel().curLevel().tiles):
+        for tile in filter(lambda t: not t.isWalkable() and not t.searched and t.char in {'|', '-', ' '}, self.kernel().curLevel().tiles):
             # TODO should preoritize them by count = len([x for x in neighbour.adjacent({'searched': False})])
             neighbours = list(filter(lambda t: t.explored and t.walkable and t.monster is None, tile.neighbours()))
             if len(neighbours):
@@ -47,7 +47,7 @@ class Search:
             if searchwalktos:
                 best = None
                 for tile in searchwalktos:
-                    if tile.glyph not in ['|', '-', ' ']:
+                    if tile.char not in ['|', '-', ' ']:
                         continue
                     neighbours = tile.adjacent({'explored': True, 'walkable': True, 'monster': None})
                     # neighbours = [neib for neib in neighbours if neib not in self._reset_walktos] # (dima)

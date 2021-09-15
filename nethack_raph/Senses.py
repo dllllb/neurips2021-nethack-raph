@@ -58,6 +58,10 @@ class Senses:
             "You destroy the (.+)": ['no_poly'],
             "(.+) engulfs you": ['got_engulfed'],
             "Call a (.+) potion": ['call_potion'],
+            "Hello Agent, welcome to NetHack!": ['start_message'],
+            "There is a doorway here.": ['cant_eat'],
+            "There is a fountain here.": ['cant_eat'],
+            "Other things that are here": ['skip_msg'],
         }
 
     def update(self):
@@ -111,6 +115,7 @@ class Senses:
     def got_expelled(self):
         self.kernel().log("Got expelled. Phew!")
         self.kernel().hero.isEngulfed = False
+
     def got_engulfed(self, match):
         self.kernel().log("We just got engulfed. This will confuze me a whole lot :(")
         self.kernel().hero.isEngulfed = True
@@ -127,24 +132,27 @@ class Senses:
             self.kernel().hero.lastActionedTile.locked = True
 
     def found_trap(self, type):
-        self.kernel().log("I found a trap. Setting glyph to ^")
-        self.kernel().curTile().glyph = '^'
+        self.kernel().log("I found a trap. Setting char to ^")
+        self.kernel().curTile().char = '^'
 
     def fell_into_pit(self):
         self.kernel().log("I fell into a pit :(")
         self.kernel().hero.inPit = True
-        self.kernel().curTile().glyph = '^'
+        self.kernel().curTile().char = '^'
+
     def found_beartrap(self):
         self.kernel().log("Found a beartrap. Setting tile to ^")
-        self.kernel().curTile().glyph = '^'
+        self.kernel().curTile().char = '^'
+
     def stepped_in_beartrap(self):
         self.kernel().log("Just stepped into a beartrap :(")
         self.kernel().hero.inBearTrap = True
-        self.kernel().curTile().glyph = '^'
+        self.kernel().curTile().char = '^'
+
     def trigger_trap(self):
         #TODO
-        self.kernel().log("Triggered a trap, setting glyph to ^.. Not changing color yet")
-        self.kernel().curTile().glyph = '^'
+        self.kernel().log("Triggered a trap, setting char to ^.. Not changing color yet")
+        self.kernel().curTile().char = '^'
 
     def blinded(self):
         self.kernel().log("I got blinded.")
@@ -152,6 +160,7 @@ class Senses:
 
     def gain_instrinct(self, type):
         pass
+
     def skill_up(self, match):
         if match.groups()[0] == 'weapon':
             self.kernel().log("Enhanced weaponskill!")
@@ -159,8 +168,9 @@ class Senses:
 
     def open_door_here(self):
         self.kernel().log("Setting tile to '-' with door colors")
-        self.kernel().curTile().glyph = '-'
+        self.kernel().curTile().char = '-'
         self.kernel().curTile().color = TermColor(33, 0, False, False)
+        self.cant_eat()  # bug_fix
 
     def call_potion(self, match):
         self.kernel().send("\x1b")
@@ -177,12 +187,18 @@ class Senses:
             self.kernel().log('corpse: eating aborted')
             self.kernel().send('n')
             for item in self.kernel().curTile().items:
-                if item.glyph == '%':
+                if item.char == '%':
                     item.name = 'corpse'
         else:
             self.kernel().log('eating...')
             self.kernel().send('y')
         # self.kernel().dontUpdate()
+
+    def cant_eat(self):
+        # bug fix. For some reason agent can't eat food, located in the doorway
+        for item in self.kernel().curTile().items:
+            if item.char == '%':
+                item.name = 'corpse'
 
     def no_door(self):
         self.kernel().hero.lastActionedTile.is_door = False
@@ -208,10 +224,10 @@ class Senses:
         self.kernel().log("Found staircase under some items..")
 
         if match.groups()[0] == 'down':
-            self.kernel().curTile().glyph = '>'
+            self.kernel().curTile().char = '>'
             self.kernel().curTile().color = TermColor(37, 0, False, False)
         else:
-            self.kernel().curTile().glyph = '<'
+            self.kernel().curTile().char = '<'
             self.kernel().curTile().color = TermColor(37, 0, False, False)
 
     def leg_no_shape(self):
@@ -246,7 +262,7 @@ class Senses:
         while buf:
             for tile in buf.pop().neighbours():
                 # This could break once a year or so (if a monster is standing in a non-shop square after you login?)
-                if (tile.glyph == '.' or tile.monster or tile.items) and not tile.inShop:
+                if (tile.char == '.' or tile.monster or tile.items) and not tile.inShop:
                     buf.append(tile)
 
                     self.kernel().log("Setting %s to be inside a shop." % tile)
@@ -258,14 +274,14 @@ class Senses:
     def no_food(self):
         if not self.kernel().hero.have_food:
             for item in self.kernel().curTile().items:
-                if item.glyph == '%':
+                if item.char == '%':
                     item.name = 'corpse' #FIXME
 
         self.kernel().hero.have_food = False
 
     def no_wear(self):
         for item in self.kernel().curTile().items:
-            if item.glyph == '[':
+            if item.char == '[':
                 item.name = 'absent' #FIXME
 
     def what_to_wear(self):
@@ -308,6 +324,11 @@ class Senses:
 
     def graffiti_on_floor(self):
         self.kernel().log("Found grafitti!")
+
+    def start_message(self):
+        msg = ' '.join(self.messages[1:])
+        self.kernel().hero.set_attributes(msg)
+        self.kernel().log(str(self.messages))
 
     def parse_messages(self):
         for msg in self.messages:

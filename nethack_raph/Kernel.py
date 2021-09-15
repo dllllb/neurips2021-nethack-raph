@@ -86,9 +86,12 @@ class Kernel:
         return ' '
 
     def step(self, obs):
-        self.state = np.zeros((2, HEIGHT, WIDTH), dtype=np.uint8)
+        self.state = np.zeros((3, HEIGHT, WIDTH), dtype=np.uint16)
         self.state[0] = obs['tty_chars']
+        self.state[0][1: -2, :-1] = obs['chars']  # fix
         self.state[1] = obs['tty_colors']
+        self.state[2][1: -2, :-1] = obs['glyphs']
+
         self.bot = "".join(chr(ch) for ch in self.state[0].reshape(-1)[22*WIDTH:])
         self.top = "".join(chr(ch) for ch in self.state[0].reshape(-1)[:WIDTH])
         self.inv_strs = obs['inv_strs']

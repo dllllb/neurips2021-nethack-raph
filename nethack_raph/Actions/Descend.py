@@ -11,7 +11,7 @@ class Descend:
         goal_coords = np.zeros((HEIGHT, WIDTH))
 
         self.kernel().log("Finding '>' ..")
-        stairs = list(filter(lambda tile: tile.glyph == '>', self.kernel().curLevel().tiles))
+        stairs = list(filter(lambda tile: tile.char == '>', self.kernel().curLevel().tiles))
         self.kernel().log(f"Found {len(stairs)} stairs")
         for stair in stairs: # Grammar <3
             goal_coords[stair.coords()] = True
@@ -22,7 +22,7 @@ class Descend:
 
     def execute(self, path):
         if len(path) == 1:
-            if path[0].glyph == '>':
+            if path[0].char == '>':
                 self.kernel().hero.descend()
                 return
             self.kernel().log('door is absent')
