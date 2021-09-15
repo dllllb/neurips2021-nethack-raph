@@ -8,7 +8,7 @@ class Monster:
         ('@', COLOR_GRAY),        # watchmen
         ('@', COLOR_GREEN),       # watch captain I think
         ('e', COLOR_BLUE),        # floating eye I think
-        ('e', COLOR_GRAY),        # gas spore
+        # ('e', COLOR_GRAY),        # gas spore
     }
 
     def __init__(self, char, color, glyph, kernel):

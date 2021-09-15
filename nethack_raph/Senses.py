@@ -177,18 +177,12 @@ class Senses:
         self.kernel().dontUpdate()
 
     def eat_it(self, msg):
-        # FIXME: (dima) should be in Eat.py
-        if self.kernel().hero.hunger == 0:
-            self.kernel().send('n')
-            return
-
-        #FIXME strange fwd bkwd happens
         if 'corpse' in msg:
             self.kernel().log('corpse: eating aborted')
             self.kernel().send('n')
             for item in self.kernel().curTile().items:
                 if item.char == '%':
-                    item.name = 'corpse'
+                    item.is_food = False
         else:
             self.kernel().log('eating...')
             self.kernel().send('y')
@@ -198,7 +192,7 @@ class Senses:
         # bug fix. For some reason agent can't eat food, located in the doorway
         for item in self.kernel().curTile().items:
             if item.char == '%':
-                item.name = 'corpse'
+                item.is_food = False
 
     def no_door(self):
         self.kernel().hero.lastActionedTile.is_door = False
@@ -242,12 +236,6 @@ class Senses:
     def found_items(self, tmp, msg):
         self.kernel().log("Found some item(s)..")
         self.kernel().sendSignal("foundItemOnFloor")
-        if self.kernel().dungeon.curBranch:
-            self.kernel().log("Updating items on (%s)" % self.kernel().curTile())
-            for item in self.kernel().curTile().items:
-                item.appearance = "Dummy"
-                if 'corpse' in msg:
-                    item.appearance = 'corpse'
 
     def shop_entrance(self, match, msg):
         self.kernel().log("Found a shop.")
@@ -275,7 +263,7 @@ class Senses:
         if not self.kernel().hero.have_food:
             for item in self.kernel().curTile().items:
                 if item.char == '%':
-                    item.name = 'corpse' #FIXME
+                    item.is_food = False
 
         self.kernel().hero.have_food = False
 

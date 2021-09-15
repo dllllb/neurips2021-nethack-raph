@@ -88,9 +88,6 @@ class Hero:
         self.kernel().log("Hero::eat")
         self.kernel().send("e")
 
-    def can_eat(self, tile):
-        return len([item for item in tile.items if item.is_food()]) > 0
-
     def canPickupHeavy(self):
         # for poly and stuff
         return False

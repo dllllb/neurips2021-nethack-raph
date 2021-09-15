@@ -88,7 +88,6 @@ class Kernel:
     def step(self, obs):
         self.state = np.zeros((3, HEIGHT, WIDTH), dtype=np.uint16)
         self.state[0] = obs['tty_chars']
-        self.state[0][1: -2, :-1] = obs['chars']  # fix
         self.state[1] = obs['tty_colors']
         self.state[2][1: -2, :-1] = obs['glyphs']
 
@@ -99,7 +98,6 @@ class Kernel:
 
         if np.sum(self.state[0][1:-2, :DUNGEON_WIDTH - 1] != obs['chars']):
             return ' '
-
 
         if len(self.action) != 0:
             self.action = self.action[1:]

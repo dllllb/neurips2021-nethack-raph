@@ -24,6 +24,7 @@ class Item(Findable):
 
         self.glyph = glyph
         self.kernel = kernel
+        self.is_food = self.check_if_food()
 
     def __str__(self):
         return "?:%s, ch:%s, c:%s, g:%s" % tuple(map(str, (self.name, self.char, self.color, self.glyph)))
@@ -37,5 +38,9 @@ class Item(Findable):
     def identified(self, id):
         self.name = id
 
-    def is_food(self):
-        return self.char == '%' and self.name != 'corpse'
+    def check_if_food(self):
+        if self.char != '%': return False
+        if 1144 <= self.glyph <= 1524:  # corpse
+            return False
+        else:
+            return True
