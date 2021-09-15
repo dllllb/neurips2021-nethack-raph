@@ -14,6 +14,7 @@ class OpenDoors:
 
         find_door = False
         doors = self.kernel().curLevel().findDoors()
+
         for door in doors:
             for adjacent in door.walkableNeighbours():
                 if not adjacent.explored:
@@ -21,6 +22,7 @@ class OpenDoors:
                 goal_coords[adjacent.coords()] = True
                 find_door = True
 
+        self.kernel().log(f"found door: {find_door}, {goal_coords.nonzero()}")
         return find_door, goal_coords
 
     def after_search(self, path):

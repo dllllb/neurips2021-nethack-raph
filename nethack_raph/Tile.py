@@ -20,6 +20,16 @@ class Tile(Findable):
                     '^': 100,
                     ' ': 1}  #char: weight
 
+    dngGlyphsToExplore = (
+        2359,  # either unexplored or solid stone
+        2371,  # doorway (with no door)
+        2372,  # open door
+        2373,  # open door
+        2379,  # dark part of a room
+        2380,  # corridor
+        2381,  # lit corridor
+    )
+
     def __init__(self, y, x, level, kernel):
         Findable.__init__(self)
         self.kernel = kernel
@@ -62,8 +72,9 @@ class Tile(Findable):
         if char in Tile.dngFeatures:
             self.char = char
             self.color = color
+            self.glyph = glyph
 
-            self.explored = self.explored or (char != ' ')
+            self.explored = self.explored or glyph not in Tile.dngGlyphsToExplore
 
             if self.items:
                 self.kernel().log("Removing items on %s because I only see a dngFeature-tile" % str(self.coords()))
@@ -137,8 +148,8 @@ class Tile(Findable):
             return not (self.monster and not self.monster.pet) and self.walkable
         else:
             if self.isDoor():
-                return not self.monster
-            return not self.monster and self.char in Tile.walkables.keys() and self.walkable
+                return not (self.monster and not self.monster.pet)
+            return not (self.monster and not self.monster.pet) and self.char in Tile.walkables.keys() and self.walkable
 
     def walkableNeighbours(self):
         ret = []

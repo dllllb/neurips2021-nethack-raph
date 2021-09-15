@@ -15,7 +15,7 @@ class Search:
 
         for tile in filter(lambda t: not t.isWalkable() and not t.searched and t.char in {'|', '-', ' '}, self.kernel().curLevel().tiles):
             # TODO should preoritize them by count = len([x for x in neighbour.adjacent({'searched': False})])
-            neighbours = list(filter(lambda t: t.explored and t.walkable and t.monster is None, tile.neighbours()))
+            neighbours = list(filter(lambda t: t.explored and t.walkable and (t.monster is None or not t.monster.pet), tile.neighbours()))
             if len(neighbours):
                 walkto = max(neighbours, key=lambda t: len([neigh for neigh in t.neighbours() if not neigh.searched]))
                 target_tiles[walkto.coords()] = True

@@ -164,8 +164,8 @@ class Hero:
             self.gender = 'fem'
         elif 'male' in msg or 'man' in msg or 'Priest' in msg:
             self.gender = 'mal'
-        else:
-            raise Exception(f"Unknown gender from '{msg}'")
+        # else:
+        #    raise Exception(f"Unknown gender from '{msg}'")
 
         if 'neutral' in msg:
             self.moral = 'neu'

@@ -1,4 +1,5 @@
 from nethack_raph.Findable import *
+from nethack_raph.MonsterGlossary import MONSTERS_GLOSSARY
 
 
 class Item(Findable):
@@ -6,6 +7,18 @@ class Item(Findable):
     UNCURSED = 1
     BLESSED = 2
     UNKNOWNBUC = 3
+
+    bad_effects = ['mimic', 'poisonous', 'hallucination', 'stun', 'die', 'acidic', 'lycanthropy', 'slime',
+                   'petrify', 'aggravate']
+
+    ambivalent_effects = ['speed toggle']  # can be either good or bad, depending on the circumstances
+
+    good_effects = ['cure stoning', 'reduce confusion', 'reduce stunning',
+                    'heal', 'cold resistance', 'disintegration resistance', 'fire resistance',
+                    'poison resistance', 'shock resistance', 'sleep resistance', 'gain level',
+                    'teleport control', 'gain telepathy', 'increase intelligence', 'polymorphing',
+                    'increase strength', 'increase energy', 'teleportitis', 'invisibility'
+                    ]
 
     def __init__(self, name, char, color, glyph, kernel, heavy=False):
         Findable.__init__(self)
@@ -42,5 +55,19 @@ class Item(Findable):
         if self.char != '%': return False
         if 1144 <= self.glyph <= 1524:  # corpse
             return False
+            monster_corpse = MONSTERS_GLOSSARY[self.glyph - 1144]['corpse']
+
+            if self.kernel().hero.race == monster_corpse['cannibal']:  # cannibalism
+                self.kernel().log("%s is not an edible corpse." % self)
+                return False
+
+            if any([key in monster_corpse for key in Item.bad_effects + Item.ambivalent_effects]):
+                self.kernel().log("%s is not an edible corpse." % self)
+                return False
+
+            else:
+                self.kernel().log("%s is an edible corpse." % self)
+                return True
         else:
+            self.kernel().log("%s is food" % self)
             return True
