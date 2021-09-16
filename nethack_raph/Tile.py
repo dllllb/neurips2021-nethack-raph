@@ -18,7 +18,17 @@ class Tile(Findable):
                     '<': 1,
                     '>': 1,
                     '^': 100,
-                    ' ': 1}  #glyph: weight
+                    ' ': 1}  #char: weight
+
+    dngGlyphsToExplore = (
+        2359,  # either unexplored or solid stone
+        2371,  # doorway (with no door)
+        2372,  # open door
+        2373,  # open door
+        2379,  # dark part of a room
+        2380,  # corridor
+        2381,  # lit corridor
+    )
 
     def __init__(self, y, x, level, kernel):
         Findable.__init__(self)
@@ -28,7 +38,7 @@ class Tile(Findable):
         self.x = x
         self.level = level
 
-        self.glyph = None
+        self.char = None
         self.color = TermColor()
 
         self.explored = False
@@ -51,40 +61,41 @@ class Tile(Findable):
     def coords(self):
         return self.y, self.x
 
-    def setTile(self, glyph, color):
+    def setTile(self, char, color, glyph):
         self.monster = None
-        self.is_door = glyph == '+'
+        self.is_door = char == '+'
 
         # fix for mimic monster
-        glyph = 'm' if glyph == ']' else glyph
-        glyph = '0' if glyph == '`' else glyph # make boulder notisable
+        char = 'm' if char == ']' else char
+        char = '0' if char == '`' else char # make boulder notisable
 
-        if glyph in Tile.dngFeatures:
-            self.glyph = glyph
+        if char in Tile.dngFeatures:
+            self.char = char
             self.color = color
+            self.glyph = glyph
 
-            self.explored = self.explored or (glyph != ' ')
+            self.explored = self.explored or glyph not in Tile.dngGlyphsToExplore
 
             if self.items:
                 self.kernel().log("Removing items on %s because I only see a dngFeature-tile" % str(self.coords()))
                 self.items = []
 
-            if glyph not in Tile.walkables.keys() and not self.isDoor():
+            if char not in Tile.walkables.keys() and not self.isDoor():
                 self.kernel().log("Setting %s to unwalkable." % self)
                 self.walkable = False
-            if glyph in Tile.walkables.keys() and glyph not in [' ']:
+            if char in Tile.walkables.keys() and char not in [' ']:
                 self.walkable = True
-            #self.kernel().log("Found feature: %s, Color: %s, at (%d,%d). Tile is now: %s" % (glyph, str(color), self.y, self.x, str(self)))
+            #self.kernel().log("Found feature: %s, Color: %s, at (%d,%d). Tile is now: %s" % (char, str(color), self.y, self.x, str(self)))
 
-        elif glyph in Tile.dngItems:
-            it = Item(None, glyph, color)
+        elif char in Tile.dngItems:
+            it = Item(None, char, color, glyph, self.kernel)
             if not self.items:
                 self.kernel().log("Added item(%s) to tile(%s)" % (str(it), str(self)))
                 self.items.append(it)
             else:
                 self.items[0] = it
 
-            if glyph == '0':
+            if char == '0':
                 self.walkable = False
             else:
                 self.walkable = True
@@ -98,34 +109,34 @@ class Tile(Findable):
             # TODO: Write comments that actually explains problems (No idea why I said the above, and no idea what the below does.. :) 
             if not self.isWalkable():
                 self.walkable = True
-                self.glyph = None
+                self.char = None
 
-        elif glyph in Tile.dngMonsters:
-            self.monster  = Monster(glyph, color, self.kernel)
+        elif char in Tile.dngMonsters:
+            self.monster = Monster(char, color, glyph, self.kernel)
             self.walkable = True
-            if self.glyph == '+':
-                if self.kernel().dungeon.tile(self.y-1, self.x).glyph == '|':
-                    self.glyph = '-'
+            if self.char == '+':
+                if self.kernel().dungeon.tile(self.y-1, self.x).char == '|':
+                    self.char = '-'
                 else:
-                    self.glyph = '|'
+                    self.char = '|'
                 self.color = TermColor(33, 0, False, False)
 
             #self.kernel().log("Found monster:%s, Color: %s, at (%d,%d). Tile is now: %s" % (str(self.monster), str(color), self.y, self.x, str(self)))
         else:
-            self.glyph = glyph
+            self.char = char
             return #FIXME DIMA
-            self.kernel().die("Couldn't parse tile: " + glyph)
+            self.kernel().die("Couldn't parse tile: " + char)
 
     def appearance(self):
         if self.monster:
-            return self.monster.glyph
+            return self.monster.char
         elif self.items:
-            return self.items[-1].glyph
+            return self.items[-1].char
         else:
-            return self.glyph
+            return self.char
 
     def isDoor(self):
-        return (self.glyph == '-' or self.glyph == '|') and self.color.getId() == COLOR_BROWN
+        return (self.char == '-' or self.char == '|') and self.color.getId() == COLOR_BROWN
 
     def isWalkable(self): #TODO: Shops might be good to visit sometime ..:)
 #        if not self.adjacent({'explored': True}):
@@ -133,12 +144,12 @@ class Tile(Findable):
         if self.inShop:
             return False
 
-        if not self.glyph:
-            return not self.monster and self.walkable
+        if not self.char:
+            return not (self.monster and not self.monster.pet) and self.walkable
         else:
             if self.isDoor():
-                return not self.monster
-            return not self.monster and self.glyph in Tile.walkables.keys() and self.walkable
+                return not (self.monster and not self.monster.pet)
+            return not (self.monster and not self.monster.pet) and self.char in Tile.walkables.keys() and self.walkable
 
     def walkableNeighbours(self):
         ret = []
@@ -187,7 +198,7 @@ class Tile(Findable):
         return abs(self.kernel().hero.x - self.x) + abs(self.kernel().hero.y - self.y)
 
     def __str__(self):
-        return "(%s,%s)->g:%s, c:(%s), e:%s, @:%s, m:(%s), i:(%s) w:%s(is:%s) sea:%s" % tuple(map(str, (self.y, self.x, self.glyph, self.color, self.explored, self.isHero(), self.monster, map(str, self.items), self.walkable, self.isWalkable(), self.searches)))
+        return "(%s,%s)->g:%s, c:(%s), e:%s, @:%s, m:(%s), i:(%s) w:%s(is:%s) sea:%s" % tuple(map(str, (self.y, self.x, self.char, self.color, self.explored, self.isHero(), self.monster, map(str, self.items), self.walkable, self.isWalkable(), self.searches)))
 
     def __eq__(self, other):
         return self.coords() == other.coords()

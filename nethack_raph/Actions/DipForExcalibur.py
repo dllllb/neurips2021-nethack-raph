@@ -6,7 +6,7 @@ class DipForExcalibur:
         self.dip = False
 
     def can(self):
-        if self.kernel().curTile().glyph == '}':
+        if self.kernel().curTile().char == '}':
             excal = self.kernel().Inventory.search({'appearance': 'long sword'}, getFirst=True)
             if excal:
                 self.item = excal
@@ -18,7 +18,7 @@ class DipForExcalibur:
             return True
 
         if self.kernel().hero.xp >= 5 and not self.kernel().ItemDB.find({'appearance': 'Excalibur'}):
-            for tile in self.kernel().curLevel().find({'glyph': '{'}):
+            for tile in self.kernel().curLevel().find({'char': '{'}):
                 path = self.kernel().pathing.path(end=tile)
                 if path:
                     self.path = path

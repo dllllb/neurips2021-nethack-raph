@@ -13,12 +13,12 @@ class TestBrain(Brain):
                             # WearArmor(kernel),
                             FixStatus(kernel),
                             RestoreHP(kernel),
-                            SearchSpot(kernel),
+                            Explore(kernel),
                             OpenDoors(kernel),
                             # [DipForExcalibur(), 1600],
                             #[GetPhatz(),        1500],
-                            Explore(kernel),
                             Descend(kernel),
+                            SearchSpot(kernel),
                             Search(kernel),
                             RandomWalk(kernel),
                        ]
@@ -42,6 +42,8 @@ class TestBrain(Brain):
                     self.kernel().log(f'found path: {path} for {action}')
                     action.execute(path)
                     return
+                else:
+                    self.kernel().log(f"Didn't found path: for {action}")
 
     def s_isWeak(self):
         self.kernel().log("Praying because I'm weak")

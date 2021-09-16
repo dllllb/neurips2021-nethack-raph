@@ -15,6 +15,7 @@ class Explore:
             return False, goal_coords
 
         self.kernel().log("No goals defined in Explore, finding one ..")
+
         found_unexplored = False
         for tile in filter(lambda t: not t.explored and t.isWalkable() and not t.isHero(), self.kernel().curLevel().tiles):
             goal_coords[tile.coords()] = True

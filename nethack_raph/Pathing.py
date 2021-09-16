@@ -61,7 +61,7 @@ def dijkstra(start, condition_fns):
                 return results
 
         for neighbour in current.tile.walkableNeighbours():
-            neighbour_cost = cost_so_far[current] + Tile.walkables.get(neighbour.glyph, 1)
+            neighbour_cost = cost_so_far[current] + Tile.walkables.get(neighbour.char, 1)
             neighbour_node = Node(neighbour, neighbour_cost)
             if neighbour_node not in cost_so_far or neighbour_cost < cost_so_far[neighbour_node]:
                 cost_so_far[neighbour_node] = neighbour_cost
