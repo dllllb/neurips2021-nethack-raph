@@ -19,6 +19,7 @@ class Hero:
 
         self.hanger = None
         self.have_food = True
+        self.god_is_angry = False
 
         self.lastActionedTile = None # I sersiouly need to #enhance my english skills :'(
 

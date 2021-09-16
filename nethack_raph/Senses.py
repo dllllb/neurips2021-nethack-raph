@@ -10,7 +10,8 @@ class Senses:
         self.messages = []
 
         self.events = {
-            "(needs food, badly!|feel weak now\.|feel weak\.)":              ['is_weak'],
+           #  "(needs food, badly!|feel weak now\.|feel weak\.)":              ['is_weak'],
+            "You feel that .* is displeased.":                               ['is_displeased'],
             "There is a staircase (down|up) here":                           ['is_staircase_here'],
             "Your (right|left) leg is in no shape":                          ['leg_no_shape'],
             "Your leg feels somewhat better":                                ['leg_feels_better'],
@@ -201,9 +202,13 @@ class Senses:
         else:
             self.kernel().send(options[0])
 
-    def is_weak(self):
-        self.kernel().personality.curBrain.s_isWeak()
-        # self.kernel().sendSignal("s_isWeak")
+    # def is_weak(self):
+    #     self.kernel().personality.curBrain.s_isWeak()
+    #     # self.kernel().sendSignal("s_isWeak")
+
+    def is_displeased(self):
+        input()
+        self.kernel().hero.god_is_angry = True
 
     def is_staircase_here(self, match):
         self.kernel().log("Found staircase under some items..")
