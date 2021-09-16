@@ -37,10 +37,10 @@ class Item(Findable):
 
         self.glyph = glyph
         self.kernel = kernel
-        self.is_food = self.check_if_food()
 
         self.corpse = False
         self.turn_of_death = -1000
+        self.is_food = self.check_if_food()
 
     def __str__(self):
         return "?:%s, ch:%s, c:%s, g:%s" % tuple(map(str, (self.name, self.char, self.color, self.glyph)))
