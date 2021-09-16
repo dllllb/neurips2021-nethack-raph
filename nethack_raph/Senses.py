@@ -133,25 +133,30 @@ class Senses:
     def found_trap(self, type):
         self.kernel().log("I found a trap. Setting char to ^")
         self.kernel().curTile().char = '^'
+        self.kernel().curTile().items = []
 
     def fell_into_pit(self):
         self.kernel().log("I fell into a pit :(")
         self.kernel().hero.inPit = True
         self.kernel().curTile().char = '^'
+        self.kernel().curTile().items = []
 
     def found_beartrap(self):
         self.kernel().log("Found a beartrap. Setting tile to ^")
         self.kernel().curTile().char = '^'
+        self.kernel().curTile().items = []
 
     def stepped_in_beartrap(self):
         self.kernel().log("Just stepped into a beartrap :(")
         self.kernel().hero.inBearTrap = True
         self.kernel().curTile().char = '^'
+        self.kernel().curTile().items = []
 
     def trigger_trap(self):
         #TODO
         self.kernel().log("Triggered a trap, setting char to ^.. Not changing color yet")
         self.kernel().curTile().char = '^'
+        self.kernel().curTile().items = []
 
     def blinded(self):
         self.kernel().log("I got blinded.")
@@ -175,15 +180,30 @@ class Senses:
         self.kernel().dontUpdate()
 
     def eat_it(self, msg):
-        if 'corpse' in msg:
-            self.kernel().log('corpse: eating aborted')
+        if self.kernel().hero.lastAction == 'eat_from_inventory':
+            self.kernel().log('eating from inventory. eating aborted')
+            self.kernel().send('n')
+            return
+
+        if not all([item.is_food for item in self.kernel().curTile().items if item.char == '%']):
+            # otherwise we should check that food in msg correspond to edible food
+            self.kernel().log('not edible: eating aborted')
             self.kernel().send('n')
             for item in self.kernel().curTile().items:
                 if item.char == '%':
                     item.is_food = False
+
+        elif 'corpse' in msg and not bool([item.is_food for item in self.kernel().curTile().items if item.corpse]):
+            self.kernel().log('unknown / not edible corpse: eating aborted')
+            self.kernel().send('n')
+            for item in self.kernel().curTile().items:
+                if item.char == '%':
+                    item.is_food = False
+
         else:
             self.kernel().log('eating...')
             self.kernel().send('y')
+
         # self.kernel().dontUpdate()
 
     def no_door(self):
@@ -255,7 +275,6 @@ class Senses:
         for item in self.kernel().curTile().items:
             if item.char == '%':
                 item.is_food = False
-        self.kernel().hero.have_food = False
 
     def no_wear(self):
         for item in self.kernel().curTile().items:

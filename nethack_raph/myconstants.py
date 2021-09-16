@@ -54,3 +54,24 @@ directions = {  'y': [-1, -1],
                 'b': [ 1, -1],
                 'n': [ 1,  1]
                 }
+
+OBJECT_CLASSES = {
+    'RANDOM_CLASS': 0,
+    'ILLOBJ_CLASS': 1,
+    'WEAPON_CLASS': 2,
+    'ARMOR_CLASS':  3,
+    'RING_CLASS':   4,
+    'AMULET_CLASS': 5,
+    'TOOL_CLASS':   6,
+    'FOOD_CLASS':   7,
+    'POTION_CLASS': 8,
+    'SCROLL_CLASS': 9,
+    'SPBOOK_CLASS': 10,
+    'WAND_CLASS':   11,
+    'COIN_CLASS':   12,
+    'GEM_CLASS':    13,
+    'ROCK_CLASS':   14,
+    'BALL_CLASS':   15,
+    'CHAIN_CLASS':  16,
+    'VENOM_CLASS':  17
+}
