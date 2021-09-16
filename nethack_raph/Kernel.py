@@ -46,6 +46,7 @@ class Kernel:
         self.top = None
         self.inv_strs = None
         self.inv_letters = None
+        self.inv_oclasses = None
 
     def set_verbose(self, value):
         if not self.verbose and value:
@@ -95,6 +96,7 @@ class Kernel:
         self.top = "".join(chr(ch) for ch in self.state[0].reshape(-1)[:WIDTH])
         self.inv_strs = obs['inv_strs']
         self.inv_letters = obs['inv_letters']
+        self.inv_oclasses = obs['inv_oclasses']
 
         if np.sum(self.state[0][1:-2, :DUNGEON_WIDTH - 1] != obs['chars']):
             return ' '

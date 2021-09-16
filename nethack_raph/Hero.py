@@ -1,5 +1,5 @@
 from nethack_raph.TermColor import TermColor
-
+from nethack_raph.myconstants import OBJECT_CLASSES
 
 class Hero:
     def __init__(self, kernel):
@@ -18,7 +18,6 @@ class Hero:
         self.isPolymorphed = False
 
         self.hunger = None
-        self.have_food = True
         self.god_is_angry = False
 
         self.role = None
@@ -27,6 +26,7 @@ class Hero:
         self.moral = None
 
         self.lastActionedTile = None # I sersiouly need to #enhance my english skills :'(
+        self.lastAction = None
 
     def coords(self):
         return self.y, self.x
@@ -36,6 +36,7 @@ class Hero:
         self.kernel().drawString("Attacking -> %s (%s)" % (dir, tile))
         self.kernel().send("F"+dir)
         self.lastActionedTile = tile
+        self.lastAction = 'attack'
 
     def move(self, tile):
         if self.beforeMove == (self.x,self.y) and self.tmpCount < 5 and not (self.inBearTrap or self.inPit):
@@ -56,27 +57,31 @@ class Hero:
             dir = self._get_direction(self.kernel().curTile(), tile)
             self.kernel().drawString("Walking -> %s (%s)" % (dir, tile))
 
-            self.beforeMove = (self.x,self.y)
+            self.beforeMove = (self.x, self.y)
             self.tmpCount = 0
 
             self.lastActionedTile = tile
             self.kernel().send(dir)
+        self.lastAction = 'move'
 
     def descend(self):
         self.kernel().log("Hero is descending..")
         self.kernel().send(">")
         self.kernel().dontUpdate()
+        self.lastAction = 'descend'
 
     def open(self, tile):
         dir = self._get_direction(self.kernel().curTile(), tile)
         self.kernel().log("Hero is opening a door..")
         self.kernel().send("o%s" % dir)
         self.lastActionedTile = tile
+        self.lastAction = 'open'
 
     def kick(self, tile):
         dir = self._get_direction(self.kernel().curTile(), tile)
         self.kernel().log("Hero is kicking a door..")
         self.kernel().send("\x04%s" % dir)
+        self.lastAction = 'kick'
 
     def search(self, times=2):
         self.kernel().send("%ds" % times)
@@ -84,10 +89,17 @@ class Hero:
             neighbour.searches = neighbour.searches + 1
             if neighbour.searches == self.kernel().curLevel().maxSearches:
                 neighbour.searched = True
+        self.lastAction = 'search'
 
     def eat(self):
         self.kernel().log("Hero::eat")
         self.kernel().send("e")
+        self.lastAction = 'eat'
+
+    def eat_from_inventory(self):
+        self.kernel().log("Hero::eat from inventory")
+        self.kernel().send("e")
+        self.lastAction = 'eat_from_inventory'
 
     def canPickupHeavy(self):
         # for poly and stuff
@@ -117,8 +129,6 @@ class Hero:
             return 'y'
 
     def set_attributes(self, msg):
-        # archaeologist, barbarian, cave(wo)man, healer, knight, priest(ess), ranger, rogue, samurai, tourist,
-        # valkyrie, and wizard)
         if 'Archeologist' in msg:
             self.role = 'arc'
         elif 'Barbarian' in msg:
@@ -178,3 +188,6 @@ class Hero:
         #    raise Exception(f"Unknown moral from '{msg}'")
 
         self.kernel().log(f"Hero is {self.role}-{self.race}-{self.moral}-{self.gender}")
+
+    def have_food(self):
+        return bool((self.kernel().inv_oclasses == OBJECT_CLASSES['FOOD_CLASS']).sum())

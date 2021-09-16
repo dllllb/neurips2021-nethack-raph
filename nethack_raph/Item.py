@@ -58,7 +58,6 @@ class Item(Findable):
         if self.char != '%': return False
         if 1144 <= self.glyph <= 1524:  # corpse
             self.corpse = True
-            return False
             monster_corpse = MONSTERS_GLOSSARY[self.glyph - 1144]['corpse']
 
             if self.kernel().hero.race == monster_corpse['cannibal']:  # cannibalism
@@ -78,5 +77,6 @@ class Item(Findable):
 
     def is_tainted(self):
         tainted = self.corpse and self.kernel().hero.turns - self.turn_of_death >= 30
-        if tainted: self.kernel().log("%s is tainted" % self)
+        if self.corpse:
+            self.kernel().log("Corpse. is tainted: %s %s %s" % (tainted, self.kernel().hero.turns, self.turn_of_death))
         return tainted
