@@ -207,7 +207,6 @@ class Senses:
     #     # self.kernel().sendSignal("s_isWeak")
 
     def is_displeased(self):
-        input()
         self.kernel().hero.god_is_angry = True
 
     def is_staircase_here(self, match):
