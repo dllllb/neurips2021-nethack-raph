@@ -250,6 +250,7 @@ class Senses:
         for item in self.kernel().curTile().items:
             if item.char == '%':
                 item.is_food = False
+        self.kernel().hero.have_food = False
 
     def no_wear(self):
         for item in self.kernel().curTile().items:
