@@ -75,12 +75,10 @@ class Kernel:
     def get_row_line(self, row):
         if row < 1 or row > 24:
             return ""
-        return "".join(chr(ch) for ch in self.state[0].reshape(-1)[(row-1)*WIDTH:row*WIDTH])
+        return bytes(self.state[0][row]).decode('ascii')
 
     def get_inventory_letter(self, inv_name):
-        for letter, s in zip(self.inv_letters, self.inv_strs):
-            descr = "".join([chr(ch) for ch in s])
-            letter = chr(letter)
+        for letter, descr in zip(self.inv_letters, self.inv_strs):
             if inv_name in descr:
                 self.log(f'FOUND {inv_name}: {letter}, {descr}')
                 return letter
@@ -92,13 +90,21 @@ class Kernel:
         self.state[1] = obs['tty_colors']
         self.state[2][1: -2, :-1] = obs['glyphs']
 
-        self.bot = "".join(chr(ch) for ch in self.state[0].reshape(-1)[22*WIDTH:])
-        self.top = "".join(chr(ch) for ch in self.state[0].reshape(-1)[:WIDTH])
-        self.inv_strs = obs['inv_strs']
-        self.inv_letters = obs['inv_letters']
-        self.inv_oclasses = obs['inv_oclasses']
+        # extract the top and the bottom lines
+        tty_chars = bytes(self.state[0]).decode('ascii')  # flattens 24x80
+        self.top, self.bot = tty_chars[:WIDTH], tty_chars[22*WIDTH:]
 
-        if np.sum(self.state[0][1:-2, :DUNGEON_WIDTH - 1] != obs['chars']):
+        # parse the inventory
+        inv_letters = obs['inv_letters'].view('c')  # uint8 to bytes
+        index, = inv_letters.nonzero()  # keep non-empty slots only
+        inv_strs = obs['inv_strs'].view('S80')[:, 0]  # uint8 to sz
+
+        self.inv_strs = inv_strs[index].astype(str)  # convert to utf8 strings
+        self.inv_letters = inv_letters[index].astype(str)
+        self.inv_oclasses = obs['inv_oclasses'][index]
+
+        # this checks for a foreground overlay message
+        if np.any(self.state[0][1:-2, :DUNGEON_WIDTH - 1] != obs['chars']):
             return ' '
 
         if len(self.action) != 0:
@@ -109,13 +115,13 @@ class Kernel:
             TTY_BRIGHT = 8
             for y in range(0, HEIGHT):
                 for x in range(0, WIDTH):
-                    ch = chr(self.state[0][y, x])
+                    ch = self.state[0][y, x]
                     color = 30 + int(self.state[1][y, x] & ~TTY_BRIGHT)
-                    self.stdout("\x1b[%dm\x1b[%d;%dH%s" % (color, y+1, x+1, ch))
+                    self.stdout("\x1b[%dm\x1b[%d;%dH%c" % (color, y+1, x+1, ch))
             self.logScreen()
 
         # TODO: use them
-        #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, unk
+        #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, condition
 
         self.hero.x, self.hero.y, strength_percentage, \
             self.hero.str, self.hero.dex, self.hero.con, \
@@ -125,9 +131,9 @@ class Kernel:
             self.hero.maxpw, self.hero.ac, monster_level, \
             self.hero.xp, self.hero.xp_next, self.hero.turns, \
             self.hero.hunger, carrying_capacity, dungeon_number, \
-            level_number, unk = obs['blstats']
+            level_number, condition = obs['blstats']
 
-        # unk == 64 -> Deaf
+        # condition (aka `unk`) == 64 -> Deaf
 
         if self.searchBot("Blind"):
             self.hero.blind = True
@@ -138,7 +144,7 @@ class Kernel:
             self.hero.isPolymorphed = True
 
         # FIXME --more-- in the middle
-        #if '--More--' in "".join([chr(ch) for ch in self.state[0].reshape(-1) if ch not in (ord('\n'), ord('\r'))]):
+        #if tty_chars.find('--More--') >= 0:
         #    self.action += ' '
         #    return self.action
 

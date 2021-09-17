@@ -64,6 +64,7 @@ class Senses:
         }
 
     def update(self):
+        # XXX this is where the top line is used, can we reuse the message?
         top = self.kernel().top_line().replace("--More--", "")
         self.messages = self.messages + top.strip().split("  ")
         self.kernel().log(str(self.messages))
