@@ -23,4 +23,4 @@ class Pray:
         pass
 
     def execute(self, path):
-        self.kernel().send('#pray\ry')
+        self.kernel().hero.pray()
