@@ -23,4 +23,5 @@ class Pray:
         pass
 
     def execute(self, path):
+        self.prev_pray = self.kernel().hero.turns
         self.kernel().hero.pray()
