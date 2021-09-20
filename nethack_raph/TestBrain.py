@@ -17,7 +17,7 @@ class TestBrain(Brain):
                             Explore(kernel),
                             OpenDoors(kernel),
                             # [DipForExcalibur(), 1600],
-                            #[GetPhatz(),        1500],
+                            # [GetPhatz(),        1500],
                             Descend(kernel),
                             SearchSpot(kernel),
                             Search(kernel),

@@ -62,7 +62,6 @@ class Senses:
             "Hello Agent, welcome to NetHack!": ['start_message'],
             "You kill .*": ["killed_monster"],
             "Continue eating\? .*": ['stop_eating'],
-            "You feel like a hypocrite.": ['attack_on_elbereth'],
             "You see no objects here.": ['nothing_found']
         }
 
@@ -351,10 +350,6 @@ class Senses:
     def you_read(self, match):
         self.kernel().log(f'YOU READ {match.groups()[0]}')
         self.kernel().curTile().has_elbereth = match.groups()[0] == 'Elbereth'
-
-    def attack_on_elbereth(self):
-        # TODO: (nikita) check it
-        self.kernel().log(f"You've attacked being on the Elbereth sign. Bad stuff")
 
     def nothing_found(self):
         self.kernel().curTile().items = []
