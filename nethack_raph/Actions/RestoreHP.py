@@ -16,7 +16,7 @@ class RestoreHP:
 
             neib_monsters = list(filter(
                 lambda t: t.monster and t.monster.isAttackable() and not t.monster.respect_elbereth,
-                self.kernel().curTile().neighbours()
+                self.kernel().curLevel().tiles
             ))
             if neib_monsters:
                 self.kernel().log("Beware, there is a monster nearby, that doesn't respect elbereth")
