@@ -31,6 +31,7 @@ class RestoreHP:
             self.read = True
 
         elif self.kernel().curTile().has_elbereth:
+            self.kernel().curTile().has_elbereth = False
             self.kernel().log("Searching for 1 turns because my HP is low")
             self.kernel().hero.search(1)
 

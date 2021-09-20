@@ -358,7 +358,6 @@ class Senses:
 
     def nothing_found(self):
         self.kernel().curTile().items = []
-        self.kernel().curTile().has_elbereth = False
 
     def parse_messages(self):
         for msg in self.messages:
