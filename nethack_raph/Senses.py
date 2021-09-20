@@ -63,6 +63,7 @@ class Senses:
             "You kill .*": ["killed_monster"],
             "Continue eating\? .*": ['stop_eating'],
             "You feel like a hypocrite.": ['attack_on_elbereth'],
+            "You see no objects here.": ['nothing_found']
         }
 
     def update(self):
@@ -354,7 +355,10 @@ class Senses:
     def attack_on_elbereth(self):
         # TODO: (nikita) check it
         self.kernel().log(f"You've attacked being on the Elbereth sign. Bad stuff")
-        raise Exception
+
+    def nothing_found(self):
+        self.kernel().curTile().items = []
+        self.kernel().curTile().has_elbereth = False
 
     def parse_messages(self):
         for msg in self.messages:

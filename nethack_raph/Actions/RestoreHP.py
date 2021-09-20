@@ -9,9 +9,17 @@ class RestoreHP:
         self.read = False
 
     def can(self):
-        # neib_monsters = list(filter(lambda t: t.monster and t.monster.isAttackable(), self.kernel().curTile().neighbours()))
         if self.kernel().hero.curhp < self.kernel().hero.maxhp / 2:
-            return True, np.ones((HEIGHT, WIDTH))
+
+            neib_monsters = list(filter(
+                lambda t: t.monster and t.monster.isAttackable() and not t.monster.respect_elbereth,
+                self.kernel().curTile().neighbours()
+            ))
+            if neib_monsters:
+                self.kernel().log("Beware, there is a monster nearby, that doesn't respect elbereth")
+                return False, np.zeros((HEIGHT, WIDTH))
+            else:
+                return True, np.ones((HEIGHT, WIDTH))
         return False, np.zeros((HEIGHT, WIDTH))
 
     def after_search(self, path):
