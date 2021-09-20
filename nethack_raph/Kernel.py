@@ -49,7 +49,7 @@ class Kernel:
         self.inv_letters = None
         self.inv_oclasses = None
 
-        self.steps_counter = 0
+        self.steps = 0
         self.turns = 0
         self.last_turn_update = 0
 
@@ -90,7 +90,7 @@ class Kernel:
         return ' '
 
     def step(self, obs):
-        self.steps_counter += 1
+        self.steps += 1
 
         self.state = np.zeros((3, HEIGHT, WIDTH), dtype=np.uint16)
         self.state[0] = obs['tty_chars']
@@ -143,14 +143,14 @@ class Kernel:
             level_number, condition = obs['blstats']
         # condition (aka `unk`) == 64 -> Deaf
 
-        if self.hero.turns != self.turns:
-            self.last_turn_update, self.turns = self.steps_counter, self.hero.turns
-        if self.steps_counter - self.last_turn_update > 30:
+        if self.turns != self.hero.turns:
+            self.last_turn_update, self.turns = self.steps, self.hero.turns
+        if self.steps - self.last_turn_update > 30:
             self.log("Looks like we're stuck in some kind of loop")
             # self.action = '\x1b10s'
             # return self.action
 
-        self.log(f'# of steps: {self.steps_counter}, turns: {self.turns}')
+        self.log(f'# of steps: {self.steps}, turns: {self.turns}')
 
         self.hero.blind = self.searchBot("Blind")
         self.hero.confused = self.searchBot("Conf")
