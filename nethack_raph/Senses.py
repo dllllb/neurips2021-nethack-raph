@@ -62,7 +62,8 @@ class Senses:
             "Hello Agent, welcome to NetHack!": ['start_message'],
             "You kill .*": ["killed_monster"],
             "Continue eating\? .*": ['stop_eating'],
-            "You see no objects here.": ['nothing_found']
+            "You see no objects here.": ['nothing_found'],
+            "You can't write on the .*": ['cant_write'],
         }
 
     def update(self):
@@ -353,6 +354,10 @@ class Senses:
 
     def nothing_found(self):
         self.kernel().curTile().items = []
+
+    def cant_write(self, msg):
+        if self.kernel().curTile().char is None:
+            self.kernel().curTile().char = '{'
 
     def parse_messages(self):
         for msg in self.messages:

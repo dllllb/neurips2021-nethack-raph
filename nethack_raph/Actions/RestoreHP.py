@@ -10,6 +10,9 @@ class RestoreHP:
 
     def can(self):
         if self.kernel().hero.curhp < self.kernel().hero.maxhp / 2:
+            if self.kernel().curTile().char in ['{', '}']:
+                # can't write on the fountains
+                return False, np.zeros((HEIGHT, WIDTH))
 
             neib_monsters = list(filter(
                 lambda t: t.monster and t.monster.isAttackable() and not t.monster.respect_elbereth,
