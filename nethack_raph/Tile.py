@@ -28,6 +28,7 @@ class Tile(Findable):
         2373,  # open door
         2371,  # doorway (with no door)
     )
+    wereCreaturesGlyphs = (15, 21, 90)
 
     def __init__(self, y, x, level, kernel):
         Findable.__init__(self)
@@ -105,6 +106,13 @@ class Tile(Findable):
         elif self.coords() == self.kernel().curTile().coords():
             self.explored = True
             self.walkable = True
+
+            if glyph in Tile.wereCreaturesGlyphs:
+                self.kernel().set_verbose(True)
+                self.kernel().log(f'new glyph is {glyph}')
+                self.kernel().hero.isLycanthropy = True
+            else:
+                self.kernel().hero.isLycanthropy = False
 
             # Might cause some trouble
             # TODO: Write comments that actually explains problems (No idea why I said the above, and no idea what the below does.. :) 

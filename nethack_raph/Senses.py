@@ -37,7 +37,6 @@ class Senses:
             "This door is locked":                                           ['locked_door'],
             "Closed for inventory":                                          ['shopkeep_door'],
             "You get expelled":                                              ['got_expelled'],
-            "You return to (human|) form":                                   ['no_poly'],
             "There is a teleportation trap here":                            ['found_trap', 'teleport'],
             # r".* eat it\? \[ynq\] \(n\)":              ['eat_it'],
             "You see no door there.": ['no_door'],
@@ -56,7 +55,6 @@ class Senses:
             "You don't have anything else to put on.": ['no_wear'],
             "What do you want to wear? [*]": ['what_to_wear'],
             "Call a scroll labeled .*": ['read_scroll'],
-            "You destroy the (.+)": ['no_poly'],
             "(.+) engulfs you": ['got_engulfed'],
             "Call a (.+) potion": ['call_potion'],
             "Hello Agent, welcome to NetHack!": ['start_message'],
@@ -115,10 +113,6 @@ class Senses:
             self.kernel().log("Found a prompt we can't handle: %s" % self.kernel().top_line())
             self.kernel().send(" ")
             self.kernel().dontUpdate()
-
-    def no_poly(self):
-        if self.kernel().hero.isEngulfed:
-            self.kernel().hero.isPolymorphed = False
 
     def got_expelled(self):
         self.kernel().log("Got expelled. Phew!")
