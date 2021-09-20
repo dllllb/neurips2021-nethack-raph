@@ -64,6 +64,7 @@ class Senses:
             "Continue eating\? .*": ['stop_eating'],
             "You see no objects here.": ['nothing_found'],
             "You can't write on the .*": ['cant_write'],
+            "You are hit.*": ['you_was_hit'],
         }
 
     def update(self):
@@ -358,6 +359,13 @@ class Senses:
     def cant_write(self, msg):
         if self.kernel().curTile().char is None:
             self.kernel().curTile().char = '{'
+
+    def you_was_hit(self, msg):
+        if self.kernel().curTile().has_elbereth:
+            # you was hit, possible from distance, elbereth doesn't protect you
+            for tile in self.kernel().curLevel().tiles:
+                if tile.monster:
+                    tile.monster.respect_elbereth = False
 
     def parse_messages(self):
         for msg in self.messages:
