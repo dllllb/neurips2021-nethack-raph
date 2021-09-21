@@ -22,4 +22,4 @@ class Pray:
 
     def execute(self, path):
         self.prev_pray = self.kernel().hero.turns
-        self.kernel().send('#pray\ry')
+        self.kernel().hero.pray()

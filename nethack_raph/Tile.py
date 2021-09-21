@@ -22,12 +22,8 @@ class Tile(Findable):
 
     dngGlyphsToExplore = (
         2359,  # either unexplored or solid stone
-        2371,  # doorway (with no door)
-        2372,  # open door
-        2373,  # open door
         2379,  # dark part of a room
         2380,  # corridor
-        2381,  # lit corridor
     )
 
     def __init__(self, y, x, level, kernel):
@@ -56,6 +52,7 @@ class Tile(Findable):
         self.shopkeepDoor = False
         self.is_door = False
 
+        self.has_elbereth = False
         self.kernel = kernel
 
     def coords(self):

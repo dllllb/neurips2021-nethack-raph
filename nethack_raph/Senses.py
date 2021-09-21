@@ -19,7 +19,7 @@ class Senses:
             "Things that are here":                                          ['found_items'],
             "There are (several|many) objects here":                         ['found_items'],
             "There's some graffiti on the floor here":                       ['graffiti_on_floor'],
-            "You read: (.*?)":                                               ['graffiti_on_floor'],
+            "You read: \"(.*?)\"":                                           ['you_read'],
             "Velkommen, [^,]+!":                                             ['shop_entrance'],
             ".*elcome to .* (store|dealership|bookstore|emporium|outlet|delicatessen|jewelers|accessories|hardware|books|food|lighting).*":  ['shop_entrance'],
             "There is an open door here":                                    ['open_door_here'],
@@ -61,6 +61,10 @@ class Senses:
             "Call a (.+) potion": ['call_potion'],
             "Hello Agent, welcome to NetHack!": ['start_message'],
             "You kill .*": ["killed_monster"],
+            "Continue eating\? .*": ['stop_eating'],
+            "You see no objects here.": ['nothing_found'],
+            "You can't write on the .*": ['cant_write'],
+            "You are hit.*": ['you_was_hit'],
         }
 
     def update(self):
@@ -93,11 +97,18 @@ class Senses:
             self.kernel().dontUpdate()
 
         match = self.kernel().searchTop(r"What do you want to eat\? \[(.*) or \?\*\]")
-        match2 = self.kernel().searchTop(r".* eat .*\? \[ynq\] \(n\)")
         if match:
             self.eat(match)
-        elif match2:
+            return
+        elif self.kernel().searchTop(r".* eat .*\? \[ynq\] \(n\)"):
             self.eat_it(self.kernel().top_line())
+            return
+        elif self.kernel().searchTop(r"What do you want to write in the dust here\?"):
+            self.kernel().send('Elbereth\r')
+            return
+        elif self.kernel().searchTop(r"Do you want to add to the current engraving\? \[ynq\] \(y\)"):
+            self.kernel().send('n')
+            return
         elif self.kernel().searchTop("What do you want to wear\? \[\*\]"):
             self.what_to_wear()
         elif self.kernel().searchTop("\? \[(.*?)\]"):
@@ -203,6 +214,14 @@ class Senses:
             self.kernel().send('y')
 
         # self.kernel().dontUpdate()
+
+    def stop_eating(self, msg):
+        # probably ate something wrong
+        self.kernel().log('not edible: eating aborted')
+        self.kernel().send('n')
+        for item in self.kernel().curTile().items:
+            if item.char == '%':
+                item.is_food = False
 
     def no_door(self):
         if self.kernel().hero.lastActionedTile:
@@ -330,6 +349,24 @@ class Senses:
         for item in self.kernel().hero.lastActionedTile.items:
             if item.corpse:  # FIXME (nikita) check glyph of killed monster
                 item.turn_of_death = self.kernel().hero.turns
+
+    def you_read(self, match):
+        self.kernel().log(f'YOU READ {match.groups()[0]}')
+        self.kernel().curTile().has_elbereth = match.groups()[0] == 'Elbereth'
+
+    def nothing_found(self):
+        self.kernel().curTile().items = []
+
+    def cant_write(self, msg):
+        if self.kernel().curTile().char is None:
+            self.kernel().curTile().char = '{'
+
+    def you_was_hit(self, msg):
+        if self.kernel().curTile().has_elbereth:
+            # you was hit, possible from distance, elbereth doesn't protect you
+            for tile in self.kernel().curLevel().tiles:
+                if tile.monster:
+                    tile.monster.respect_elbereth = False
 
     def parse_messages(self):
         for msg in self.messages:

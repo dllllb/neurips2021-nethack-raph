@@ -101,6 +101,26 @@ class Hero:
         self.kernel().send("e")
         self.lastAction = 'eat_from_inventory'
 
+    def read(self):
+        self.kernel().log("Hero::read")
+        self.kernel().send(":")
+        self.lastAction = 'read'
+
+    def write(self):
+        self.kernel().log("Hero::write in the dust")
+        self.kernel().send('E-')
+        self.lastAction = 'write'
+
+    def engrave(self):
+        self.kernel().log("Hero::engrave")
+        self.kernel().send('E')
+        self.lastAction = 'engrave'
+
+    def pray(self):
+        self.kernel().log("Hero::pray")
+        self.kernel().send('#pray\ry')
+        self.lastAction = 'pray'
+
     def canPickupHeavy(self):
         # for poly and stuff
         return False

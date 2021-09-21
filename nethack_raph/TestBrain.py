@@ -7,17 +7,17 @@ class TestBrain(Brain):
         Brain.__init__(self, "TestBrain", kernel)
 
         self.actions = [
+                            RestoreHP(kernel),
                             AttackMonster(kernel),
                             EatFromInventory(kernel),
                             Eat(kernel),
                             Pray(kernel),
                             # WearArmor(kernel),
                             FixStatus(kernel),
-                            RestoreHP(kernel),
                             Explore(kernel),
                             OpenDoors(kernel),
                             # [DipForExcalibur(), 1600],
-                            #[GetPhatz(),        1500],
+                            # [GetPhatz(),        1500],
                             Descend(kernel),
                             SearchSpot(kernel),
                             Search(kernel),

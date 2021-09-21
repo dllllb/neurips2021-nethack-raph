@@ -60,7 +60,8 @@ class Item(Findable):
             self.corpse = True
             monster_corpse = MONSTERS_GLOSSARY[self.glyph - 1144]['corpse']
 
-            if self.kernel().hero.race == monster_corpse['cannibal']:  # cannibalism
+            if monster_corpse['cannibal'] and self.kernel().hero.race in (None, monster_corpse['cannibal']):
+                # cannibalism. If we doesn't know the race it is cannibalism for any monster that can be cannibalised
                 self.kernel().log("%s is not an edible corpse." % self)
                 return False
 
