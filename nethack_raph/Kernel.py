@@ -44,6 +44,7 @@ class Kernel:
         self.state = None
         self.bot = None
         self.top = None
+        self.tty_chars = None
         self.inv_strs = None
         self.inv_letters = None
         self.inv_oclasses = None
@@ -75,7 +76,7 @@ class Kernel:
     def get_row_line(self, row):
         if row < 1 or row > 24:
             return ""
-        return bytes(self.state[0][row]).decode('ascii')
+        return self.tty_chars[row * WIDTH: (row + 1) * WIDTH]
 
     def get_inventory_letter(self, inv_name):
         for letter, descr in zip(self.inv_letters, self.inv_strs):
@@ -91,8 +92,8 @@ class Kernel:
         self.state[2][1: -2, :-1] = obs['glyphs']
 
         # extract the top and the bottom lines
-        tty_chars = bytes(self.state[0]).decode('ascii')  # flattens 24x80
-        self.top, self.bot = tty_chars[:WIDTH], tty_chars[22*WIDTH:]
+        self.tty_chars = bytes(obs['tty_chars']).decode('ascii')  # flattens 24x80
+        self.top, self.bot = self.tty_chars[:WIDTH], self.tty_chars[22*WIDTH:]
 
         # parse the inventory
         inv_letters = obs['inv_letters'].view('c')  # uint8 to bytes
