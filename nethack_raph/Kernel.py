@@ -89,11 +89,15 @@ class Kernel:
         self.state = np.zeros((3, HEIGHT, WIDTH), dtype=np.uint16)
         self.state[0] = obs['tty_chars']
         self.state[1] = obs['tty_colors']
-        self.state[2][1: -2, :-1] = obs['glyphs']
 
-        # extract the top and the bottom lines
+        self.state[0][1: -2, :-1] = obs['chars']
+        self.state[1][1: -2, :-1] = obs['colors']
+        self.state[2][1: -2, :-1] = obs['glyphs']
+        self.top = bytes(obs['message'][obs['message'].nonzero()]).decode('ascii')
+
+        # extract the the bottom lines
         self.tty_chars = bytes(obs['tty_chars']).decode('ascii')  # flattens 24x80
-        self.top, self.bot = self.tty_chars[:WIDTH], self.tty_chars[22*WIDTH:]
+        self.bot = self.tty_chars[22*WIDTH:]
 
         # parse the inventory
         inv_letters = obs['inv_letters'].view('c')  # uint8 to bytes
@@ -104,14 +108,6 @@ class Kernel:
         self.inv_letters = inv_letters[index].astype(str)
         self.inv_oclasses = obs['inv_oclasses'][index]
 
-        # this checks for a foreground overlay message
-        if np.any(self.state[0][1:-2, :DUNGEON_WIDTH - 1] != obs['chars']):
-            return ' '
-
-        if len(self.action) != 0:
-            self.action = self.action[1:]
-
-        # self.frame_buffer.parse(obs)
         if self.verbose:
             TTY_BRIGHT = 8
             for y in range(0, HEIGHT):
@@ -119,7 +115,13 @@ class Kernel:
                     ch = self.state[0][y, x]
                     color = 30 + int(self.state[1][y, x] & ~TTY_BRIGHT)
                     self.stdout("\x1b[%dm\x1b[%d;%dH%c" % (color, y+1, x+1, ch))
-            self.logScreen()
+            self.log_screen(chars=self.state[0][1:-2, :DUNGEON_WIDTH - 1], log=self._frames_log)
+
+        if len(self.action) != 0:
+            self.action = self.action[1:]
+
+        if self.action:
+            return self.action
 
         # TODO: use them
         #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, condition
@@ -144,25 +146,22 @@ class Kernel:
         if self.searchBot("the Werejackal"):
             self.hero.isPolymorphed = True
 
-        # FIXME --more-- in the middle
-        #if tty_chars.find('--More--') >= 0:
-        #    self.action += ' '
-        #    return self.action
-
         self.log("Updates starting: \n\n")
         self.log("--------- DUNGEON ---------")
 
         self.dungeon.update()
-        if len(self.action):
-            return self.action
+        assert len(self.action) == 0
+
+        # this checks for a foreground overlay message
+        if obs['misc'][2]:
+            self.action += ' '
 
         self.log("--------- SENSES --------- ")
         self.senses.update()
-        if len(self.action):
-            return self.action
 
         self.log("-------- MESSAGES -------- ")
         self.senses.parse_messages()
+
         if len(self.action):
             return self.action
 
@@ -214,19 +213,17 @@ class Kernel:
         # self.Personality.dontUpdate()
         # self.Senses.dontUpdate()
 
-    def logScreen(self):
+    def log_screen(self, chars, log):
         if not self.verbose:
             return
 
-        for y in range(0, HEIGHT):
-            self._frames_log.write("\n")
-            for x in range(0, WIDTH):
-                if y == HEIGHT-1 and x > WIDTH-5:
-                    break
-                self._frames_log.write(chr(self.state[0][y,x]))
+        for row in chars:
+            log.write("\n")
+            for ch in row:
+                log.write(chr(ch))
         if self.dungeon.curBranch:
-            self._frames_log.write(str(self.curTile().coords()))
-        self._frames_log.flush()
+            log.write(str(self.curTile().coords()))
+        log.flush()
 
     def stdout(self, msg):
         if self.verbose:
