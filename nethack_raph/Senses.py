@@ -68,12 +68,10 @@ class Senses:
         }
 
     def update(self):
-        top = self.kernel().top_line().replace("--More--", "")
+        # XXX this is where the top line is used, can we reuse the message?
+        top = self.kernel().top_line()
         self.messages = self.messages + top.strip().split("  ")
         self.kernel().log(str(self.messages))
-
-        if '--More--' in self.kernel().top_line():
-            self.kernel().send(' ')
 
         if self.kernel().searchTop("Things that are here:"):
             self.kernel().log("Found some items. (Row 3)")
@@ -345,6 +343,9 @@ class Senses:
         self.kernel().log(str(self.messages))
 
     def killed_monster(self, msg):
+        if not self.kernel().hero.lastActionedTile or not self.kernel().hero.lastActionedTile.items:
+            return
+
         for item in self.kernel().hero.lastActionedTile.items:
             if item.corpse:  # FIXME (nikita) check glyph of killed monster
                 item.turn_of_death = self.kernel().hero.turns

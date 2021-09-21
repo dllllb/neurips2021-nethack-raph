@@ -6,15 +6,13 @@ import numpy as np
 class Pray:
     def __init__(self, kernel):
         self.kernel = kernel
+        self.prev_pray = -1000
 
     def can(self):
-        if self.kernel().hero.hunger < 3:
-            # count turns would be better
-            self.kernel().hero.god_is_angry = False
+        if self.kernel().hero.turns - self.prev_pray < 1000:
             return False, np.zeros((HEIGHT, WIDTH))
 
-        # set by senses
-        if self.kernel().hero.god_is_angry:
+        if self.kernel().hero.hunger < 3 and self.kernel().hero.curhp > 6:
             return False, np.zeros((HEIGHT, WIDTH))
 
         return True, np.ones((HEIGHT, WIDTH))

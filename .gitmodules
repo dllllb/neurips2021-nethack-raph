@@ -1,0 +1,3 @@
+[submodule "nle_toolbox"]
+	path = nle_toolbox
+	url = https://github.com/ivannz/nle_toolbox.git
