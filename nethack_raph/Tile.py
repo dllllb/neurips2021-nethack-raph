@@ -28,7 +28,11 @@ class Tile(Findable):
         2373,  # open door
         2371,  # doorway (with no door)
     )
-    wereCreaturesGlyphs = (15, 21, 90)
+    wereCreaturesGlyphs = (
+        15,  # werejackal
+        21,  # werewolf
+        90,  # wererat
+    )
 
     def __init__(self, y, x, level, kernel):
         Findable.__init__(self)

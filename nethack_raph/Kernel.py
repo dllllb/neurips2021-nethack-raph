@@ -147,8 +147,8 @@ class Kernel:
             self.last_turn_update, self.turns = self.steps, self.hero.turns
         if self.steps - self.last_turn_update > 30:
             self.log("Looks like we're stuck in some kind of loop")
-            # self.action = '\x1b10s'
-            # return self.action
+            self.action = '\x1b10s'
+            return self.action
 
         self.log(f'# of steps: {self.steps}, turns: {self.turns}')
 
