@@ -24,6 +24,9 @@ class Tile(Findable):
         2359,  # either unexplored or solid stone
         2379,  # dark part of a room
         2380,  # corridor
+        2372,  # open door
+        2373,  # open door
+        2371,  # doorway (with no door)
     )
 
     def __init__(self, y, x, level, kernel):

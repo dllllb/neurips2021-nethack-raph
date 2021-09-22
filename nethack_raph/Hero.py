@@ -125,9 +125,6 @@ class Hero:
         # for poly and stuff
         return False
 
-    def canOpen(self, tile):
-        return not tile.shopkeepDoor and tile.is_door and (tile.locked or self.kernel().hero.legShape) and tile.isAdjacent(self.kernel().curTile())
-
     def _get_direction(self, source, target):
         if abs(source.y - target.y) > 1 or abs(source.x - target.x) > 1:
             self.kernel().die(f"\n\nAsked for directions to a nonadjacent tile {source} -> {target}\n\n")

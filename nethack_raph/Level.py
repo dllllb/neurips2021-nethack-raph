@@ -34,7 +34,7 @@ class Level:
         return ret
 
     def findDoors(self):
-        return [tile for tile in self.tiles if tile.is_door]
+        return [tile for tile in self.tiles if tile.is_door and not tile.shopkeepDoor]
 
     def find_food(self):
         return [tile for tile in self.tiles for item in tile.items if item.is_food and not item.is_tainted()]

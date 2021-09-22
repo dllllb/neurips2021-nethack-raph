@@ -129,11 +129,9 @@ class Senses:
         self.kernel().hero.isEngulfed = True
 
     def shopkeep_door(self):
-        #FIXME exception [tile for tile in self.kernel().curTile().neighbours() if tile.is_door][0]
         for tile in self.kernel().curTile().neighbours():
             if tile.is_door:
                 tile.shopkeepDoor = True
-                break
 
     def locked_door(self):
         if self.kernel().hero.lastActionedTile and self.kernel().hero.lastActionedTile.is_door:
