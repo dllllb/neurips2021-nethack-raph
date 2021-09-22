@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import HEIGHT, WIDTH, COLOR_BG_CYAN
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH, COLOR_BG_CYAN
 
 import numpy as np
 
@@ -8,7 +8,7 @@ class OpenDoors:
         self.kernel = kernel
 
     def can(self):
-        goal_coords = np.zeros((HEIGHT, WIDTH))
+        goal_coords = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
         self.kernel().log("Looking for any doors on level..")
 

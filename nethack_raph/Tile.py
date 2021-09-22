@@ -175,7 +175,7 @@ class Tile(Findable):
         for x, y in ((-1, 0), (1, 0), (0, -1), (0, 1)):
             if x + self.x < 0 or x + self.x >= DUNGEON_WIDTH or y + self.y < 0 or y + self.y >= DUNGEON_HEIGHT:
                 continue
-            tile = self.level.tiles[(x + self.x) + (y + self.y) * WIDTH]
+            tile = self.level.tiles[(x + self.x) + (y + self.y) * DUNGEON_WIDTH]
             if find is None or tile.find(find):
                 ret.append(tile)
         return ret
@@ -188,7 +188,7 @@ class Tile(Findable):
         for x, y in ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)):
             if x + self.x < 0 or x + self.x >= DUNGEON_WIDTH or y + self.y < 0 or y + self.y >= DUNGEON_HEIGHT:
                 continue
-            tile = self.level.tiles[x + self.x + (y + self.y) * WIDTH]
+            tile = self.level.tiles[x + self.x + (y + self.y) * DUNGEON_WIDTH]
             ret.append(tile)
         return ret
 

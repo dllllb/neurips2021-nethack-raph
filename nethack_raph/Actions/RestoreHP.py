@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import HEIGHT, WIDTH
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
 
 import numpy as np
 
@@ -12,7 +12,7 @@ class RestoreHP:
         if self.kernel().hero.curhp < self.kernel().hero.maxhp / 2:
             if self.kernel().curTile().char in ['{', '}']:
                 # can't write on the fountains
-                return False, np.zeros((HEIGHT, WIDTH))
+                return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
             if self.kernel().hero.blind or self.kernel().hero.confused:
                 # too hard to write while blinded or confused
@@ -24,7 +24,7 @@ class RestoreHP:
             ))
             if neib_monsters:
                 self.kernel().log("Beware, there is a monster nearby, that doesn't respect elbereth")
-                return False, np.zeros((HEIGHT, WIDTH))
+                return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
             neib_monsters = list(filter(
                 lambda t: t.monster and t.monster.isAttackable(),
@@ -32,11 +32,11 @@ class RestoreHP:
             ))
             if neib_monsters and self.kernel().hero.lastAction == 'read' and self.kernel().curTile().has_elbereth:
                 self.kernel().log("We are staying on elbereth sign, there is a monster nearby, let's attack him")
-                return False, np.zeros((HEIGHT, WIDTH))
+                return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-            return True, np.ones((HEIGHT, WIDTH))
+            return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        return False, np.zeros((HEIGHT, WIDTH))
+        return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
     def after_search(self, path):
         pass

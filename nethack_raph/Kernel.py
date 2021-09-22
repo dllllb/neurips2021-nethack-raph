@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import *
+from nethack_raph.myconstants import TTY_WIDTH, TTY_HEIGHT, TTY_BRIGHT, DUNGEON_WIDTH
 from nethack_raph.TermColor import TermColor
 from nethack_raph.Personality import Personality
 from nethack_raph.Senses import Senses
@@ -59,7 +59,7 @@ class Kernel:
         return self.dungeon.curBranch.curLevel
 
     def curTile(self):
-        return self.dungeon.curBranch.curLevel.tiles[self.hero.x + self.hero.y*WIDTH]
+        return self.dungeon.curBranch.curLevel.tiles[self.hero.x + self.hero.y * DUNGEON_WIDTH]
 
     def searchBot(self, regex):
         return re.search(regex, self.bot)
@@ -76,7 +76,7 @@ class Kernel:
     def get_row_line(self, row):
         if row < 1 or row > 24:
             return ""
-        return self.tty_chars[row * WIDTH: (row + 1) * WIDTH]
+        return self.tty_chars[row * TTY_WIDTH: (row + 1) * TTY_WIDTH]
 
     def get_inventory_letter(self, inv_name):
         for letter, descr in zip(self.inv_letters, self.inv_strs):
@@ -86,18 +86,15 @@ class Kernel:
         return ' '
 
     def step(self, obs):
-        self.state = np.zeros((3, HEIGHT, WIDTH), dtype=np.uint16)
+        self.state = np.zeros((3, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
         self.state[0] = obs['tty_chars']
         self.state[1] = obs['tty_colors']
 
-        self.state[0][1: -2, :-1] = obs['chars']
-        self.state[1][1: -2, :-1] = obs['colors']
-        self.state[2][1: -2, :-1] = obs['glyphs']
         self.top = bytes(obs['message'][obs['message'].nonzero()]).decode('ascii')
 
         # extract the the bottom lines
         self.tty_chars = bytes(obs['tty_chars']).decode('ascii')  # flattens 24x80
-        self.bot = self.tty_chars[22*WIDTH:]
+        self.bot = self.tty_chars[22 * TTY_WIDTH:]
 
         # parse the inventory
         inv_letters = obs['inv_letters'].view('c')  # uint8 to bytes
@@ -110,12 +107,12 @@ class Kernel:
 
         if self.verbose:
             TTY_BRIGHT = 8
-            for y in range(0, HEIGHT):
-                for x in range(0, WIDTH):
+            for y in range(0, TTY_HEIGHT):
+                for x in range(0, TTY_WIDTH):
                     ch = self.state[0][y, x]
                     color = 30 + int(self.state[1][y, x] & ~TTY_BRIGHT)
                     self.stdout("\x1b[%dm\x1b[%d;%dH%c" % (color, y+1, x+1, ch))
-            self.log_screen(chars=self.state[0][1:-2, :DUNGEON_WIDTH - 1], log=self._frames_log)
+            self.log_screen(chars=self.state[0], log=self._frames_log)
 
         if len(self.action) != 0:
             self.action = self.action[1:]
@@ -149,7 +146,7 @@ class Kernel:
         self.log("Updates starting: \n\n")
         self.log("--------- DUNGEON ---------")
 
-        self.dungeon.update()
+        self.dungeon.update(bytes(obs['chars']).decode('ascii'), obs['colors'].flat, obs['glyphs'].flat)
         assert len(self.action) == 0
 
         # this checks for a foreground overlay message
