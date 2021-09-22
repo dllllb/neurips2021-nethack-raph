@@ -50,6 +50,7 @@ class Tile(Findable):
         self.searched = False
 
         self.inShop = False
+        self.walk_cost = 1
 
         self.locked = False
         self.shopkeepDoor = False
@@ -120,12 +121,15 @@ class Tile(Findable):
                 else:
                     self.char = '|'
                 self.color = TermColor(33, 0, False, False)
-
             #self.kernel().log("Found monster:%s, Color: %s, at (%d,%d). Tile is now: %s" % (str(self.monster), str(color), self.y, self.x, str(self)))
+
         else:
             self.char = char
-            return #FIXME DIMA
-            self.kernel().die("Couldn't parse tile: " + char)
+            # self.kernel().die("Couldn't parse tile: " + char)
+
+        self.walk_cost = Tile.walkables.get(self.char, 1)
+        if self.monster and not self.monster.pet:
+            self.walk_cost += 100
 
     def appearance(self):
         if self.monster:
@@ -136,20 +140,17 @@ class Tile(Findable):
             return self.char
 
     def isDoor(self):
+        # TODO: (nikita) calculate it once for each tile in setTile
         return (self.char == '-' or self.char == '|') and self.color.getId() == COLOR_BROWN
 
     def isWalkable(self): #TODO: Shops might be good to visit sometime ..:)
-#        if not self.adjacent({'explored': True}):
-#            return False
         if self.inShop:
             return False
 
         if not self.char:
-            return not (self.monster and not self.monster.pet) and self.walkable
+            return self.walkable
         else:
-            if self.isDoor():
-                return not (self.monster and not self.monster.pet)
-            return not (self.monster and not self.monster.pet) and self.char in Tile.walkables.keys() and self.walkable
+            return (self.char in Tile.walkables.keys() and self.walkable) or self.isDoor()
 
     def walkableNeighbours(self):
         ret = []

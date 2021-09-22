@@ -14,6 +14,10 @@ class RestoreHP:
                 # can't write on the fountains
                 return False, np.zeros((HEIGHT, WIDTH))
 
+            if self.kernel().hero.blind or self.kernel().hero.confused:
+                # too hard to write while blinded or confused
+                return False, np.zeros((HEIGHT, WIDTH))
+
             neib_monsters = list(filter(
                 lambda t: t.monster and t.monster.isAttackable() and not t.monster.respect_elbereth,
                 self.kernel().curLevel().tiles
