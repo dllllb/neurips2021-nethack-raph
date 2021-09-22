@@ -10,6 +10,7 @@ class Hero:
         self.tmpCount = 0
 
         self.blind = False
+        self.confused = False
         self.legShape = True
 
         self.inBearTrap = False

@@ -276,7 +276,7 @@ class Senses:
         while buf:
             for tile in buf.pop().neighbours():
                 # This could break once a year or so (if a monster is standing in a non-shop square after you login?)
-                if (tile.char == '.' or tile.monster or tile.items) and not tile.inShop:
+                if (tile.char == '.' or (tile.monster and not tile.monster.pet) or tile.items) and not tile.inShop:
                     buf.append(tile)
 
                     self.kernel().log("Setting %s to be inside a shop." % tile)
@@ -363,7 +363,7 @@ class Senses:
         if self.kernel().curTile().has_elbereth:
             # you was hit, possible from distance, elbereth doesn't protect you
             for tile in self.kernel().curLevel().tiles:
-                if tile.monster:
+                if tile.monster and not tile.monster.pet:
                     tile.monster.respect_elbereth = False
 
     def parse_messages(self):
