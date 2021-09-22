@@ -3,6 +3,28 @@ from nethack_raph.Monster import *
 from nethack_raph.TermColor import *
 from nethack_raph.Findable import *
 
+import numpy as np
+
+
+def calc_neighbours():
+    offset = np.array(((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)), dtype=np.int)
+    result = []
+    for y in range(DUNGEON_HEIGHT):
+        result.append([])
+        for x in range(DUNGEON_WIDTH):
+            coords = (np.array(((y, x),), dtype=np.int) + offset).T
+            (ids,) = np.where(
+                (coords[0] < DUNGEON_HEIGHT) &
+                (coords[0] >= 0) &
+                (coords[1] < DUNGEON_WIDTH) &
+                (coords[1] >= 0)
+            )
+            result[y].append(coords[1][ids] + coords[0][ids] * DUNGEON_WIDTH)
+    return result
+
+
+_NEIGHBOURS = calc_neighbours()
+
 
 class Tile(Findable):
     dngFeatures = ['.', '}', '{', '#', '<', '>', '+', '^', '|', '-', '~', ' ']
@@ -184,13 +206,7 @@ class Tile(Findable):
         return [tile for tile in self.neighbours() if tile.find(find)]
 
     def neighbours(self):
-        ret = []
-        for x, y in ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)):
-            if x + self.x < 0 or x + self.x >= DUNGEON_WIDTH or y + self.y < 0 or y + self.y >= DUNGEON_HEIGHT:
-                continue
-            tile = self.level.tiles[x + self.x + (y + self.y) * DUNGEON_WIDTH]
-            ret.append(tile)
-        return ret
+        return self.level.tiles[_NEIGHBOURS[self.y][self.x]]
 
     def isHero(self):
         return self.coords() == self.kernel().curTile().coords()

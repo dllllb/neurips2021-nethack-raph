@@ -16,7 +16,7 @@ class RestoreHP:
 
             if self.kernel().hero.blind or self.kernel().hero.confused:
                 # too hard to write while blinded or confused
-                return False, np.zeros((HEIGHT, WIDTH))
+                return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
             neib_monsters = list(filter(
                 lambda t: t.monster and t.monster.isAttackable() and not t.monster.respect_elbereth,
