@@ -86,7 +86,7 @@ class Kernel:
         return ' '
 
     def step(self, obs):
-        self.state = np.zeros((3, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
+        self.state = np.zeros((2, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
         self.state[0] = obs['tty_chars']
         self.state[1] = obs['tty_colors']
 
