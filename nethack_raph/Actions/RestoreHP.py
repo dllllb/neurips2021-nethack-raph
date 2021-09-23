@@ -14,8 +14,8 @@ class RestoreHP:
                 # can't write on the fountains
                 return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-            if self.kernel().hero.blind or self.kernel().hero.confused:
-                # too hard to write while blinded or confused
+            if self.kernel().hero.blind or self.kernel().hero.confused or self.kernel().hero.isEngulfed or self.kernel().hero.isLycanthropy:
+                # too hard to write while blinded or confused etc.
                 return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
             neib_monsters = list(filter(

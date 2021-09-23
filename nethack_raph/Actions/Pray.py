@@ -12,7 +12,7 @@ class Pray:
         if self.kernel().hero.turns - self.prev_pray < 1000:
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        if self.kernel().hero.hunger < 3 and self.kernel().hero.curhp > 6:
+        if self.kernel().hero.hunger < 3 and self.kernel().hero.curhp > 6 and not self.kernel().hero.isLycanthropy:
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
         return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))

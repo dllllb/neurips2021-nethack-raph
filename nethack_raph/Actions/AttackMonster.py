@@ -41,6 +41,7 @@ class AttackMonster:
 
             if self.kernel().hero.isEngulfed:
                 self.kernel().hero.attack(self.kernel().curTile().neighbours()[0])
+                return
 
             self.kernel().log('monster is absent')
             self.kernel().send(' ')
