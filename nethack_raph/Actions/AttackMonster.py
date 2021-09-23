@@ -9,13 +9,13 @@ class AttackMonster:
     def can(self):
         if self.kernel().hero.isEngulfed:
             self.kernel().log("Attacking while engulfed..")
-            return True, np.ones((HEIGHT, WIDTH))
+            return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
 
         # O(n)
         monsters = self.kernel().curLevel().findAttackableMonsters()
         self.kernel().log(f"We found {len(monsters)} monsters")
-        target_tiles = np.zeros((HEIGHT, WIDTH))
+        target_tiles = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
         # O(n)
         found_monsters = False

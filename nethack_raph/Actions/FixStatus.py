@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import HEIGHT, WIDTH
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
 
 import numpy as np
 
@@ -8,9 +8,9 @@ class FixStatus:
         self.kernel = kernel
 
     def can(self):
-        if self.kernel().hero.blind or self.kernel().hero.isLycanthropy:
-            return True, np.ones((HEIGHT, WIDTH))
-        return False, np.zeros((HEIGHT, WIDTH))
+        if self.kernel().hero.blind or self.kernel().hero.isPolymorphed:
+            return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
     def after_search(self, path):
         pass

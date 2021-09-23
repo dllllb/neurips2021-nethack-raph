@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import HEIGHT, WIDTH
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
 
 import numpy as np
 
@@ -10,12 +10,12 @@ class Pray:
 
     def can(self):
         if self.kernel().hero.turns - self.prev_pray < 1000:
-            return False, np.zeros((HEIGHT, WIDTH))
+            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        if self.kernel().hero.hunger >= 3 or self.kernel().hero.curhp <= 5 or self.kernel().hero.isLycanthropy:
-            return True, np.ones((HEIGHT, WIDTH))
+        if self.kernel().hero.hunger < 3 and self.kernel().hero.curhp > 6:
+            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        return False, np.zeros((HEIGHT, WIDTH))
+        return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
     def after_search(self, path):
         pass

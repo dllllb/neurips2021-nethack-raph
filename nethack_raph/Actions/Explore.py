@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import HEIGHT, WIDTH, COLOR_BG_BLUE
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH, COLOR_BG_BLUE
 
 import numpy as np
 
@@ -8,7 +8,7 @@ class Explore:
         self.kernel = kernel
 
     def can(self):
-        goal_coords = np.zeros((HEIGHT, WIDTH))
+        goal_coords = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
         if self.kernel().curLevel().explored:
             self.kernel().log("Level is explored.")

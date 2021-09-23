@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import HEIGHT, WIDTH
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
 
 import numpy as np
 
@@ -8,7 +8,7 @@ class WearArmor:
         self.kernel = kernel
 
     def can(self):
-        armor_tiles = np.zeros((HEIGHT, WIDTH))
+        armor_tiles = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
         found_armor = False
         for armor in filter(lambda t: sum([item.char == '[' and item.name != 'absent' for item in t.items]), self.kernel().curLevel().tiles):
             armor_tiles[armor.coords()] = True

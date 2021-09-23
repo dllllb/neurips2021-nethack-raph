@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import HEIGHT, WIDTH, COLOR_BG_YELLOW
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH, COLOR_BG_YELLOW
 
 import numpy as np
 
@@ -8,7 +8,7 @@ class Search:
         self.kernel = kernel
 
     def can(self):
-        target_tiles = np.zeros((HEIGHT, WIDTH))
+        target_tiles = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
         found = False
 
         self.kernel().log("Finding possible searchwalktos")
