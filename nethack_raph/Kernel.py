@@ -50,7 +50,6 @@ class Kernel:
         self.inv_oclasses = None
 
         self.steps = 0
-        self.turns = 0
         self.last_turn_update = 0
 
     def set_verbose(self, value):
@@ -129,6 +128,13 @@ class Kernel:
         # TODO: use them
         #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, condition
 
+        if self.hero.turns != obs['blstats'][20]:
+            self.last_turn_update = self.steps
+        if self.steps - self.last_turn_update > 30:
+            self.log("Looks like we're stuck in some kind of loop")
+            self.action = '\x1b10s'
+            return self.action
+
         self.hero.x, self.hero.y, strength_percentage, \
             self.hero.str, self.hero.dex, self.hero.con, \
             self.hero.int, self.hero.wis, self.hero.cha, \
@@ -139,13 +145,6 @@ class Kernel:
             self.hero.hunger, carrying_capacity, dungeon_number, \
             level_number, condition = obs['blstats']
         # condition (aka `unk`) == 64 -> Deaf
-
-        if self.turns != self.hero.turns:
-            self.last_turn_update, self.turns = self.steps, self.hero.turns
-        if self.steps - self.last_turn_update > 30:
-            self.log("Looks like we're stuck in some kind of loop")
-            self.action = '\x1b10s'
-            return self.action
 
         self.log(f'# of steps: {self.steps}, turns: {self.turns}')
 
