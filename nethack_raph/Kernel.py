@@ -146,7 +146,7 @@ class Kernel:
             level_number, condition = obs['blstats']
         # condition (aka `unk`) == 64 -> Deaf
 
-        self.log(f'# of steps: {self.steps}, turns: {self.turns}')
+        self.log(f'# of steps: {self.steps}, turns: {self.hero.turns}')
 
         self.hero.blind = self.searchBot("Blind")
         self.hero.confused = self.searchBot("Conf")
