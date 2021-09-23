@@ -15,11 +15,11 @@ class TestBrain(Brain):
                             # WearArmor(kernel),
                             FixStatus(kernel),
                             Explore(kernel),
-                            SearchSpot(kernel),
                             OpenDoors(kernel),
                             # [DipForExcalibur(), 1600],
                             # [GetPhatz(),        1500],
                             Descend(kernel),
+                            SearchSpot(kernel),
                             Search(kernel),
                             RandomWalk(kernel),
                        ]
