@@ -8,6 +8,7 @@ class Hero:
         self.y = None
         self.beforeMove = None
         self.tmpCount = 0
+        self.turns = 0
 
         self.blind = False
         self.confused = False
@@ -16,7 +17,7 @@ class Hero:
         self.inBearTrap = False
         self.inPit = False
         self.isEngulfed = False
-        self.isPolymorphed = False
+        self.isLycanthropy = False
 
         self.hunger = None
         self.god_is_angry = False
@@ -40,7 +41,7 @@ class Hero:
         self.lastAction = 'attack'
 
     def move(self, tile):
-        if self.beforeMove == (self.x,self.y) and self.tmpCount < 5 and not (self.inBearTrap or self.inPit):
+        if self.beforeMove == (self.x, self.y) and self.tmpCount < 5 and not (self.inBearTrap or self.inPit):
             self.kernel().log("Hero asked to move, but I still havn't moved after last update, ignoring this")
             self.tmpCount = self.tmpCount + 1
         else:

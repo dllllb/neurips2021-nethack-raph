@@ -49,6 +49,9 @@ class Kernel:
         self.inv_letters = None
         self.inv_oclasses = None
 
+        self.steps = 0
+        self.last_turn_update = 0
+
     def set_verbose(self, value):
         if not self.verbose and value:
             self._file = open("logs/log.txt", "w")
@@ -86,6 +89,8 @@ class Kernel:
         return ' '
 
     def step(self, obs):
+        self.steps += 1
+
         self.state = np.zeros((2, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
         self.state[0] = obs['tty_chars']
         self.state[1] = obs['tty_colors']
@@ -123,6 +128,13 @@ class Kernel:
         # TODO: use them
         #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, condition
 
+        if self.hero.turns != obs['blstats'][20]:
+            self.last_turn_update = self.steps
+        if self.steps - self.last_turn_update > 30:
+            self.log("Looks like we're stuck in some kind of loop")
+            self.action = '\x1b10s'
+            return self.action
+
         self.hero.x, self.hero.y, strength_percentage, \
             self.hero.str, self.hero.dex, self.hero.con, \
             self.hero.int, self.hero.wis, self.hero.cha, \
@@ -132,16 +144,12 @@ class Kernel:
             self.hero.xp, self.hero.xp_next, self.hero.turns, \
             self.hero.hunger, carrying_capacity, dungeon_number, \
             level_number, condition = obs['blstats']
-
         # condition (aka `unk`) == 64 -> Deaf
 
-        if self.searchBot("Blind"):
-            self.hero.blind = True
-        else:
-            self.hero.blind = False
+        self.log(f'# of steps: {self.steps}, turns: {self.hero.turns}')
 
-        if self.searchBot("the Werejackal"):
-            self.hero.isPolymorphed = True
+        self.hero.blind = self.searchBot("Blind")
+        self.hero.confused = self.searchBot("Conf")
 
         self.log("Updates starting: \n\n")
         self.log("--------- DUNGEON ---------")

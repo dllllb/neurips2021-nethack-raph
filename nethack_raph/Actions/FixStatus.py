@@ -8,7 +8,7 @@ class FixStatus:
         self.kernel = kernel
 
     def can(self):
-        if self.kernel().hero.blind or self.kernel().hero.isPolymorphed:
+        if self.kernel().hero.blind or self.kernel().hero.isLycanthropy:
             return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
         return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 

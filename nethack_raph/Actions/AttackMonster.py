@@ -33,10 +33,16 @@ class AttackMonster:
         self.kernel().log(f'len path: {len(path)}')
         if len(path) == 1:
             assert path[0] == self.kernel().curTile()
+
             for tile in self.kernel().curTile().neighbours():
                 if tile.monster and tile.monster.isAttackable():
                     self.kernel().hero.attack(tile)
                     return
+
+            if self.kernel().hero.isEngulfed:
+                self.kernel().hero.attack(self.kernel().curTile().neighbours()[0])
+                return
+
             self.kernel().log('monster is absent')
             self.kernel().send(' ')
             return
