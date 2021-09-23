@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import WIDTH
+from nethack_raph.myconstants import DUNGEON_WIDTH
 from nethack_raph.Tile import Tile
 
 import heapq
@@ -13,7 +13,7 @@ class Node:
         return self.total_cost < other.total_cost
 
     def __hash__(self):
-        return self.tile.x + self.tile.y * WIDTH
+        return self.tile.x + self.tile.y * DUNGEON_WIDTH
 
     def __eq__(self, other):
         return self.tile.x == other.tile.x and self.tile.y == other.tile.y

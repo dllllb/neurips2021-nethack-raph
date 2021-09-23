@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import HEIGHT, WIDTH
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
 
 import numpy as np
 
@@ -8,7 +8,7 @@ class RandomWalk:
         self.kernel = kernel
 
     def can(self):
-        return True, np.ones((HEIGHT, WIDTH))
+        return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
     def after_search(self, path):
         pass

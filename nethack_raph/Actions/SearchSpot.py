@@ -1,4 +1,4 @@
-from nethack_raph.myconstants import HEIGHT, WIDTH
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
 
 import numpy as np
 
@@ -9,14 +9,14 @@ class SearchSpot:
         self.kernel = kernel
 
     def can(self):
-        goal_coords = np.zeros((HEIGHT, WIDTH))
+        goal_coords = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
         self.goal = None
 
         unsearched = self.kernel().curTile().adjacent({'walkable': False, 'searched': False})
         if len(unsearched) > 4 and len(self.kernel().curTile().straight({'walkable': True})) == 1:
             for tile in self.kernel().curTile().neighbours():
                 if tile.is_door: # So it won't search on "###@]  "
-                    return False, np.zeros((HEIGHT, WIDTH))
+                    return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
             self.goal = sorted(unsearched, key=lambda x: x.searches)[0]
 
             #FIXME (dima) add all?

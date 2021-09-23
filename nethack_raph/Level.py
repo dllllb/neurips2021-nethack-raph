@@ -1,4 +1,5 @@
 from nethack_raph.Tile import *
+import numpy as np
 
 
 class Level:
@@ -13,9 +14,7 @@ class Level:
         self.explored = False
         self.maxSearches = 10
 
-        for y in range(0, 21):
-            for x in range(0, 80):
-                self.tiles.append(Tile(y, x, self, kernel))
+        self.tiles = np.array([Tile(y, x, self, kernel) for y in range(DUNGEON_HEIGHT) for x in range(DUNGEON_WIDTH)])
 
         self.kernel().log("Made a Level() with dlvl: %d in branch %s" % (self.dlvl, self.branchname))
 
@@ -42,29 +41,24 @@ class Level:
     def find(self, query):
         return [tile for tile in self.tiles if tile.find(query)]
 
-    def update(self):
-        chars, colors, glyphs = self.kernel().state
-        chars = chars.reshape(-1)
-        colors = colors.reshape(-1)
-        glyphs = glyphs.reshape(-1)
+    def update(self, chars, colors, glyphs):
         for x in range(0, len(self.tiles)):
-            tile_id = x + WIDTH
-            char = chr(chars[tile_id])
-            glyph = glyphs[tile_id]
+            char = chars[x]
+            glyph = glyphs[x]
             if self.tiles[x].appearance() != char:
 
-                color = 30 + (colors[tile_id] & ~TTY_BRIGHT)
+                color = 30 + (colors[x] & ~TTY_BRIGHT)
                 is_bold = bool(color & TTY_BRIGHT)
                 color = TermColor(color, bold=is_bold)
 
-                tmp = self.tiles[x].appearance()
-                self.kernel().log("\n   <--- %s\n   ---> %s" % (str(self.tiles[x].appearance()), str(char)))
+                # tmp = self.tiles[x].appearance()
+                # self.kernel().log("\n   <--- %s\n   ---> %s" % (str(self.tiles[x].appearance()), str(char)))
                 self.tiles[x].setTile(char, color, glyph)
                 if not (self.tiles[x].isHero()):
-                    self.kernel().log("\n   <!!! %s(%s)\n   !!!> %s" % (tmp, str(self.tiles[x].coords()), str(char)))
+                    # self.kernel().log("\n   <!!! %s(%s)\n   !!!> %s" % (tmp, str(self.tiles[x].coords()), str(char)))
                     self.explored = False
 
         for tile in self.kernel().curTile().neighbours():
             if tile.appearance() == ' ' and tile.walkable:
-                self.kernel().log("Setting walkable to False because I think this is rock (%s)" % tile)
+                # self.kernel().log("Setting walkable to False because I think this is rock (%s)" % tile)
                 tile.walkable = False
