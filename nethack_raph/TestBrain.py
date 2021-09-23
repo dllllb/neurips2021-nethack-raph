@@ -7,6 +7,7 @@ class TestBrain(Brain):
         Brain.__init__(self, "TestBrain", kernel)
 
         self.actions = [
+                            Elbereth(kernel),
                             RestoreHP(kernel),
                             AttackMonster(kernel),
                             EatFromInventory(kernel),

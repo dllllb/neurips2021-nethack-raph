@@ -1,5 +1,5 @@
 from nethack_raph.Findable import *
-from nethack_raph.MonsterGlossary import MONSTERS_GLOSSARY
+from nethack_raph.glossaries import MONSTERS_GLOSSARY
 
 
 class Item(Findable):

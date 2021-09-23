@@ -106,6 +106,7 @@ class Hero:
     def read(self):
         self.kernel().log("Hero::read")
         self.kernel().send(":")
+        self.kernel().curTile().has_elbereth = False
         self.lastAction = 'read'
 
     def write(self):

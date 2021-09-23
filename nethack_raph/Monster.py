@@ -1,5 +1,6 @@
 from nethack_raph.TermColor import *
-from nethack_raph.MonsterGlossary import MONSTERS_GLOSSARY
+from nethack_raph.glossaries import MONSTERS_GLOSSARY
+
 
 class Monster:
     peacefuls = {
