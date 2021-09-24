@@ -38,13 +38,13 @@ class Elbereth:
         # if not neib_monsters:
         #     return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        # monsters with elbereth disrespect nearby
+        # monsters with elbereth disrespect or range attack
         neib_monsters = list(filter(
-            lambda t: t.monster and t.monster.isAttackable() and not (t.monster.respect_elbereth or t.monster.range_attack),
+            lambda t: t.monster and t.monster.isAttackable() and (not t.monster.respect_elbereth or t.monster.range_attack),
             self.kernel().curLevel().tiles
         ))
         if neib_monsters:
-            self.kernel().log("Beware, there is a monster nearby, that doesn't respect elbereth")
+            self.kernel().log("Beware, there is a monster with elbereth disrespect or range attack")
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
         return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
