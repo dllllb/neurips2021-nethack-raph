@@ -91,7 +91,9 @@ class Tile(Findable):
 
     def setTile(self, char, color, glyph):
         self.monster = None
-        self.is_door = char == '+'
+
+        # closed door and locked door
+        self.is_door = glyph in (2374, 2375)
 
         # fix for mimic monster
         char = 'm' if char == ']' else char
