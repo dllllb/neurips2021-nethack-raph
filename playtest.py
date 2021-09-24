@@ -8,13 +8,19 @@ from envs.wrappers import addtimelimitwrapper_fn
 from rollout import run_batched_rollout
 from envs.batched_env import BatchedEnv
 
+from nle_toolbox.wrappers.replay import ReplayToFile
+
 
 def evaluate():
-    batched_env = BatchedEnv(env_make_fn=addtimelimitwrapper_fn, num_envs=1)
+    with ReplayToFile(
+        addtimelimitwrapper_fn(),
+        folder='./replays',
+        save_on='close,done',
+    ) as env:
+        batched_env = BatchedEnv(env_make_fn=lambda: env, num_envs=1)
+        agent = CustomAgent(1, batched_env.num_actions, verbose=True)
+        ascensions, scores = run_batched_rollout(1, batched_env, agent)
 
-    agent = CustomAgent(1, batched_env.num_actions, verbose=True)
-
-    ascensions, scores = run_batched_rollout(1, batched_env, agent)
     print(
         f"Ascensions: {ascensions} "
         f"Median Score: {np.median(scores)}, "
