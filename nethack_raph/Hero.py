@@ -89,7 +89,7 @@ class Hero:
         self.kernel().send("%ds" % times)
         for neighbour in self.kernel().curTile().neighbours():
             neighbour.searches = neighbour.searches + 1
-            if neighbour.searches == self.kernel().curLevel().maxSearches:
+            if neighbour.searches >= self.kernel().curLevel().maxSearches:
                 neighbour.searched = True
         self.lastAction = 'search'
 
