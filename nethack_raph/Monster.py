@@ -1,6 +1,7 @@
 from nethack_raph.TermColor import *
 from nethack_raph.MonsterGlossary import MONSTERS_GLOSSARY
 
+
 class Monster:
     peacefuls = {
         ('@', COLOR_WHITE),       # shk
@@ -22,29 +23,9 @@ class Monster:
 
         self.peaceful = (self.char, self.color.getId()) in Monster.peacefuls
         self.pet = 381 <= self.glyph <= 761
+        self.is_monster = self.glyph < 381
         self.respect_elbereth = MONSTERS_GLOSSARY.get(self.glyph, {}).get('elbereth', 1)
-
-        # Exceptions
-        if char == 'I':
-            return
-        if char == 'm' and color.getId() == 34:
-            self.name = "mimic"
-            return
-
-    def isAttackable(self):
-        if self.is_statue:
-            return False
-
-        if self.peaceful:
-            self.kernel().log("%s is not attacakble." % self)
-            return False
-
-        if self.pet:
-            self.kernel().log("%s is a pet." % self)
-            # return False
-
-        self.kernel().log("%s is attackable" % self)
-        return True
+        self.is_attackable = (self.is_monster or self.pet) and not self.peaceful
 
     def __str__(self):
         return "n:%s, ch:%s, c:%s, g:%s, o:%s" % tuple(map(str, [self.name, self.char, self.color, self.glyph, self.spoiler]))

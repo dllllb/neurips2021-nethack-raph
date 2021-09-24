@@ -19,7 +19,7 @@ class RestoreHP:
                 return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
             neib_monsters = list(filter(
-                lambda t: t.monster and t.monster.isAttackable() and not t.monster.respect_elbereth,
+                lambda t: t.monster and t.monster.is_attackable and not t.monster.respect_elbereth,
                 self.kernel().curLevel().tiles
             ))
             if neib_monsters:
@@ -27,7 +27,7 @@ class RestoreHP:
                 return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
             neib_monsters = list(filter(
-                lambda t: t.monster and t.monster.isAttackable(),
+                lambda t: t.monster and t.monster.is_attackable,
                 self.kernel().curTile().neighbours()
             ))
             if neib_monsters and self.kernel().hero.lastAction == 'read' and self.kernel().curTile().has_elbereth:
