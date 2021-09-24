@@ -111,10 +111,10 @@ class CustomAgentMP(BatchedAgent):
 class CustomAgent(BatchedAgent):
     """A example agent... that simple acts randomly. Adapt to your needs!"""
 
-    def __init__(self, num_envs, num_actions):
+    def __init__(self, num_envs, num_actions, *, verbose=False):
         """Set up and load you model here"""
         super().__init__(num_envs, num_actions)
-        self.agent = Agent(verbose=False)
+        self.agent = Agent(verbose=verbose)
         self.maxtime = 0
         self.reward = 0
 
