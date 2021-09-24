@@ -150,6 +150,8 @@ class Kernel:
 
         self.hero.blind = self.searchBot("Blind")
         self.hero.confused = self.searchBot("Conf")
+        self.hero.stun = self.searchBot("Stun")
+        self.hero.hallu = self.searchBot("Hallu")
 
         self.log("Updates starting: \n\n")
         self.log("--------- DUNGEON ---------")

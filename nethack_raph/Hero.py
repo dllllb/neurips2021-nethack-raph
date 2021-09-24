@@ -12,6 +12,8 @@ class Hero:
 
         self.blind = False
         self.confused = False
+        self.hallu = False
+        self.stun = False
         self.legShape = True
 
         self.inBearTrap = False

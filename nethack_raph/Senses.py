@@ -358,7 +358,7 @@ class Senses:
             # you was hit, possible from distance, elbereth doesn't protect you
             for tile in self.kernel().curLevel().tiles:
                 if tile.monster and not tile.monster.pet:
-                    tile.monster.respect_elbereth = False
+                    tile.monster.range_attack = False
 
     def parse_messages(self):
         for msg in self.messages:
