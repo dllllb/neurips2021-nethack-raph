@@ -1,5 +1,5 @@
 from nethack_raph.TermColor import TermColor
-from nethack_raph.myconstants import OBJECT_CLASSES
+
 
 class Hero:
     def __init__(self, kernel):
@@ -27,8 +27,9 @@ class Hero:
         self.gender = None
         self.moral = None
 
-        self.lastActionedTile = None # I sersiouly need to #enhance my english skills :'(
+        self.lastActionedTile = None  # I sersiouly need to #enhance my english skills :'(
         self.lastAction = None
+        self.lastActionedItem = None
 
     def coords(self):
         return self.y, self.x
@@ -127,6 +128,11 @@ class Hero:
         self.kernel().send(',')
         self.lastAction = 'pick'
 
+    def wear(self, ):
+        self.kernel().log("Hero::wear")
+        self.kernel().send('W')
+        self.lastAction = 'wear'
+
     def canPickupHeavy(self):
         # for poly and stuff
         return False
@@ -211,6 +217,3 @@ class Hero:
         #    raise Exception(f"Unknown moral from '{msg}'")
 
         self.kernel().log(f"Hero is {self.role}-{self.race}-{self.moral}-{self.gender}")
-
-    def have_food(self):
-        return bool((self.kernel().inv_oclasses == OBJECT_CLASSES['FOOD_CLASS']).sum())

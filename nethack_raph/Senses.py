@@ -10,6 +10,8 @@ class Senses:
         self.kernel = kernel
         self.messages = []
 
+        self.what_to_wear_menu = False
+
         self.events = {
            #  "(needs food, badly!|feel weak now\.|feel weak\.)":              ['is_weak'],
             "You feel that .* is displeased.":                               ['is_displeased'],
@@ -54,17 +56,21 @@ class Senses:
             "You don't have anything to eat.": ['no_food'],
             "You don't have anything else to wear.": ['no_wear'],
             "You don't have anything else to put on.": ['no_wear'],
-            "What do you want to wear? [*]": ['what_to_wear'],
             "Call a scroll labeled .*": ['read_scroll'],
             "(.+) engulfs you": ['got_engulfed'],
-            "Call a (.+) potion": ['call_potion'],
+            "Call (.+) potion": ['call_potion'],
             "Hello Agent, welcome to NetHack!": ['start_message'],
             "You kill .*": ["killed_monster"],
             "Continue eating\? .*": ['stop_eating'],
             "You see no objects here.": ['nothing_found'],
             "You can't write on the .*": ['cant_write'],
             "You are hit.*": ['you_was_hit'],
-            "There is nothing here to pick up.": ['nothing_to_pickup'],
+            "There is nothing here to pick up.": ['no_pickup'],
+            "The stairs are solidly fixed to the floor.": ['no_pickup'],
+            "You could drink the water...": ['no_pickup'],
+            "You cannot wear .*": ['cant_wear'],
+            "You are already wearing .*": ['cant_wear'],
+            "[a-z] - ": ['picked_up'],
         }
 
     def update(self):
@@ -94,19 +100,29 @@ class Senses:
 
         match = self.kernel().searchTop(r"What do you want to eat\? \[(.*) or \?\*\]")
         if match:
-            self.eat(match)
+            self.what_to_eat(match)
             return
+
         elif self.kernel().searchTop(r".* eat .*\? \[ynq\] \(n\)"):
             self.eat_it(self.kernel().top_line())
             return
+
         elif self.kernel().searchTop(r"What do you want to write in the dust here\?"):
             self.kernel().send('Elbereth\r')
             return
+
         elif self.kernel().searchTop(r"Do you want to add to the current engraving\? \[ynq\] \(y\)"):
             self.kernel().send('n')
             return
-        elif self.kernel().searchTop("What do you want to wear\? \[\*\]"):
+
+        elif self.kernel().searchTop("What do you want to wear\?"):
             self.what_to_wear()
+            return
+
+        elif self.kernel().searchTop("You have a little trouble .*"):
+            self.kernel().send('y')
+            return
+
         elif self.kernel().searchTop("\? \[(.*?)\]"):
             self.kernel().log("Found a prompt we can't handle: %s" % self.kernel().top_line())
             self.kernel().send(" ")
@@ -213,7 +229,7 @@ class Senses:
         if self.kernel().hero.lastActionedTile:
             self.kernel().hero.lastActionedTile.is_door = False
 
-    def eat(self, matched):
+    def what_to_eat(self, matched):
         options = matched.groups()[0]
         self.kernel().log('eating...' + options)
         if 'f' in options:
@@ -276,13 +292,11 @@ class Senses:
                 item.is_food = False
 
     def no_wear(self):
-        for item in self.kernel().curTile().items:
-            if item.char == '[':
-                item.name = 'absent' #FIXME
+        self.kernel().inventory.new_armors = []
 
     def what_to_wear(self):
-        action = input('ENTER ACTION\n')
-        self.kernel().send(action)
+        self.what_to_wear_menu = True
+        self.kernel().send('*')
 
     def read_scroll(self):
         self.kernel().send('r\r') # 'r\r' seems to work
@@ -296,8 +310,6 @@ class Senses:
             self.kernel().hero.lastActionedTile.walkable = False
 
     def leave_pick(self, match):
-        #FIXME (dima) do i really need do that?
-        # self.kernel().send('d' + self.kernel().get_inventory_letter(match.groups()[0]))
         pass
 
     def who_are_you(self):
@@ -350,8 +362,18 @@ class Senses:
                 if tile.monster and not tile.monster.pet:
                     tile.monster.respect_elbereth = False
 
-    def nothing_to_pickup(self, msg):
+    def no_pickup(self, msg):
         self.kernel().curTile().items = []
+
+    def picked_up(self, msg):
+        self.kernel().curTile().items = []
+
+    def cant_wear(self):
+        # Drop unused item:
+        self.kernel().log(f'Drop item {self.kernel().hero.lastActionedItem}')
+        self.kernel().send(f'd{self.kernel().hero.lastActionedItem}')
+        self.kernel().curTile().dropped_here = True
+        # TODO (nikita): we can try take off another item, if we are already wearing that type of armor
 
     def parse_messages(self):
         for msg in self.messages:
@@ -374,15 +396,15 @@ class Senses:
 
     def parse_menu(self):
         header = self.kernel().get_row_line(0)
-        if header and header.find("Pick up what?") >= 0:
-            self.kernel().set_verbose(True)
-            self.kernel().log(f'{[self.kernel().get_row_line(i) for i in range(10)]}')
+        skip_first = len(header) - len(header.lstrip())
 
+        # What to pick up menu
+        if header and header.find("Pick up what?") >= 0:
             # choose all armors to inventory
             choice = []
             is_armor = False
             for i in range(1, TTY_HEIGHT+1):
-                row = self.kernel().get_row_line(i)
+                row = self.kernel().get_row_line(i, skip_first)
                 if 'Armor' in row:
                     is_armor = True
                     continue
@@ -394,9 +416,15 @@ class Senses:
                         break
 
             self.kernel().curTile().items = []
-            self.kernel().log(f'choice: {choice}')
-            self.kernel().action += ''.join(choice) + '\r'
+            self.kernel().log(f'Pick up what choice: {choice}')
+            self.kernel().send(''.join(choice) + '\r')
 
+        elif self.what_to_wear_menu:
+            self.what_to_wear_menu = False
+
+            armor_glyph, armor_inv_str, armor_letter = self.kernel().inventory.new_armors.pop(0)
+            self.kernel().send(armor_letter)
+            self.kernel().log(f'Armor wear choice: {armor_letter}')
+            self.kernel().hero.lastActionedItem = armor_letter
         else:
-            self.kernel().action += ' '
-
+            self.kernel().send(' ')

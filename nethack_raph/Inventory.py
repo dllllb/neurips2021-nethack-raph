@@ -1,48 +1,52 @@
-import re
-from nethack_raph.EeekObject import *
+from nethack_raph.myconstants import OBJECT_CLASSES as OCLASSES
+
+from collections import Counter
+import numpy as np
 
 
-class Inventory(EeekObject):
-    def __init__(self):
-        EeekObject.__init__(self)
-        items = []
+class Inventory:
+    def __init__(self, kernel):
+        self.kernel = kernel
+        self.raw_glyphs = np.array((), dtype=np.int16)
+        self.inv_strs = None
+        self.inv_letters = None
+        self.inv_oclasses = np.array((), dtype=np.int16)
+        self.inv_glyphs = np.array((), dtype=np.int16)
+        self.new_weapons = []
+        self.new_armors = []
 
-    def search(self, what, getFirst=False):
-        ret = []
-        for item in items:
-            count = 0
-            for find in what:
-                if find in item.__dict__ and item.__dict__[find].find(what[find])>=0:
-                    if getFirst:
-                        return item
-                    count = count + 1
-            if count == len(what):
-                ret.append(item)
-        return len(ret)==1 and ret[0] or ret
+    def update(self, obs):
+        self.raw_glyphs = np.copy(obs['inv_glyphs'])
 
-    def add(self, item):
-        if item not in self.items:
-            self.items.append(item)
+        # parse the inventory
+        inv_letters = obs['inv_letters'].view('c')  # uint8 to bytes
+        index, = inv_letters.nonzero()  # keep non-empty slots only
+        inv_strs = obs['inv_strs'].view('S80')[:, 0]  # uint8 to sz
 
-    def parseFrame(self, match):
-        first = match.groups()[0]
-        (row, start) = (1, self.kernel().FramebufferParser.topLine().find(first))
+        self.new_weapons = []
+        if (self.inv_oclasses == OCLASSES['WEAPON_CLASS']).sum() < (obs['inv_oclasses'][index] == OCLASSES['WEAPON_CLASS']).sum():
+            for oc, glyph, inv_str, letter in zip(
+                    obs['inv_oclasses'][index],
+                    obs['inv_glyphs'][index],
+                    inv_strs[index].astype(str),
+                    inv_letters[index].astype(str)):
+                if oc == OCLASSES['WEAPON_CLASS'] and not 'in hand' in inv_str:
+                    self.new_weapons.append((glyph, inv_str, letter))
 
-        while True:
-            line = self.kernel().FramebufferParser.getRowLine(row)
-            if line.find("(end)") != -1:
-                break
+        self.new_armors = []
+        if (self.inv_oclasses == OCLASSES['ARMOR_CLASS']).sum() < (obs['inv_oclasses'][index] == OCLASSES['ARMOR_CLASS']).sum():
+            for oc, glyph, inv_str, letter in zip(
+                    obs['inv_oclasses'][index],
+                    obs['inv_glyphs'][index],
+                    inv_strs[index].astype(str),
+                    inv_letters[index].astype(str)):
+                if oc == OCLASSES['ARMOR_CLASS'] and not 'being worn' in inv_str:
+                    self.new_armors.append((glyph, inv_str, letter))
 
-            if line[start+1] == ' ':
-                self.kernel().log(line)
-                match = re.search("(\w) - (a|an|\d+)( (uncursed|cursed|blessed)|)( (\+\d+|-\d+|)|) (.+)( \((.+)\)|)", line)
-                if match:
-                    self.kernel().log(str(match.groups()))
-                    (slot, qty, trash, buc, trash, enchant, item, trash, info) = map(lambda x:x and x.strip(), match.groups())
-                    it = Item()
-                    self.kernel().Inventory.add
-                else:
-                    self.kernel().die("Unparsed inventory item: %s" % line)
+        self.inv_strs = inv_strs[index].astype(str)  # convert to utf8 strings
+        self.inv_letters = inv_letters[index].astype(str)
+        self.inv_oclasses = obs['inv_oclasses'][index]
+        self.inv_glyphs = obs['inv_glyphs'][index]
 
-            row = row + 1
-        self.kernel().send(" ")
+    def have_food(self):
+        return bool((self.inv_oclasses == OCLASSES['FOOD_CLASS']).sum())
