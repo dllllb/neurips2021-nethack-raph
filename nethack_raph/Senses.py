@@ -1,4 +1,5 @@
 from nethack_raph.TermColor import TermColor
+from nethack_raph.myconstants import TTY_HEIGHT
 
 import inspect
 import re
@@ -63,6 +64,7 @@ class Senses:
             "You see no objects here.": ['nothing_found'],
             "You can't write on the .*": ['cant_write'],
             "You are hit.*": ['you_was_hit'],
+            "There is nothing here to pick up.": ['nothing_to_pickup'],
         }
 
     def update(self):
@@ -74,25 +76,21 @@ class Senses:
         if self.kernel().searchTop("Things that are here:"):
             self.kernel().log("Found some items. (Row 3)")
             self.kernel().send("    ")
-            self.kernel().dontUpdate()
 
         elif self.kernel().get_row_line(3).find("Things that are here:") >= 0:
             self.messages.append("Things that are here:")
             self.kernel().log("Found some items (row 3).")
             self.kernel().send("    ")
-            self.kernel().dontUpdate()
 
         if self.kernel().searchTop("Really attack"):
             self.kernel().log("Asked if I really want to attack.")
             self.kernel().send("y")
-            self.kernel().dontUpdate()
 
         #TODO MOVE THE ABOWE TO UPDATE
 
         if self.kernel().searchTop("In what direction?"):
             self.kernel().log("Getting rid if 'In what direction?' prompt")
             self.kernel().send("\x1b")
-            self.kernel().dontUpdate()
 
         match = self.kernel().searchTop(r"What do you want to eat\? \[(.*) or \?\*\]")
         if match:
@@ -112,7 +110,6 @@ class Senses:
         elif self.kernel().searchTop("\? \[(.*?)\]"):
             self.kernel().log("Found a prompt we can't handle: %s" % self.kernel().top_line())
             self.kernel().send(" ")
-            self.kernel().dontUpdate()
 
     def got_expelled(self):
         self.kernel().log("Got expelled. Phew!")
@@ -178,7 +175,6 @@ class Senses:
 
     def call_potion(self, match):
         self.kernel().send("\x1b")
-        self.kernel().dontUpdate()
 
     def eat_it(self, msg):
         if self.kernel().hero.lastAction == 'eat_from_inventory':
@@ -205,8 +201,6 @@ class Senses:
             self.kernel().log('eating...')
             self.kernel().send('y')
 
-        # self.kernel().dontUpdate()
-
     def stop_eating(self, msg):
         # probably ate something wrong
         self.kernel().log('not edible: eating aborted')
@@ -226,10 +220,6 @@ class Senses:
             self.kernel().send('f')
         else:
             self.kernel().send(options[0])
-
-    # def is_weak(self):
-    #     self.kernel().personality.curBrain.s_isWeak()
-    #     # self.kernel().sendSignal("s_isWeak")
 
     def is_displeased(self):
         self.kernel().hero.god_is_angry = True
@@ -360,6 +350,9 @@ class Senses:
                 if tile.monster and not tile.monster.pet:
                     tile.monster.respect_elbereth = False
 
+    def nothing_to_pickup(self, msg):
+        self.kernel().curTile().items = []
+
     def parse_messages(self):
         for msg in self.messages:
             for event in self.events:
@@ -379,6 +372,31 @@ class Senses:
 
         self.messages = []
 
-    def dontUpdate(self):
-        self.kernel().log("Someone told the Senses not to update this tick! Probably myself")
-        self.updateNext = False
+    def parse_menu(self):
+        header = self.kernel().get_row_line(0)
+        if header and header.find("Pick up what?") >= 0:
+            self.kernel().set_verbose(True)
+            self.kernel().log(f'{[self.kernel().get_row_line(i) for i in range(10)]}')
+
+            # choose all armors to inventory
+            choice = []
+            is_armor = False
+            for i in range(1, TTY_HEIGHT+1):
+                row = self.kernel().get_row_line(i)
+                if 'Armor' in row:
+                    is_armor = True
+                    continue
+
+                if is_armor:
+                    if row[0].islower():
+                        choice.append(row[0])
+                    else:
+                        break
+
+            self.kernel().curTile().items = []
+            self.kernel().log(f'choice: {choice}')
+            self.kernel().action += ''.join(choice) + '\r'
+
+        else:
+            self.kernel().action += ' '
+

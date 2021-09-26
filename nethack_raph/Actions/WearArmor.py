@@ -10,7 +10,7 @@ class WearArmor:
     def can(self):
         armor_tiles = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
         found_armor = False
-        for armor in filter(lambda t: sum([item.char == '[' and item.name != 'absent' for item in t.items]), self.kernel().curLevel().tiles):
+        for armor in filter(lambda t: any([item.item_type == 'armor' for item in t.items]), self.kernel().curLevel().tiles):
             armor_tiles[armor.coords()] = True
             found_armor = True
             self.kernel().log(f"Found {armor}: {list(map(lambda t: str(t), armor.items))}")
@@ -22,8 +22,7 @@ class WearArmor:
     def execute(self, path):
         if len(path) == 1:
             assert path[0] == self.kernel().curTile()
-            self.kernel().send('W')
-            self.kernel().log('HERO:WEAR')
+            self.kernel().hero.pick()
             return
 
         self.kernel().log(path)

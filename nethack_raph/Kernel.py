@@ -77,9 +77,9 @@ class Kernel:
         return self.bot
 
     def get_row_line(self, row):
-        if row < 1 or row > 24:
+        if row < 0 or row > 24:
             return ""
-        return self.tty_chars[row * TTY_WIDTH: (row + 1) * TTY_WIDTH]
+        return self.tty_chars[row * TTY_WIDTH + 41: (row + 1) * TTY_WIDTH]
 
     def get_inventory_letter(self, inv_name):
         for letter, descr in zip(self.inv_letters, self.inv_strs):
@@ -159,7 +159,8 @@ class Kernel:
 
         # this checks for a foreground overlay message
         if obs['misc'][2]:
-            self.action += ' '
+            self.log("--------- MENU --------- ")
+            self.senses.parse_menu()
 
         self.log("--------- SENSES --------- ")
         self.senses.update()
@@ -211,12 +212,6 @@ class Kernel:
         if self.verbose:
             for tile in path:
                 self.stdout("\x1b[%dm\x1b[%d;%dH%s\x1b[m" % (color, tile.y + 2, tile.x + 1, tile.appearance()))
-
-    def dontUpdate(self):
-        pass
-        # self.Dungeon.dontUpdate()
-        # self.Personality.dontUpdate()
-        # self.Senses.dontUpdate()
 
     def log_screen(self, chars, log):
         if not self.verbose:

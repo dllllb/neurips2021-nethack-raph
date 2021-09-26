@@ -69,7 +69,6 @@ class Hero:
     def descend(self):
         self.kernel().log("Hero is descending..")
         self.kernel().send(">")
-        self.kernel().dontUpdate()
         self.lastAction = 'descend'
 
     def open(self, tile):
@@ -122,6 +121,11 @@ class Hero:
         self.kernel().log("Hero::pray")
         self.kernel().send('#pray\ry')
         self.lastAction = 'pray'
+
+    def pick(self):
+        self.kernel().log("Hero::pick")
+        self.kernel().send(',')
+        self.lastAction = 'pick'
 
     def canPickupHeavy(self):
         # for poly and stuff

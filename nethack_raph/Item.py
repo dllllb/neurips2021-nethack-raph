@@ -20,6 +20,20 @@ class Item(Findable):
                     'increase strength', 'increase energy', 'teleportitis', 'invisibility'
                     ]
 
+    item_glyp_ranges = {
+        'weapon': (1907, 1976),
+        'armor': (1977, 2055),
+        'ring': (2056, 2083),
+        'amulet': (2084, 2094),
+        'tool': (2095, 2144),
+        'food': (2145, 2177),
+        'potion': (2178, 2203),
+        'scroll': (2204, 2245),
+        'spell_book': (2246, 2288),
+        'wand': (2289, 2315),
+        'gem': (2317, 2352),
+    }
+
     def __init__(self, name, char, color, glyph, kernel, heavy=False):
         Findable.__init__(self)
 
@@ -41,6 +55,12 @@ class Item(Findable):
         self.corpse = False
         self.turn_of_death = -1000
         self.is_food = self.check_if_food()
+
+        self.item_type = None
+        for k, v in Item.item_glyp_ranges.items():
+            if v[0] <= self.glyph <= v[1]:
+                self.item_type = k
+                break
 
     def __str__(self):
         return "?:%s, ch:%s, c:%s, g:%s" % tuple(map(str, (self.name, self.char, self.color, self.glyph)))
