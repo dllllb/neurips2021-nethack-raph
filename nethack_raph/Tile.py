@@ -82,6 +82,7 @@ class Tile(Findable):
         self.locked = False
         self.shopkeepDoor = False
         self.is_door = False
+        self.dropped_here = False
 
         self.has_elbereth = False
         self.kernel = kernel

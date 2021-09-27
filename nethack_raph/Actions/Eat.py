@@ -12,9 +12,9 @@ class EatFromInventory:
             self.kernel().log(f"Hero is Satiated")
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        self.kernel().log(f"Hero have food: {self.kernel().hero.have_food()}")
+        self.kernel().log(f"Hero have food: {self.kernel().inventory.have_food()}")
 
-        if self.kernel().hero.have_food():
+        if self.kernel().inventory.have_food():
             return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
         else:
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))

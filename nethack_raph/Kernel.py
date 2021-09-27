@@ -2,11 +2,10 @@ from nethack_raph.myconstants import TTY_WIDTH, TTY_HEIGHT, TTY_BRIGHT, DUNGEON_
 from nethack_raph.TermColor import TermColor
 from nethack_raph.Personality import Personality
 from nethack_raph.Senses import Senses
-from nethack_raph.Console import Console
 from nethack_raph.Hero import Hero
 from nethack_raph.Dungeon import Dungeon
 from nethack_raph.TestBrain import TestBrain
-from nethack_raph.Cursor import Cursor
+from nethack_raph.Inventory import Inventory
 
 import re
 import sys
@@ -22,10 +21,9 @@ class Kernel:
         self.set_verbose(verbose)
 
         # Stuff
-        # self.console = Console(weakref.ref(self))
-        # self.cursor = Cursor(weakref.ref(self))
         self.dungeon = Dungeon(weakref.ref(self))
         self.hero = Hero(weakref.ref(self))
+        self.inventory = Inventory(weakref.ref(self))
 
         # AI
         self.personality = Personality(weakref.ref(self))
@@ -45,9 +43,6 @@ class Kernel:
         self.bot = None
         self.top = None
         self.tty_chars = None
-        self.inv_strs = None
-        self.inv_letters = None
-        self.inv_oclasses = None
 
         self.steps = 0
         self.last_turn_update = 0
@@ -77,16 +72,9 @@ class Kernel:
         return self.bot
 
     def get_row_line(self, row):
-        if row < 1 or row > 24:
+        if row < 0 or row > 24:
             return ""
         return self.tty_chars[row * TTY_WIDTH: (row + 1) * TTY_WIDTH]
-
-    def get_inventory_letter(self, inv_name):
-        for letter, descr in zip(self.inv_letters, self.inv_strs):
-            if inv_name in descr:
-                self.log(f'FOUND {inv_name}: {letter}, {descr}')
-                return letter
-        return ' '
 
     def step(self, obs):
         self.steps += 1
@@ -100,15 +88,6 @@ class Kernel:
         # extract the the bottom lines
         self.tty_chars = bytes(obs['tty_chars']).decode('ascii')  # flattens 24x80
         self.bot = self.tty_chars[22 * TTY_WIDTH:]
-
-        # parse the inventory
-        inv_letters = obs['inv_letters'].view('c')  # uint8 to bytes
-        index, = inv_letters.nonzero()  # keep non-empty slots only
-        inv_strs = obs['inv_strs'].view('S80')[:, 0]  # uint8 to sz
-
-        self.inv_strs = inv_strs[index].astype(str)  # convert to utf8 strings
-        self.inv_letters = inv_letters[index].astype(str)
-        self.inv_oclasses = obs['inv_oclasses'][index]
 
         if self.verbose:
             TTY_BRIGHT = 8
@@ -132,7 +111,7 @@ class Kernel:
             self.last_turn_update = self.steps
         if self.steps - self.last_turn_update > 30:
             self.log("Looks like we're stuck in some kind of loop")
-            self.action = '\x1b10s'
+            self.action = '\x1b10s'  # ESC + waiting 10 turns
             return self.action
 
         self.hero.x, self.hero.y, strength_percentage, \
@@ -163,13 +142,21 @@ class Kernel:
 
         # this checks for a foreground overlay message
         if obs['misc'][2]:
-            self.action += ' '
+            self.log("--------- MENU --------- ")
+            self.senses.parse_menu()
 
         self.log("--------- SENSES --------- ")
         self.senses.update()
 
         self.log("-------- MESSAGES -------- ")
         self.senses.parse_messages()
+
+        if len(self.action):
+            return self.action
+
+        if not np.array_equal(self.inventory.raw_glyphs, obs['inv_glyphs']):
+            self.log("-------- INVENTORY -------- ")
+            self.inventory.update(obs)
 
         if len(self.action):
             return self.action
@@ -215,12 +202,6 @@ class Kernel:
         if self.verbose:
             for tile in path:
                 self.stdout("\x1b[%dm\x1b[%d;%dH%s\x1b[m" % (color, tile.y + 2, tile.x + 1, tile.appearance()))
-
-    def dontUpdate(self):
-        pass
-        # self.Dungeon.dontUpdate()
-        # self.Personality.dontUpdate()
-        # self.Senses.dontUpdate()
 
     def log_screen(self, chars, log):
         if not self.verbose:
