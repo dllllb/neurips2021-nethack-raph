@@ -51,7 +51,7 @@ penalty_step: -0.01          # Penalty per step in the episode.
 reward_lose: 0               # Reward for losing (dying before finding the staircase).
 reward_win: 100              # Reward for winning (finding the staircase).
 state_counter: none          # Method for counting state visits. Default none.
-character: 'mon-hum-neu-mal' # Specification of the NetHack character.
+character: '@'               # Specification of the NetHack character.
                               ## typical characters we use
                                 # 'mon-hum-neu-mal'
                                 # 'val-dwa-law-fem'
@@ -86,15 +86,15 @@ epsilon: 0.000001            # RMSProp epsilon.
 # LOSS settings.
 entropy_cost: 0.001          # Entropy cost/multiplier.
 baseline_cost: 0.5           # Baseline cost/multiplier.
-discounting: 0.999           # Discounting factor.
+discounting: 0.9             # Discounting factor.
 normalize_reward: true       # Normalizes reward by dividing by running stdev from mean.
 
 # MODEL settings.
 model: baseline              # Name of model to build (see models/__init__.py).
-use_lstm: true               # Use LSTM in agent model.
+use_lstm: false              # Use LSTM in agent model.
 hidden_dim: 256              # Size of hidden representations.
-embedding_dim: 64            # Size of glyph embeddings.
-layers: 5                    # Number of ConvNet Layers for Glyph Model
+embedding_dim: 16            # Size of glyph embeddings.
+layers: 2                    # Number of ConvNet Layers for Glyph Model
 crop_dim: 9                  # Size of crop (c x c)
 use_index_select: true       # Whether to use index_select instead of embedding lookup (for speed reasons).
 restrict_action_space: True  # Use a restricted ACTION SPACE (only nethack.USEFUL_ACTIONS)

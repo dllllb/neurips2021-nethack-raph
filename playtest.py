@@ -5,6 +5,7 @@ import aicrowd_gym
 from gym.wrappers import TimeLimit
 
 from agents.custom_agent import CustomAgent
+from agents.torchbeast_agent import TorchBeastAgent
 from envs.wrappers import addtimelimitwrapper_fn
 
 
@@ -16,7 +17,7 @@ from nle_toolbox.wrappers.replay import ReplayToFile
 
 def evaluate(seed, character):
     with ReplayToFile(
-        addtimelimitwrapper_fn(character=character),
+        addtimelimitwrapper_fn(character=character, verbose=True),
         folder='./replays',
         save_on='close,done',
     ) as env:
@@ -25,7 +26,8 @@ def evaluate(seed, character):
             env.seed(seed=tuple(seed))
 
         batched_env = BatchedEnv(env_make_fn=lambda: env, num_envs=1)
-        agent = CustomAgent(1, batched_env.num_actions, verbose=True)
+        # agent = CustomAgent(1, batched_env.num_actions, verbose=True)
+        agent = TorchBeastAgent(1, env.action_space.n)
         ascensions, scores = run_batched_rollout(1, batched_env, agent)
 
     print(

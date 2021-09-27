@@ -42,28 +42,25 @@ def run_batched_rollout(num_episodes, batched_env, agent):
     returns = [0.0 for _ in range(num_envs)]
     # The evaluator will automatically stop after the episodes based on the development/test phase
     while episode_count < num_episodes:
-        actions, agent_infos = agent.batched_step(observations, rewards, dones, infos)
-
-        for ai in agent_infos:
-            if ai != None:
-                role, score = agent_infos[done_idx]
-                role_stats[role].append(score)
-
+        actions = agent.batched_step(observations, rewards, dones, infos)
         observations, rewards, dones, infos = batched_env.batch_step(actions)
-        
+
         for i, r in enumerate(rewards):
             returns[i] += r
         
         for done_idx in np.where(dones)[0]:
             if active_envs[done_idx]:
                 # We were 'counting' this episode
-                all_returns.append(returns[done_idx])
+                all_returns.append(infos[done_idx]['episode']['r'])
                 episode_count += 1
                 
                 active_envs[done_idx] = (num_remaining > 0)
                 num_remaining -= 1
                 
                 ascension_count += int(infos[done_idx]["is_ascended"])
+
+                role = infos[done_idx]['role']
+                role_stats[role].append(infos[done_idx]['episode']['r'])
 
                 pbar.update(1)
             

@@ -109,7 +109,7 @@ class RangeAttackMonster(BaseAction):
         if self.weapon_letter is None:
             return False, None
 
-        max_range = min(self.hero.strength // 2, 12)
+        max_range = min(self.hero.strength // 2, 5)
 
         monsters = range_attack_candidates(self.hero, level)
 

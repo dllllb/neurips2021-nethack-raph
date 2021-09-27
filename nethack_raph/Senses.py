@@ -204,6 +204,9 @@ class Senses:
     def open_door_there(self, *, match=None, message=None):
         ker = self.kernel()
         lev = ker.curLevel()
+        if ker.hero.lastActionedTile is None:
+            return
+        
 
         tile = lev.tiles[ker.hero.lastActionedTile]
         if not tile.is_opened_door:

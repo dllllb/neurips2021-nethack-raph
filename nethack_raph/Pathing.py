@@ -3,9 +3,11 @@ from math import isfinite
 
 from heapq import heappop, heappush
 from collections import defaultdict
+from ctypes import *
+import os
+import platform
 
 from nethack_raph.myconstants import DUNGEON_WIDTH, DUNGEON_HEIGHT
-
 
 def calc_corner_adjacent():
     offsets = {(-1, -1), (-1, 1), (1, -1), (1, 1)}
@@ -21,7 +23,6 @@ def calc_corner_adjacent():
                 neibs.append((x + h) * DUNGEON_WIDTH + y + w)
             result.append(tuple(neibs))
     return result
-
 
 def calc_edge_adjacent():
     offsets = {(-1, 0), (0, -1), (0, 1), (1, 0)}
@@ -67,7 +68,7 @@ def reconstruct_path(prev, goal):
     return result
 
 
-def dijkstra_pathing(tiles, start, mask, doors):
+def dijkstra_py(tiles, start, mask, doors):
     walk_costs = tiles.walk_cost.reshape(-1)
     coords = mask.reshape(-1)
     doors = doors.reshape(-1)
@@ -95,7 +96,7 @@ def dijkstra_pathing(tiles, start, mask, doors):
         current = heappop(frontier)
 
         if coords[current.xy]:
-            return reconstruct_path(prev, current),
+            return reconstruct_path(prev, current)
 
         # no need to re-inspect stale heap records
         if cost[current] < current.cost:
@@ -114,8 +115,57 @@ def dijkstra_pathing(tiles, start, mask, doors):
                     cost[node] = node.cost
                     prev[node] = current
 
-    return None,
+    return None
 
 
 def check_neighbours(xy, coords):
     return coords[np.array(_EDGE_ADJACENT[xy])].any() or coords[np.array(_CORNER_ADJACENT[xy])].any()
+
+
+def lib_path():
+    dirname = os.path.dirname(__file__)
+
+    system = platform.system()
+    if system == 'Windows':
+        lib_name = 'algo.dll'
+    elif system == 'Darwin':
+        lib_name = 'libalgo.dylib'
+    else:
+        lib_name = 'libalgo.so'
+
+    return os.path.join(dirname, 'libs/' + lib_name)
+
+
+libc = cdll.LoadLibrary(lib_path())
+libc.dijkstra.argtypes = [
+    POINTER(c_double),
+    c_int32,
+    POINTER(c_bool),
+    POINTER(c_int32),
+    POINTER(c_bool)
+]
+
+
+def dijkstra_cpp(tiles, start, targets_mask, doors):
+
+    def to_pointer(nparray, dtype):
+        return nparray.ctypes.data_as(POINTER(dtype))
+
+    walk_costs = tiles.walk_cost.reshape(-1)
+    targets_mask = targets_mask.astype(np.bool)
+    doors = doors.astype(np.bool)
+    start = start[0] * DUNGEON_WIDTH + start[1]
+
+    path = np.full((2 * DUNGEON_WIDTH * DUNGEON_HEIGHT), -1, dtype=np.int32)
+    libc.dijkstra(
+        to_pointer(walk_costs, c_double),
+        start,
+        to_pointer(targets_mask, c_bool),
+        to_pointer(path, c_int32),
+        to_pointer(doors, c_bool)
+    )
+    path = path[np.where(path != -1)]
+    path = path.reshape((-1, 2))
+    path = list(map(tuple, path))
+
+    return path if path else None

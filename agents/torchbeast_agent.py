@@ -5,7 +5,7 @@ from agents.base import BatchedAgent
 
 from nethack_baselines.torchbeast.models import load_model
 
-MODEL_DIR = "./saved_models/torchbeast/pretrained_0.15B"
+MODEL_DIR = "./latest/"
 
 
 class TorchBeastAgent(BatchedAgent):
@@ -23,6 +23,8 @@ class TorchBeastAgent(BatchedAgent):
         self.core_state = [
             m.to(self.device) for m in self.model.initial_state(batch_size=num_envs)
         ]
+
+        self.model.eval()
 
     def batch_inputs(self, observations, dones):
         """
@@ -59,4 +61,5 @@ class TorchBeastAgent(BatchedAgent):
         with torch.no_grad():
             outputs, self.core_state = self.model(observations, self.core_state)
 
+        # return torch.distributions.Categorical(logits=outputs["policy_logits"]).sample().numpy()[0]
         return outputs["action"].cpu().numpy()[0]
