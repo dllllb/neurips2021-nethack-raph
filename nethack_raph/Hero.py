@@ -12,6 +12,8 @@ class Hero:
 
         self.blind = False
         self.confused = False
+        self.hallu = False
+        self.stun = False
         self.legShape = True
 
         self.inBearTrap = False
@@ -106,6 +108,7 @@ class Hero:
     def read(self):
         self.kernel().log("Hero::read")
         self.kernel().send(":")
+        self.kernel().curTile().has_elbereth = False
         self.lastAction = 'read'
 
     def write(self):

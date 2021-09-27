@@ -1,5 +1,6 @@
 from nethack_raph.TermColor import *
-from nethack_raph.MonsterGlossary import MONSTERS_GLOSSARY
+from nethack_raph.glossaries import MONSTERS_GLOSSARY
+
 
 class Monster:
     peacefuls = {
@@ -23,6 +24,7 @@ class Monster:
         self.peaceful = (self.char, self.color.getId()) in Monster.peacefuls
         self.pet = 381 <= self.glyph <= 761
         self.respect_elbereth = MONSTERS_GLOSSARY.get(self.glyph, {}).get('elbereth', 1)
+        self.range_attack = False
 
         # Exceptions
         if char == 'I':
