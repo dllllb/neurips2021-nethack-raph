@@ -404,7 +404,7 @@ class Senses:
             choice = []
             is_armor = False
             for i in range(1, TTY_HEIGHT+1):
-                row = self.kernel().get_row_line(i, skip_first)
+                row = self.kernel().get_row_line(i)[skip_first:]
                 if 'Armor' in row:
                     is_armor = True
                     continue

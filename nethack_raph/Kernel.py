@@ -71,10 +71,10 @@ class Kernel:
     def bot_line(self):
         return self.bot
 
-    def get_row_line(self, row, skip_first=0):
+    def get_row_line(self, row):
         if row < 0 or row > 24:
             return ""
-        return self.tty_chars[row * TTY_WIDTH + skip_first: (row + 1) * TTY_WIDTH]
+        return self.tty_chars[row * TTY_WIDTH: (row + 1) * TTY_WIDTH]
 
     def step(self, obs):
         self.steps += 1
