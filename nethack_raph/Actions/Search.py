@@ -31,7 +31,7 @@ class Search:
     def execute(self, path):
         if len(path) == 1:
             assert path[0] == self.kernel().curTile()
-            self.kernel().hero.search()
+            self.kernel().hero.search(2)
             return
 
         self.kernel().log("Going towards searchspot")
