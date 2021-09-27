@@ -22,7 +22,7 @@ class Level:
         return [tile for tile in self.tiles if tile.find(args)]
 
     def findAttackableMonsters(self):
-        return [tile for tile in self.tiles if tile.monster and tile.monster.isAttackable()]
+        return [tile for tile in self.tiles if tile.monster and tile.monster.is_attackable]
 
     def findUnidentifiedItems(self):
         ret = []

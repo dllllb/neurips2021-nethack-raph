@@ -31,7 +31,7 @@ class SearchSpot:
     def execute(self, path):
         self.kernel().log("Searching..")
         self.kernel().drawString("Searching hotspot (%s)" % self.goal)
-        self.kernel().hero.search()
+        self.kernel().hero.search(2)
         if self.goal.searches >= 10:
             self.goal.searched = True
             self.goal = None

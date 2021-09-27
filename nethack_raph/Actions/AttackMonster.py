@@ -35,7 +35,7 @@ class AttackMonster:
             assert path[0] == self.kernel().curTile()
 
             for tile in self.kernel().curTile().neighbours():
-                if tile.monster and tile.monster.isAttackable():
+                if tile.monster and tile.monster.is_attackable:
                     self.kernel().hero.attack(tile)
                     return
 

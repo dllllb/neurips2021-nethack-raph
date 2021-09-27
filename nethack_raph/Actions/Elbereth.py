@@ -32,7 +32,7 @@ class Elbereth:
 
         # there are no monsters nearby, no need to make elbereth
         # neib_monsters = list(filter(
-        #     lambda t: t.monster and t.monster.isAttackable(),
+        #     lambda t: t.monster and t.monster.is_attackable,
         #     self.kernel().curTile().neighbours()
         # ))
         # if not neib_monsters:
@@ -40,7 +40,7 @@ class Elbereth:
 
         # monsters with elbereth disrespect or range attack
         neib_monsters = list(filter(
-            lambda t: t.monster and t.monster.isAttackable() and (not t.monster.respect_elbereth or t.monster.range_attack),
+            lambda t: t.monster and t.monster.is_attackable and (not t.monster.respect_elbereth or t.monster.range_attack),
             self.kernel().curLevel().tiles
         ))
         if neib_monsters:

@@ -14,7 +14,7 @@ class RestoreHP:
 
         # monsters nearby
         neib_monsters = list(filter(
-            lambda t: t.monster and t.monster.isAttackable(),
+            lambda t: t.monster and t.monster.is_attackable,
             self.kernel().curTile().neighbours()
         ))
         if neib_monsters:
@@ -22,7 +22,7 @@ class RestoreHP:
 
         # monsters with range attack
         neib_monsters = list(filter(
-            lambda t: t.monster and t.monster.isAttackable() and t.monster.range_attack,
+            lambda t: t.monster and t.monster.is_attackable and t.monster.range_attack,
             self.kernel().curLevel().tiles
         ))
         if neib_monsters:

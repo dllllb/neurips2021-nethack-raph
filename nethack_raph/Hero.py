@@ -87,11 +87,11 @@ class Hero:
         self.kernel().send("\x04%s" % dir)
         self.lastAction = 'kick'
 
-    def search(self, times=2):
+    def search(self, times=1):
         self.kernel().send("%ds" % times)
         for neighbour in self.kernel().curTile().neighbours():
-            neighbour.searches = neighbour.searches + 1
-            if neighbour.searches == self.kernel().curLevel().maxSearches:
+            neighbour.searches = neighbour.searches + times
+            if neighbour.searches >= self.kernel().curLevel().maxSearches:
                 neighbour.searched = True
         self.lastAction = 'search'
 
