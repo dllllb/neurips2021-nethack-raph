@@ -13,7 +13,7 @@ class TestBrain(Brain):
             EatFromInventory(kernel),
             Eat(kernel),
             Pray(kernel),
-            # WearArmor(kernel),
+            WearArmor(kernel),
             FixStatus(kernel),
             Explore(kernel),
             OpenDoors(kernel),
