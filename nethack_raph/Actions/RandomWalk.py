@@ -14,4 +14,4 @@ class RandomWalk:
         pass
 
     def execute(self, path):
-        self.kernel().hero.search()
+        self.kernel().hero.search(2)

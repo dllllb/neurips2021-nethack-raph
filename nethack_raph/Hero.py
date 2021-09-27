@@ -12,6 +12,8 @@ class Hero:
 
         self.blind = False
         self.confused = False
+        self.hallu = False
+        self.stun = False
         self.legShape = True
 
         self.inBearTrap = False
@@ -85,11 +87,11 @@ class Hero:
         self.kernel().send("\x04%s" % dir)
         self.lastAction = 'kick'
 
-    def search(self, times=2):
+    def search(self, times=1):
         self.kernel().send("%ds" % times)
         for neighbour in self.kernel().curTile().neighbours():
-            neighbour.searches = neighbour.searches + 1
-            if neighbour.searches == self.kernel().curLevel().maxSearches:
+            neighbour.searches = neighbour.searches + times
+            if neighbour.searches >= self.kernel().curLevel().maxSearches:
                 neighbour.searched = True
         self.lastAction = 'search'
 
@@ -106,6 +108,7 @@ class Hero:
     def read(self):
         self.kernel().log("Hero::read")
         self.kernel().send(":")
+        self.kernel().curTile().has_elbereth = False
         self.lastAction = 'read'
 
     def write(self):
