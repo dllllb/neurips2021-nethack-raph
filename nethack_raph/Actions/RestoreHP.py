@@ -9,7 +9,7 @@ class RestoreHP:
 
     def can(self):
         # hp is at an acceptable level
-        if self.kernel().hero.curhp >= self.kernel().hero.maxhp / 2 and self.kernel().hero.curhp > 8:
+        if self.kernel().hero.curhp >= self.kernel().hero.maxhp / 2:
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
         # monsters nearby
