@@ -14,7 +14,7 @@ class Hero:
 
         self.attributes = None  # check https://nethackwiki.com/wiki/Attribute for more details
 
-        self.score = None
+        self.score = 0
         self.curhp = None
         self.maxhp = None
         self.gold = None

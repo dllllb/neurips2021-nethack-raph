@@ -77,6 +77,10 @@ class Kernel:
         return self.tty_chars[row * TTY_WIDTH: (row + 1) * TTY_WIDTH]
 
     def step(self, obs):
+        if self.hero.score >= 1e3:
+            self.die('reached 1000')
+            return self.action
+
         self.steps += 1
 
         self.state = np.zeros((2, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
