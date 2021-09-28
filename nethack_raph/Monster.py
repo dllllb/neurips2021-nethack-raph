@@ -27,7 +27,7 @@ class Monster:
         self.is_monster = self.glyph < 381
         self.respect_elbereth = MONSTERS_GLOSSARY.get(self.glyph, {}).get('elbereth', 1)
         self.range_attack = False
-        self.is_attackable = (self.is_monster or self.pet) and not self.peaceful
+        self.is_attackable = self.is_monster and not self.peaceful
 
     def __str__(self):
         return "n:%s, ch:%s, c:%s, g:%s, o:%s" % tuple(map(str, [self.name, self.char, self.color, self.glyph, self.spoiler]))

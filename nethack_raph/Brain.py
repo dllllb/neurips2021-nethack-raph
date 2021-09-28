@@ -11,7 +11,7 @@ from nethack_raph.Actions.RestoreHP import *
 from nethack_raph.Actions.DipForExcalibur import *
 from nethack_raph.Actions.Eat import *
 from nethack_raph.Actions.Pray import Pray
-from nethack_raph.Actions.WearArmor import WearArmor
+from nethack_raph.Actions.PickUpStuff import PickUpStuff
 from nethack_raph.Actions.Elbereth import Elbereth
 
 

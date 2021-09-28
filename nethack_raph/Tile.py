@@ -158,9 +158,17 @@ class Tile(Findable):
             self.char = char
             # self.kernel().die("Couldn't parse tile: " + char)
 
-        self.walk_cost = Tile.walkables.get(self.char, 1)
+        self.update_walk_cost()
+
+    def update_walk_cost(self):
+        walk_cost = Tile.walkables.get(self.char, 1)
         if self.monster and not self.monster.pet:
-            self.walk_cost += 100
+            walk_cost += 100
+        self.walk_cost = walk_cost
+
+    def set_as_trap(self):
+        self.char = '^'
+        self.update_walk_cost()
 
     def appearance(self):
         if self.monster:

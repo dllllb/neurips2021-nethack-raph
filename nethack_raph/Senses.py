@@ -10,8 +10,6 @@ class Senses:
         self.kernel = kernel
         self.messages = []
 
-        self.what_to_wear_menu = False
-
         self.events = {
            #  "(needs food, badly!|feel weak now\.|feel weak\.)":              ['is_weak'],
             "You feel that .* is displeased.":                               ['is_displeased'],
@@ -71,6 +69,8 @@ class Senses:
             "You cannot wear .*": ['cant_wear'],
             "You are already wearing .*": ['cant_wear'],
             "[a-z] - ": ['picked_up'],
+            "You finish your dressing maneuver.": ['dressed'],
+            "You finish taking off your mail.": ['took_off'],
         }
 
     def update(self):
@@ -115,10 +115,6 @@ class Senses:
             self.kernel().send('n')
             return
 
-        elif self.kernel().searchTop("What do you want to wear\?"):
-            self.what_to_wear()
-            return
-
         elif self.kernel().searchTop("You have a little trouble .*"):
             self.kernel().send('y')
             return
@@ -146,31 +142,25 @@ class Senses:
 
     def found_trap(self, type):
         self.kernel().log("I found a trap. Setting char to ^")
-        self.kernel().curTile().char = '^'
-        self.kernel().curTile().items = []
+        self.kernel().curTile().set_as_trap()
 
     def fell_into_pit(self):
         self.kernel().log("I fell into a pit :(")
         self.kernel().hero.inPit = True
-        self.kernel().curTile().char = '^'
-        self.kernel().curTile().items = []
+        self.kernel().curTile().set_as_trap()
 
     def found_beartrap(self):
         self.kernel().log("Found a beartrap. Setting tile to ^")
-        self.kernel().curTile().char = '^'
-        self.kernel().curTile().items = []
+        self.kernel().curTile().set_as_trap()
 
     def stepped_in_beartrap(self):
         self.kernel().log("Just stepped into a beartrap :(")
         self.kernel().hero.inBearTrap = True
-        self.kernel().curTile().char = '^'
-        self.kernel().curTile().items = []
+        self.kernel().curTile().set_as_trap()
 
     def trigger_trap(self):
-        #TODO
         self.kernel().log("Triggered a trap, setting char to ^.. Not changing color yet")
-        self.kernel().curTile().char = '^'
-        self.kernel().curTile().items = []
+        self.kernel().curTile().set_as_trap()
 
     def blinded(self):
         self.kernel().log("I got blinded.")
@@ -294,10 +284,6 @@ class Senses:
     def no_wear(self):
         self.kernel().inventory.new_armors = []
 
-    def what_to_wear(self):
-        self.what_to_wear_menu = True
-        self.kernel().send('*')
-
     def read_scroll(self):
         self.kernel().send('r\r') # 'r\r' seems to work
 
@@ -351,22 +337,32 @@ class Senses:
     def nothing_found(self):
         self.kernel().curTile().items = []
 
-    def cant_write(self, msg):
+    def cant_write(self):
         if self.kernel().curTile().char is None:
             self.kernel().curTile().char = '{'
 
-    def you_was_hit(self, msg):
+    def you_was_hit(self):
         if self.kernel().curTile().has_elbereth:
             # you was hit, possible from distance, elbereth doesn't protect you
             for tile in self.kernel().curLevel().tiles:
                 if tile.monster and not tile.monster.pet:
                     tile.monster.range_attack = False
 
-    def no_pickup(self, msg):
+    def no_pickup(self):
         self.kernel().curTile().items = []
 
-    def picked_up(self, msg):
+    def picked_up(self):
         self.kernel().curTile().items = []
+
+    def dressed(self):
+        if self.kernel().hero.armor_class >= self.kernel().hero.armor_class_before:
+            self.kernel().inventory.take_off_armors.append(self.kernel().hero.lastActionedItem)
+
+    def took_off(self):
+        # Drop unused item:
+        self.kernel().log(f'Drop item {self.kernel().hero.lastActionedItem}')
+        self.kernel().send(f'd{self.kernel().hero.lastActionedItem}')
+        self.kernel().curTile().dropped_here = True
 
     def cant_wear(self):
         # Drop unused item:
@@ -419,12 +415,5 @@ class Senses:
             self.kernel().log(f'Pick up what choice: {choice}')
             self.kernel().send(''.join(choice) + '\r')
 
-        elif self.what_to_wear_menu:
-            self.what_to_wear_menu = False
-
-            armor_glyph, armor_inv_str, armor_letter = self.kernel().inventory.new_armors.pop(0)
-            self.kernel().send(armor_letter)
-            self.kernel().log(f'Armor wear choice: {armor_letter}')
-            self.kernel().hero.lastActionedItem = armor_letter
         else:
             self.kernel().send(' ')

@@ -36,7 +36,7 @@ class Level:
         return [tile for tile in self.tiles if tile.is_door and not tile.shopkeepDoor]
 
     def find_food(self):
-        return [tile for tile in self.tiles for item in tile.items if item.is_food and not item.is_tainted()]
+        return [t for t in self.tiles for item in t.items if item.is_food and not item.is_tainted() and t.char != '^']
 
     def find(self, query):
         return [tile for tile in self.tiles if tile.find(query)]
