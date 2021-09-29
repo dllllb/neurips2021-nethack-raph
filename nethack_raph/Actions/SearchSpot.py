@@ -15,7 +15,7 @@ class SearchSpot:
         unsearched = self.kernel().curTile().adjacent({'walkable': False, 'searched': False})
         if len(unsearched) > 4 and len(self.kernel().curTile().straight({'walkable': True})) == 1:
             for tile in self.kernel().curTile().neighbours():
-                if tile.is_door: # So it won't search on "###@]  "
+                if tile.is_closed_door: # So it won't search on "###@]  "
                     return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
             self.goal = sorted(unsearched, key=lambda x: x.searches)[0]
 

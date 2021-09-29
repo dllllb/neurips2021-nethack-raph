@@ -33,10 +33,10 @@ class Level:
         return ret
 
     def findDoors(self):
-        return [tile for tile in self.tiles if tile.is_door and not tile.shopkeepDoor]
+        return [tile for tile in self.tiles if tile.is_closed_door and not tile.shopkeepDoor]
 
     def find_food(self):
-        return [t for t in self.tiles for item in t.items if item.is_food and not item.is_tainted() and t.char != '^']
+        return [t for t in self.tiles for item in t.items if t.char != '^' and not t.inShop and item.is_food and not item.is_tainted()]
 
     def find(self, query):
         return [tile for tile in self.tiles if tile.find(query)]
@@ -59,6 +59,7 @@ class Level:
                     self.explored = False
 
         for tile in self.kernel().curTile().neighbours():
-            if tile.appearance() == ' ' and tile.walkable:
+            if tile.appearance() == ' ' and tile.walkable_glyph:
                 # self.kernel().log("Setting walkable to False because I think this is rock (%s)" % tile)
-                tile.walkable = False
+                tile.walkable_glyph = False
+                tile.update_is_walkable()
