@@ -156,13 +156,19 @@ class Tile(Findable):
             # self.kernel().die("Couldn't parse tile: " + char)
 
         self.update_walk_cost()
-        self.update_is_walkable()
 
     def update_walk_cost(self):
-        walk_cost = Tile.walkables.get(self.char, 1)
-        if self.monster and not self.monster.pet:
-            walk_cost += 100
-        self.walk_cost = walk_cost
+        if self.shop_entrance:  # TODO: Shops might be good to visit sometime
+            self.walkable_tile = False
+        elif not self.char:
+            self.walkable_tile = self.walkable_glyph
+        else:
+            self.walkable_tile = (self.char in Tile.walkables.keys() and self.walkable_glyph) or self.is_opened_door
+
+        if self.walkable_tile:
+            self.walk_cost = Tile.walkables.get(self.char, 1) + (100 if self.monster and not self.monster.pet else 0)
+        else:
+            self.walk_cost = np.inf
 
     def set_as_trap(self):
         self.char = '^'
@@ -175,19 +181,6 @@ class Tile(Findable):
             return self.items[-1].char
         else:
             return self.char
-
-    # def isDoor(self):
-    #     return (self.char == '-' or self.char == '|') and self.color.getId() == COLOR_BROWN
-
-    def update_is_walkable(self): #TODO: Shops might be good to visit sometime ..:)
-        if self.shop_entrance:
-            self.walkable_tile = False
-
-        elif not self.char:
-            self.walkable_tile = self.walkable_glyph
-
-        else:
-            self.walkable_tile = (self.char in Tile.walkables.keys() and self.walkable_glyph) or self.is_opened_door
 
     def walkableNeighbours(self):
         ret = []

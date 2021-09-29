@@ -62,4 +62,4 @@ class Level:
             if tile.appearance() == ' ' and tile.walkable_glyph:
                 # self.kernel().log("Setting walkable to False because I think this is rock (%s)" % tile)
                 tile.walkable_glyph = False
-                tile.update_is_walkable()
+                tile.update_walk_cost()
