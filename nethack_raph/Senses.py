@@ -416,5 +416,8 @@ class Senses:
             self.kernel().log(f'Pick up what choice: {choice}')
             self.kernel().send(''.join(choice) + '\r')
 
+        elif header and header.find("There is an open door here") >= 0:
+            self.open_door_here()
+            self.kernel().send(' ')
         else:
             self.kernel().send(' ')
