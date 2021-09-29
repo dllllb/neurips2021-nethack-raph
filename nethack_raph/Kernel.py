@@ -82,7 +82,6 @@ class Kernel:
         self.state = np.zeros((2, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
         self.state[0] = obs['tty_chars']
         self.state[1] = obs['tty_colors']
-
         self.top = bytes(obs['message'][obs['message'].nonzero()]).decode('ascii')
 
         # extract the the bottom lines
@@ -104,39 +103,27 @@ class Kernel:
         if self.action:
             return self.action
 
-        # TODO: use them
-        #strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, condition
-
+        self.log(f"\n ------------------ STEP {self.steps} ------------------ ")
         if self.hero.turns != obs['blstats'][20]:
             self.last_turn_update = self.steps
+
         if self.steps - self.last_turn_update > 30:
             self.log("Looks like we're stuck in some kind of loop")
             self.action = '\x1b10s'  # ESC + waiting 10 turns
             return self.action
 
-        self.hero.x, self.hero.y, strength_percentage, \
-            self.hero.str, self.hero.dex, self.hero.con, \
-            self.hero.int, self.hero.wis, self.hero.cha, \
-            self.hero.score, self.hero.curhp, self.hero.maxhp, \
-            self.dungeon.dlvl, self.hero.gold, self.hero.curpw, \
-            self.hero.maxpw, self.hero.ac, monster_level, \
-            self.hero.xp, self.hero.xp_next, self.hero.turns, \
-            self.hero.hunger, carrying_capacity, dungeon_number, \
-            level_number, condition = obs['blstats']
-        # condition (aka `unk`) == 64 -> Deaf
-
-        self.log("\n ------------------ NEW STEP ------------------")
-        self.log(f'# of steps: {self.steps}, turns: {self.hero.turns}')
-        self.log(f'hp: {self.hero.curhp}/{self.hero.maxhp}')
-
-        self.hero.blind = self.searchBot("Blind")
-        self.hero.confused = self.searchBot("Conf")
-        self.hero.stun = self.searchBot("Stun")
-        self.hero.hallu = self.searchBot("Hallu")
-
         self.log("Updates starting: \n\n")
-        self.log("--------- DUNGEON ---------")
 
+        self.log("--------- HERO ---------")
+        self.hero.update(obs['blstats'], self.top, self.bot)
+        assert len(self.action) == 0
+
+        self.log("-------- INVENTORY -------- ")
+        self.inventory.update(obs)
+        assert len(self.action) == 0
+
+        self.log("--------- DUNGEON ---------")
+        self.dungeon.dlvl = obs['blstats'][12]
         self.dungeon.update(bytes(obs['chars']).decode('ascii'), obs['colors'].flat, obs['glyphs'].flat)
         assert len(self.action) == 0
 
@@ -153,10 +140,6 @@ class Kernel:
 
         if len(self.action):
             return self.action
-
-        if not np.array_equal(self.inventory.raw_glyphs, obs['inv_glyphs']):
-            self.log("-------- INVENTORY -------- ")
-            self.inventory.update(obs)
 
         if len(self.action):
             return self.action

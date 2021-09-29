@@ -31,6 +31,7 @@ class Item(Findable):
         'scroll': (2204, 2245),
         'spell_book': (2246, 2288),
         'wand': (2289, 2315),
+        'gold_piece': (2316, 2316),
         'gem': (2317, 2352),
     }
 

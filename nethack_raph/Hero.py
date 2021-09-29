@@ -1,5 +1,7 @@
 from nethack_raph.TermColor import TermColor
 
+import re
+
 
 class Hero:
     def __init__(self, kernel):
@@ -10,10 +12,24 @@ class Hero:
         self.tmpCount = 0
         self.turns = 0
 
+        self.attributes = None  # check https://nethackwiki.com/wiki/Attribute for more details
+
+        self.score = 0
+        self.curhp = None
+        self.maxhp = None
+        self.gold = None
+        self.curpw = None
+
+        self.maxpw = None
+        self.armor_class = None
+        self.xp = None
+        self.xp_next = None
+
         self.blind = False
         self.confused = False
         self.hallu = False
         self.stun = False
+        self.levitating = False
         self.legShape = True
 
         self.inBearTrap = False
@@ -33,8 +49,30 @@ class Hero:
         self.lastAction = None
         self.lastActionedItem = None
 
+        self.armor_class_before = None
+
     def coords(self):
         return self.y, self.x
+
+    def update(self, blstats, top_line, bot_line):
+        # TODO: use them
+        # strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, condition
+        # condition (aka `unk`) == 64 -> Deaf
+
+        self.blind = bool(re.search("Blind", bot_line))
+        self.confused = bool(re.search("Conf", bot_line))
+        self.stun = bool(re.search("Stun", bot_line))
+        self.hallu = bool(re.search("Hallu", bot_line))
+        self.levitating = bool(re.search("Lev", bot_line))
+
+        self.x, self.y, strength_percentage, strength, dexterity, constitution, \
+            intelligence, wisdom, charisma, self.score, self.curhp, self.maxhp, \
+            _, self.gold, self.curpw, self.maxpw, self.armor_class, monster_level, \
+            self.xp, self.xp_next, self.turns, self.hunger, carrying_capacity, dungeon_number, \
+            level_number, condition = blstats
+
+        self.attributes = (strength, dexterity, constitution, intelligence, wisdom, charisma)
+        self.kernel().log(f'Hero hp: {self.curhp}/{self.maxhp}')
 
     def attack(self, tile):
         dir = self._get_direction(self.kernel().curTile(), tile)
@@ -131,10 +169,22 @@ class Hero:
         self.kernel().send(',')
         self.lastAction = 'pick'
 
-    def wear(self, ):
+    def wear(self, armor_letter):
         self.kernel().log("Hero::wear")
-        self.kernel().send('W')
+        self.kernel().send(f'W*{armor_letter}')
+        self.armor_class_before = self.armor_class
         self.lastAction = 'wear'
+        self.lastActionedItem = armor_letter
+
+    def take_off(self, armor_letter):
+        self.kernel().log("Hero::take_off")
+        if self.kernel().inventory.being_worn_count > 1:
+            # have to define, what we want to take off
+            self.kernel().send(f'T*{armor_letter}')
+        else:
+            self.kernel().send('T')
+        self.lastAction = 'take_off'
+        self.kernel().hero.lastActionedItem = armor_letter
 
     def canPickupHeavy(self):
         # for poly and stuff

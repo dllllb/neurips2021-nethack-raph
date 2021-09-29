@@ -26,6 +26,7 @@ class Elbereth:
                 self.kernel().hero.confused,
                 self.kernel().hero.stun,
                 self.kernel().hero.hallu,
+                self.kernel().hero.levitating,
                 self.kernel().hero.isEngulfed,
                 self.kernel().hero.isLycanthropy]):
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
