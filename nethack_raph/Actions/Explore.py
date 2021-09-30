@@ -17,7 +17,7 @@ class Explore:
         self.kernel().log("No goals defined in Explore, finding one ..")
 
         found_unexplored = False
-        for tile in filter(lambda t: not t.explored and t.isWalkable() and not t.isHero(), self.kernel().curLevel().tiles):
+        for tile in filter(lambda t: not t.explored and t.walkable_tile and not t.isHero(), self.kernel().curLevel().tiles):
             goal_coords[tile.coords()] = True
             found_unexplored = True
 
@@ -29,6 +29,5 @@ class Explore:
             self.kernel().curLevel().explored = True
 
     def execute(self, path):
-        self.kernel().log("Found self.path (%s)" % str(path))
         self.kernel().draw_path(path, color=COLOR_BG_BLUE)
         self.kernel().hero.move(path[-2])

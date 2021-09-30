@@ -43,11 +43,11 @@ class TestBrain(Brain):
             action.after_search(path)
 
             if path is not None:
-                self.kernel().log(f'found path: {path} for {action}')
+                self.kernel().log(f'found path: {[x.coords() for x in path]} for {action}')
                 action.execute(path)
                 return
             else:
-                self.kernel().log(f"Didn't found path: for {action}")
+                self.kernel().log(f"Didn't find path: for {action}")
 
     def s_isWeak(self):
         self.kernel().log("Praying because I'm weak")

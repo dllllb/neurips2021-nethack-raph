@@ -17,6 +17,9 @@ class PickUpStuff:
             self.action_to_do = 'wear'
             return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
+        if self.kernel().hero.levitating:  # You cannot reach the floor.
+            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+
         armor_tiles = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
         found_armor = False
         for armor in filter(

@@ -1,5 +1,5 @@
 from nethack_raph.TermColor import TermColor
-from nethack_raph.myconstants import TTY_HEIGHT
+from nethack_raph.myconstants import TTY_HEIGHT, DUNGEON_WIDTH
 
 import inspect
 import re
@@ -23,6 +23,8 @@ class Senses:
             "You read: \"(.*?)\"":                                           ['you_read'],
             "Velkommen, [^,]+!":                                             ['shop_entrance'],
             ".*elcome to .* (store|dealership|bookstore|emporium|outlet|delicatessen|jewelers|accessories|hardware|books|food|lighting).*":  ['shop_entrance'],
+            "You can't move diagonally into an intact doorway.":             ['open_door_there'],
+            "You can't move diagonally out of an intact doorway.":           ['open_door_here'],
             "There is an open door here":                                    ['open_door_here'],
             "There is a bear trap here|You are caught in a bear trap":       ['found_beartrap'],
             "You feel more confident in your ([^ ]+) ":                      ['skill_up'],
@@ -45,8 +47,6 @@ class Senses:
             "You harmlessly attack a statue.": ['is_statue'],
             "You cannot pass through the bars.": ['not_walkable'],
             "You are carrying too much to get through.": ['not_walkable'],
-            "You can't move diagonally into an intact doorway.": ['not_walkable'],
-            "You can't move diagonally out of an intact doorway.": ['not_walkable'],
             "Hello stranger, who are you?": ['who_are_you'],
             "It's solid stone.": ['not_walkable'],
             "Will you please leave your (.*) outside\?": ['leave_pick'],
@@ -133,11 +133,11 @@ class Senses:
 
     def shopkeep_door(self):
         for tile in self.kernel().curTile().neighbours():
-            if tile.is_door:
+            if tile.is_closed_door:
                 tile.shopkeepDoor = True
 
     def locked_door(self):
-        if self.kernel().hero.lastActionedTile and self.kernel().hero.lastActionedTile.is_door:
+        if self.kernel().hero.lastActionedTile and self.kernel().hero.lastActionedTile.is_closed_door:
             self.kernel().hero.lastActionedTile.locked = True
 
     def found_trap(self, type):
@@ -176,8 +176,11 @@ class Senses:
 
     def open_door_here(self):
         self.kernel().log("Setting tile to '-' with door colors")
-        self.kernel().curTile().char = '-'
-        self.kernel().curTile().color = TermColor(33, 0, False, False)
+        self.kernel().curTile().setTile('-', TermColor(33, 0, False, False), 2373)
+
+    def open_door_there(self):
+        self.kernel().log("Setting tile to '-' with door colors")
+        self.kernel().hero.lastActionedTile.setTile('-', TermColor(33, 0, False, False), 2373)
 
     def call_potion(self, match):
         self.kernel().send("\x1b")
@@ -217,7 +220,7 @@ class Senses:
 
     def no_door(self):
         if self.kernel().hero.lastActionedTile:
-            self.kernel().hero.lastActionedTile.is_door = False
+            self.kernel().hero.lastActionedTile.is_closed_door = False
 
     def what_to_eat(self, matched):
         options = matched.groups()[0]
@@ -255,12 +258,17 @@ class Senses:
 
     def shop_entrance(self, match, msg):
         self.kernel().log("Found a shop.")
-        # input('IN STORE ' + msg)
-        # self.kernel().set_verbose(True)
 
-        #FIXME (dima) some loop here
-        # self.kernel().hero.lastActionedTile.walkable = False
-        # return
+        if self.kernel().curTile().is_opened_door and self.kernel().hero.lastAction == 'move':
+            prev_coords = (self.kernel().hero.beforeMove[1], self.kernel().hero.beforeMove[0])
+            cur_coords = self.kernel().hero.coords()
+            # entrance is opposite to the tile where we came from
+            entrance_y, entrance_x = tuple((2*c - p) for c, p in list(zip(cur_coords, prev_coords)))
+            entrance_tile = self.kernel().dungeon.tile(entrance_y, entrance_x)
+
+            entrance_tile.shop_entrance = True
+            entrance_tile.update_walk_cost()
+            self.kernel().log(f'Shop entrance: {entrance_tile}')
 
         buf = [self.kernel().curTile()]
         while buf:
@@ -293,7 +301,8 @@ class Senses:
 
     def not_walkable(self):
         if self.kernel().hero.lastActionedTile:
-            self.kernel().hero.lastActionedTile.walkable = False
+            self.kernel().hero.lastActionedTile.walkable_glyph = False
+            self.kernel().hero.lastActionedTile.update_walk_cost()
 
     def leave_pick(self, match):
         pass
@@ -307,12 +316,8 @@ class Senses:
     def carrying_too_mach(self):
         # FIXME (dima) drop smth
         if self.kernel().hero.lastActionedTile:
-            self.kernel().hero.lastActionedTile.walkable = False
-
-    def intact_doorway(self):
-        # FIXME (dima) hack
-        if self.kernel().hero.lastActionedTile:
-            self.kernel().hero.lastActionedTile.walkable = False
+            self.kernel().hero.lastActionedTile.walkable_glyph = False
+            self.kernel().hero.lastActionedTile.update_walk_cost()
 
     def graffiti_on_floor(self):
         self.kernel().log("Found grafitti!")
@@ -415,5 +420,8 @@ class Senses:
             self.kernel().log(f'Pick up what choice: {choice}')
             self.kernel().send(''.join(choice) + '\r')
 
+        elif header and header.find("There is an open door here") >= 0:
+            self.open_door_here()
+            self.kernel().send(' ')
         else:
             self.kernel().send(' ')

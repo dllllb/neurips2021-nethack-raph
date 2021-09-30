@@ -32,7 +32,7 @@ class OpenDoors:
         if len(path) == 1:
             assert path[0] == self.kernel().curTile()
             for tile in self.kernel().curTile().neighbours():
-                if tile.is_door:
+                if tile.is_closed_door:
                     if tile.locked:
                         self.kernel().hero.kick(tile)
                     else:

@@ -72,7 +72,7 @@ class Hero:
             level_number, condition = blstats
 
         self.attributes = (strength, dexterity, constitution, intelligence, wisdom, charisma)
-        self.kernel().log(f'Hero hp: {self.curhp}/{self.maxhp}')
+        self.kernel().log(f'Hero hp: {self.curhp}/{self.maxhp}, hero coords: {self.coords()}')
 
     def attack(self, tile):
         dir = self._get_direction(self.kernel().curTile(), tile)
