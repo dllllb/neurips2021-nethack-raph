@@ -1,4 +1,4 @@
-from nethack_raph.Tile import *
+from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH, COLOR_BG_RED
 import numpy as np
 
 
@@ -6,48 +6,33 @@ class AttackMonster:
     def __init__(self, kernel):
         self.kernel = kernel
 
-    def can(self):
+    def can(self, level):
         if self.kernel().hero.isEngulfed:
             self.kernel().log("Attacking while engulfed..")
             return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
+        monsters = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        for xy, monster in level.monsters.items():
+            if monster is not None and monster.is_attackable:
+                monsters[xy] = True
+                self.kernel().log(f"Found monster {xy}: {str(monster)}")
 
-        # O(n)
-        monsters = self.kernel().curLevel().findAttackableMonsters()
-        self.kernel().log(f"We found {len(monsters)} monsters")
-        target_tiles = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-
-        # O(n)
-        found_monsters = False
-        for monster in monsters:
-            self.kernel().log(f'monster: {monster}, self: {self.kernel().curTile()}')
-            for neighbour in monster.walkableNeighbours():
-                target_tiles[neighbour.coords()] = True
-                found_monsters = True
-        return found_monsters, target_tiles
+        return monsters.sum() > 0, monsters
 
     def after_search(self, path):
         pass
 
     def execute(self, path):
         self.kernel().log(f'len path: {len(path)}')
-        if len(path) == 1:
-            assert path[0] == self.kernel().curTile()
 
-            for tile in self.kernel().curTile().neighbours():
-                if tile.monster and tile.monster.is_attackable:
-                    self.kernel().hero.attack(tile)
-                    return
-
-            if self.kernel().hero.isEngulfed:
-                self.kernel().hero.attack(self.kernel().curTile().neighbours()[0])
-                return
-
-            self.kernel().log('monster is absent')
-            self.kernel().send(' ')
+        if self.kernel().hero.isEngulfed:
+            self.kernel().hero.attack((self.kernel().hero.x + 1, self.kernel().hero.y))
             return
 
-        self.kernel().sendSignal("interrupt_action", self)
+        if len(path) == 2:  # we are next to the monster
+            self.kernel().hero.attack(path[-2])
+            return
+
         self.kernel().draw_path(path, color=COLOR_BG_RED)
         self.kernel().log("Going towards monster")
         self.kernel().hero.move(path[-2])

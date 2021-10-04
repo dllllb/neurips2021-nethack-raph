@@ -7,23 +7,23 @@ class RestoreHP:
     def __init__(self, kernel):
         self.kernel = kernel
 
-    def can(self):
+    def can(self, level):
         # hp is at an acceptable level
         if self.kernel().hero.curhp >= self.kernel().hero.maxhp / 2:
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
         # monsters nearby
         neib_monsters = list(filter(
-            lambda t: t.monster and t.monster.is_attackable,
-            self.kernel().curTile().neighbours()
+            lambda xy: level.monsters[tuple(xy)] is not None and level.monsters[tuple(xy)].is_attackable,
+            level.neighbours[level.tiles.is_hero].xy.reshape(-1)
         ))
         if neib_monsters:
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
         # monsters with range attack
         neib_monsters = list(filter(
-            lambda t: t.monster and t.monster.is_attackable and t.monster.range_attack,
-            self.kernel().curLevel().tiles
+            lambda m: m is not None and m.is_attackable and m.range_attack,
+            level.monsters.values()
         ))
         if neib_monsters:
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))

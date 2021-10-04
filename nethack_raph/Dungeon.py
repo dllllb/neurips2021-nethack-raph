@@ -1,5 +1,6 @@
-from nethack_raph.Branch import *
+from nethack_raph.Branch import Branch
 from nethack_raph.myconstants import DUNGEON_WIDTH
+from nethack_raph.myconstants import WHEREIS_MINES, WHEREIS_GEHENNOM
 
 
 class Dungeon:
@@ -20,12 +21,11 @@ class Dungeon:
     def tile(self, y, x):
         return self.curBranch.curLevel.tiles[x + y * DUNGEON_WIDTH]
 
-    def update(self, chars, colors, glyphs):
+    def update(self, chars, glyphs):
         if not self.curBranch or self.curBranch.curLevel.dlvl != self.dlvl:
             self.curBranch = self.guessBranch()
-            self.kernel().sendSignal("new_dlvl")
 
-        self.curBranch.update(chars, colors, glyphs)
+        self.curBranch.update(chars, glyphs)
 
     def guessBranch(self):
         if self.dlvl < 2 or (self.dlvl > WHEREIS_MINES[-1] and self.dlvl < WHEREIS_GEHENNOM[0]):

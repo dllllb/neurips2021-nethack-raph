@@ -5,7 +5,7 @@ class Personality:
 
     def nextAction(self):
         self.kernel().log("\n---- Personality ----)")
-        self.curBrain.executeNext()
+        self.curBrain.execute_next(self.kernel().curLevel())
 
     def setBrain(self, brain):
         self.curBrain = brain

@@ -7,7 +7,7 @@ class Elbereth:
     def __init__(self, kernel):
         self.kernel = kernel
 
-    def can(self):
+    def can(self, level):
         # hp is at an acceptable level
         if self.kernel().hero.curhp >= self.kernel().hero.maxhp / 2:
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
@@ -31,18 +31,10 @@ class Elbereth:
                 self.kernel().hero.isLycanthropy]):
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        # there are no monsters nearby, no need to make elbereth
-        # neib_monsters = list(filter(
-        #     lambda t: t.monster and t.monster.is_attackable,
-        #     self.kernel().curTile().neighbours()
-        # ))
-        # if not neib_monsters:
-        #     return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-
         # monsters with elbereth disrespect or range attack
         neib_monsters = list(filter(
-            lambda t: t.monster and t.monster.is_attackable and (not t.monster.respect_elbereth or t.monster.range_attack),
-            self.kernel().curLevel().tiles
+            lambda m: m is not None and m.is_attackable and (not m.respect_elbereth or m.range_attack),
+            level.monsters.values()
         ))
         if neib_monsters:
             self.kernel().log("Beware, there is a monster with elbereth disrespect or range attack")

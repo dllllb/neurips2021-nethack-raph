@@ -7,7 +7,7 @@ class RandomWalk:
     def __init__(self, kernel):
         self.kernel = kernel
 
-    def can(self):
+    def can(self, level):
         return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
     def after_search(self, path):

@@ -1,4 +1,3 @@
-from nethack_raph.TermColor import TermColor
 from nethack_raph.myconstants import TTY_HEIGHT, DUNGEON_WIDTH
 
 import inspect
@@ -132,35 +131,38 @@ class Senses:
         self.kernel().hero.isEngulfed = True
 
     def shopkeep_door(self):
-        for tile in self.kernel().curTile().neighbours():
-            if tile.is_closed_door:
-                tile.shopkeepDoor = True
+        neighbours = self.kernel().curLevel().neighbours[self.kernel().hero.coords()]
+        neighbours.shopkeep_door[neighbours.is_closed_door] = True
 
     def locked_door(self):
-        if self.kernel().hero.lastActionedTile and self.kernel().hero.lastActionedTile.is_closed_door:
-            self.kernel().hero.lastActionedTile.locked = True
+        if self.kernel().hero.lastActionedTile is None:
+            return
+
+        tile = self.kernel().curLevel().tiles[self.kernel().hero.lastActionedTile]
+        if tile.is_closed_door:
+            tile.locked = True
 
     def found_trap(self, type):
         self.kernel().log("I found a trap. Setting char to ^")
-        self.kernel().curTile().set_as_trap()
+        self.kernel().curLevel().set_as_trap(self.kernel().curTile())
 
     def fell_into_pit(self):
         self.kernel().log("I fell into a pit :(")
         self.kernel().hero.inPit = True
-        self.kernel().curTile().set_as_trap()
+        self.kernel().curLevel().set_as_trap(self.kernel().curTile())
 
     def found_beartrap(self):
         self.kernel().log("Found a beartrap. Setting tile to ^")
-        self.kernel().curTile().set_as_trap()
+        self.kernel().curLevel().set_as_trap(self.kernel().curTile())
 
     def stepped_in_beartrap(self):
         self.kernel().log("Just stepped into a beartrap :(")
         self.kernel().hero.inBearTrap = True
-        self.kernel().curTile().set_as_trap()
+        self.kernel().curLevel().set_as_trap(self.kernel().curTile())
 
     def trigger_trap(self):
         self.kernel().log("Triggered a trap, setting char to ^.. Not changing color yet")
-        self.kernel().curTile().set_as_trap()
+        self.kernel().curLevel().set_as_trap(self.kernel().curTile())
 
     def blinded(self):
         self.kernel().log("I got blinded.")
@@ -175,12 +177,14 @@ class Senses:
             pass
 
     def open_door_here(self):
-        self.kernel().log("Setting tile to '-' with door colors")
-        self.kernel().curTile().setTile('-', TermColor(33, 0, False, False), 2373)
+        tile = self.kernel().curLevel().tiles[self.kernel().hero.coords()]
+        if not tile.is_opened_door:
+            self.kernel().curLevel().set_as_door(tile)
 
     def open_door_there(self):
-        self.kernel().log("Setting tile to '-' with door colors")
-        self.kernel().hero.lastActionedTile.setTile('-', TermColor(33, 0, False, False), 2373)
+        tile = self.kernel().curLevel().tiles[self.kernel().hero.lastActionedTile]
+        if not tile.is_opened_door:
+            self.kernel().curLevel().set_as_door(tile)
 
     def call_potion(self, match):
         self.kernel().send("\x1b")
@@ -191,36 +195,30 @@ class Senses:
             self.kernel().send('n')
             return
 
-        if not all([item.is_food for item in self.kernel().curTile().items if item.char == '%']):
+        if not all([item.is_food for item in self.kernel().curLevel().items[self.kernel().hero.coords()] if item.char == '%']):
             # otherwise we should check that food in msg correspond to edible food
             self.kernel().log('not edible: eating aborted')
             self.kernel().send('n')
-            for item in self.kernel().curTile().items:
+            for item in self.kernel().curLevel().items[self.kernel().hero.coords()]:
                 if item.char == '%':
                     item.is_food = False
+            return
 
-        elif 'corpse' in msg and not bool([item.is_food for item in self.kernel().curTile().items if item.corpse]):
+        if 'corpse' in msg and not bool([item.is_food for item in self.kernel().curLevel().items[self.kernel().hero.coords()] if item.corpse]):
             self.kernel().log('unknown / not edible corpse: eating aborted')
             self.kernel().send('n')
-            for item in self.kernel().curTile().items:
+            for item in self.kernel().curLevel().items[self.kernel().hero.coords()]:
                 if item.char == '%':
                     item.is_food = False
+            return
 
-        else:
-            self.kernel().log('eating...')
-            self.kernel().send('y')
-
-    def stop_eating(self, msg):
-        # probably ate something wrong
-        self.kernel().log('not edible: eating aborted')
-        self.kernel().send('n')
-        for item in self.kernel().curTile().items:
-            if item.char == '%':
-                item.is_food = False
+        self.kernel().log('eating...')
+        self.kernel().send('y')
 
     def no_door(self):
         if self.kernel().hero.lastActionedTile:
-            self.kernel().hero.lastActionedTile.is_closed_door = False
+            tile = self.kernel().curLevel().tiles[self.kernel().hero.lastActionedTile]
+            tile.is_closed_door = False
 
     def what_to_eat(self, matched):
         options = matched.groups()[0]
@@ -238,10 +236,8 @@ class Senses:
 
         if match.groups()[0] == 'down':
             self.kernel().curTile().char = '>'
-            self.kernel().curTile().color = TermColor(37, 0, False, False)
         else:
             self.kernel().curTile().char = '<'
-            self.kernel().curTile().color = TermColor(37, 0, False, False)
 
     def leg_no_shape(self):
         #TODO DONT WORK
@@ -254,38 +250,47 @@ class Senses:
 
     def found_items(self, tmp, msg):
         self.kernel().log("Found some item(s)..")
-        self.kernel().sendSignal("foundItemOnFloor")
 
     def shop_entrance(self, match, msg):
+        # TODO (level refactor)
         self.kernel().log("Found a shop.")
 
         if self.kernel().curTile().is_opened_door and self.kernel().hero.lastAction == 'move':
-            prev_coords = (self.kernel().hero.beforeMove[1], self.kernel().hero.beforeMove[0])
+            prev_coords = self.kernel().hero.beforeMove
             cur_coords = self.kernel().hero.coords()
             # entrance is opposite to the tile where we came from
-            entrance_y, entrance_x = tuple((2*c - p) for c, p in list(zip(cur_coords, prev_coords)))
-            entrance_tile = self.kernel().dungeon.tile(entrance_y, entrance_x)
+            entrance_x, entrance_y = tuple((2*c - p) for c, p in list(zip(cur_coords, prev_coords)))
+            entrance_tile = self.kernel().curLevel().tiles[entrance_x, entrance_y]
 
             entrance_tile.shop_entrance = True
-            entrance_tile.update_walk_cost()
+            self.kernel().curLevel().update_walk_cost(entrance_tile)
             self.kernel().log(f'Shop entrance: {entrance_tile}')
 
         buf = [self.kernel().curTile()]
         while buf:
-            for tile in buf.pop().neighbours():
+            for tile in self.kernel().curLevel().get_neighbours(buf.pop()):
                 # This could break once a year or so (if a monster is standing in a non-shop square after you login?)
-                if (tile.char == '.' or (tile.monster and not tile.monster.pet) or tile.items) and not tile.inShop:
+                x, y = tile.xy
+                is_monster = bool(self.kernel().curLevel().monsters[x, y]) and not self.kernel().curLevel().monsters[x, y].pet
+                is_item = bool(self.kernel().curLevel().items[x, y])
+                if (tile.char == '.' or is_monster or is_item) and not tile.in_shop:
                     buf.append(tile)
-
                     self.kernel().log("Setting %s to be inside a shop." % tile)
-                    tile.inShop = True
+                    self.kernel().curLevel().tiles[x, y].in_shop = True
 
     def food_is_eaten(self):
         pass
-        # self.kernel().curTile().items = []
 
     def no_food(self):
-        for item in self.kernel().curTile().items:
+        for item in self.kernel().curLevel().items[self.kernel().hero.coords()]:
+            if item.char == '%':
+                item.is_food = False
+
+    def stop_eating(self, msg):
+        # probably ate something wrong
+        self.kernel().log('not edible: eating aborted')
+        self.kernel().send('n')
+        for item in self.kernel().curLevel().items[self.kernel().hero.coords()]:
             if item.char == '%':
                 item.is_food = False
 
@@ -296,13 +301,14 @@ class Senses:
         self.kernel().send('r\r') # 'r\r' seems to work
 
     def is_statue(self):
-        if self.kernel().hero.lastActionedTile and self.kernel().hero.lastActionedTile.monster:
-            self.kernel().hero.lastActionedTile.monster.is_statue = True
+        if self.kernel().hero.lastActionedTile and self.kernel().curLevel().monsters[self.kernel().hero.lastActionedTile]:
+            self.kernel().curLevel().monsters[self.kernel().hero.lastActionedTile].is_statue = True
 
     def not_walkable(self):
         if self.kernel().hero.lastActionedTile:
-            self.kernel().hero.lastActionedTile.walkable_glyph = False
-            self.kernel().hero.lastActionedTile.update_walk_cost()
+            tile = self.kernel().curLevel().tiles[self.kernel().hero.lastActionedTile]
+            tile.walkable_glyph = False
+            self.kernel().curLevel().update_walk_cost(tile)
 
     def leave_pick(self, match):
         pass
@@ -316,8 +322,9 @@ class Senses:
     def carrying_too_mach(self):
         # FIXME (dima) drop smth
         if self.kernel().hero.lastActionedTile:
-            self.kernel().hero.lastActionedTile.walkable_glyph = False
-            self.kernel().hero.lastActionedTile.update_walk_cost()
+            tile = self.kernel().curLevel().tiles[self.kernel().hero.lastActionedTile]
+            tile.walkable_glyph = False
+            self.kernel().curLevel().update_walk_cost(tile)
 
     def graffiti_on_floor(self):
         self.kernel().log("Found grafitti!")
@@ -327,12 +334,12 @@ class Senses:
         self.kernel().hero.set_attributes(msg)
         self.kernel().log(str(self.messages))
 
-    def killed_monster(self, msg):
-        if not self.kernel().hero.lastActionedTile or not self.kernel().hero.lastActionedTile.items:
+    def killed_monster(self, match, msg):
+        if self.kernel().hero.lastActionedTile is None:
             return
 
-        for item in self.kernel().hero.lastActionedTile.items:
-            if item.corpse:  # FIXME (nikita) check glyph of killed monster
+        for item in self.kernel().curLevel().items[self.kernel().hero.lastActionedTile]:
+            if item.corpse and item.corpse in msg and item.turn_of_death < 0:
                 item.turn_of_death = self.kernel().hero.turns
 
     def you_read(self, match):
@@ -340,24 +347,24 @@ class Senses:
         self.kernel().curTile().has_elbereth = match.groups()[0] == 'Elbereth'
 
     def nothing_found(self):
-        self.kernel().curTile().items = []
+        self.kernel().curLevel().clear_items(*self.kernel().hero.coords())
 
     def cant_write(self):
-        if self.kernel().curTile().char is None:
+        if self.kernel().curTile().char == '':
             self.kernel().curTile().char = '{'
 
     def you_was_hit(self):
         if self.kernel().curTile().has_elbereth:
             # you was hit, possible from distance, elbereth doesn't protect you
-            for tile in self.kernel().curLevel().tiles:
-                if tile.monster and not tile.monster.pet:
-                    tile.monster.range_attack = False
+            for monster in self.kernel().curLevel().monsters.values():
+                if monster and not monster.pet:
+                    monster.range_attack = True
 
     def no_pickup(self):
-        self.kernel().curTile().items = []
+        self.kernel().curLevel().clear_items(*self.kernel().hero.coords())
 
     def picked_up(self):
-        self.kernel().curTile().items = []
+        self.kernel().curLevel().clear_items(*self.kernel().hero.coords())
 
     def dressed(self):
         if self.kernel().hero.armor_class >= self.kernel().hero.armor_class_before:
@@ -416,7 +423,7 @@ class Senses:
                     else:
                         break
 
-            self.kernel().curTile().items = []
+            self.kernel().curLevel().clear_items(*self.kernel().hero.coords())
             self.kernel().log(f'Pick up what choice: {choice}')
             self.kernel().send(''.join(choice) + '\r')
 

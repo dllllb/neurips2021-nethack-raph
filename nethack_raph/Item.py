@@ -21,6 +21,7 @@ class Item(Findable):
                     ]
 
     item_glyp_ranges = {
+        'corpse': (1144, 1524),
         'weapon': (1907, 1976),
         'armor': (1977, 2055),
         'ring': (2056, 2083),
@@ -35,7 +36,7 @@ class Item(Findable):
         'gem': (2317, 2352),
     }
 
-    def __init__(self, name, char, color, glyph, kernel, heavy=False):
+    def __init__(self, name, char, glyph, kernel):
         Findable.__init__(self)
 
         self.name = name
@@ -47,8 +48,6 @@ class Item(Findable):
         self.page = None
 
         self.char = char
-        self.color = color
-        self.heavy = heavy or self.char in ['0']
 
         self.glyph = glyph
         self.kernel = kernel
@@ -64,13 +63,7 @@ class Item(Findable):
                 break
 
     def __str__(self):
-        return "?:%s, ch:%s, c:%s, g:%s" % tuple(map(str, (self.name, self.char, self.color, self.glyph)))
-
-    def isHeavy(self):
-        return self.char in ['`', '0']
-
-    def canPickup(self):
-        return self.char not in ['_', '\\']
+        return "?:%s, ch:%s, g:%s" % tuple(map(str, (self.name, self.char, self.glyph)))
 
     def identified(self, id):
         self.name = id
@@ -78,7 +71,7 @@ class Item(Findable):
     def check_if_food(self):
         if self.char != '%': return False
         if 1144 <= self.glyph <= 1524:  # corpse
-            self.corpse = True
+            self.corpse = MONSTERS_GLOSSARY[self.glyph - 1144]['name']
             monster_corpse = MONSTERS_GLOSSARY[self.glyph - 1144]['corpse']
 
             if monster_corpse['cannibal'] and self.kernel().hero.race in (None, monster_corpse['cannibal']):
@@ -98,7 +91,7 @@ class Item(Findable):
             return True
 
     def is_tainted(self):
-        tainted = self.corpse and self.kernel().hero.turns - self.turn_of_death >= 30
+        tainted = bool(self.corpse) and self.kernel().hero.turns - self.turn_of_death >= 30
         if self.corpse:
-            self.kernel().log("Corpse. is tainted: %s %s %s" % (tainted, self.kernel().hero.turns, self.turn_of_death))
+            self.kernel().log(f"Corpse is {'' if tainted else 'not'} tainted: {(self.kernel().hero.turns, self.turn_of_death)}")
         return tainted

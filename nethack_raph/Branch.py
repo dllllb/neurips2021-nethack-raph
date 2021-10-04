@@ -8,7 +8,7 @@ class Branch:
         self.curLevel = None
         self.kernel = kernel
 
-    def update(self, chars, colors, glyphs):
+    def update(self, chars, glyphs):
         if not self.curLevel or self.curLevel.dlvl != self.kernel().dungeon.dlvl:
             result = [level for level in self.levels if level.dlvl == self.kernel().dungeon.dlvl]
             if len(result) > 1:
@@ -19,4 +19,4 @@ class Branch:
                 self.levels.append(Level(self.kernel, self.kernel().dungeon.dlvl))
                 self.curLevel = self.levels[-1]
 
-        self.curLevel.update(chars, colors, glyphs)
+        self.curLevel.update(chars, glyphs)
