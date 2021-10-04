@@ -91,13 +91,22 @@ class Kernel:
         self.bot = self.tty_chars[22 * TTY_WIDTH:]
 
         if self.verbose:
-            TTY_BRIGHT = 8
-            for y in range(0, TTY_HEIGHT):
-                for x in range(0, TTY_WIDTH):
-                    ch = self.state[0][y, x]
-                    color = 30 + int(self.state[1][y, x] & ~TTY_BRIGHT)
-                    self.stdout("\x1b[%dm\x1b[%d;%dH%c" % (color, y+1, x+1, ch))
-            self.log_screen(chars=self.state[0], log=self._frames_log, coords=(obs['blstats'][1], obs['blstats'][0]))
+            chrs, cols = self.state
+            # render output line by line with ANSI escapes
+            ansi = ''
+            for L in range(TTY_HEIGHT):
+                # position the cursor at (L, C) with \033[<L>;<C>H 1-based
+                ansi += f'\033[{L+1};1H'
+                for C in range(TTY_WIDTH):
+                    # set fg color with \033[<bold?>;3<3-bit color>m
+                    cl, ch = cols[L, C], chrs[L, C]
+                    ansi += f'\033[{bool(cl & 8):1d};3{cl & 7:1d}m{ch:c}'
+            ansi += f'\033[{TTY_HEIGHT+1};1H'
+
+            # save/restore the cursor, and reset the color back to normal
+            self.stdout(f'\033[s{ansi}\033[u\033[m')
+            self.log_screen(chars=self.state[0], log=self._frames_log,
+                            coords=(obs['blstats'][1], obs['blstats'][0]))
 
         self.log(f"\n ------------------ STEP {self.steps} ------------------ ")
         if self.hero.turns != obs['blstats'][20]:
