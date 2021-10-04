@@ -7,21 +7,14 @@ class Explore:
     def __init__(self, kernel):
         self.kernel = kernel
 
-    def can(self):
-        goal_coords = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-
+    def can(self, level):
         if self.kernel().curLevel().explored:
             self.kernel().log("Level is explored.")
-            return False, goal_coords
+            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        self.kernel().log("No goals defined in Explore, finding one ..")
-
-        found_unexplored = False
-        for tile in filter(lambda t: not t.explored and t.walkable_tile and not t.isHero(), self.kernel().curLevel().tiles):
-            goal_coords[tile.coords()] = True
-            found_unexplored = True
-
-        return found_unexplored, goal_coords
+        targets = np.logical_not(level.tiles.explored) & level.tiles.walkable_tile & np.logical_not(level.tiles.is_hero)
+        self.kernel().log(f"Found {targets.sum()} goals to explore")
+        return targets.sum() > 0, targets
 
     def after_search(self, path):
         if path is None:

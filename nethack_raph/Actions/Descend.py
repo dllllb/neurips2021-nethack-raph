@@ -7,22 +7,19 @@ class Descend:
     def __init__(self, kernel):
         self.kernel = kernel
 
-    def can(self):
-        goal_coords = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-
+    def can(self, level):
         self.kernel().log("Finding '>' ..")
-        stairs = list(filter(lambda tile: tile.char == '>', self.kernel().curLevel().tiles))
-        self.kernel().log(f"Found {len(stairs)} stairs")
-        for stair in stairs: # Grammar <3
-            goal_coords[stair.coords()] = True
-        return len(stairs), goal_coords
+        stairs = level.tiles.char == '>'
+        self.kernel().log(f"Found {stairs.sum()} stairs")
+        return stairs.sum() > 0, stairs
 
     def after_search(self, path):
         pass
 
     def execute(self, path):
         if len(path) == 1:
-            if path[0].char == '>':
+            assert path[0] == tuple(self.kernel().curTile().xy)
+            if self.kernel().curTile().char == '>':
                 self.kernel().hero.descend()
                 return
             self.kernel().log('door is absent')

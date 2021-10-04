@@ -8,7 +8,7 @@ class PickUpStuff:
         self.kernel = kernel
         self.action_to_do = None
 
-    def can(self):
+    def can(self, level):
         if self.kernel().inventory.take_off_armors:
             self.action_to_do = 'take_off'
             return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
@@ -20,16 +20,15 @@ class PickUpStuff:
         if self.kernel().hero.levitating:  # You cannot reach the floor.
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        armor_tiles = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-        found_armor = False
-        for armor in filter(
-                lambda t: any([item.item_type in ('armor', 'gold_piece') for item in t.items]),
-                [t for t in self.kernel().curLevel().tiles if not t.dropped_here and not t.inShop]):
-            armor_tiles[armor.coords()] = True
-            found_armor = True
-            self.action_to_do = 'pick_up'
-            self.kernel().log(f"Found armor {armor}: {list(map(lambda t: str(t), armor.items))}")
-        return found_armor, armor_tiles
+        stuff_tiles = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        for xy, items in level.items.items():
+            if level.tiles[xy].in_shop or level.tiles[xy].dropped_here: continue
+            if any([item.item_type in ('armor', 'gold_piece') for item in items]):
+                stuff_tiles[xy] = True
+                self.action_to_do = 'pick_up'
+                self.kernel().log(f"Found stuff {xy}: {list(map(lambda t: str(t), items))}")
+
+        return stuff_tiles.sum() > 0, stuff_tiles
 
     def after_search(self, path):
         pass
@@ -46,11 +45,9 @@ class PickUpStuff:
             return
 
         if len(path) == 1:
-            assert path[0] == self.kernel().curTile()
+            assert path[0] == tuple(self.kernel().curTile().xy)
             self.kernel().hero.pick()
             return
 
         self.kernel().log(path)
         self.kernel().hero.move(path[-2])
-        # self.kernel().sendSignal("interrupt_action", self)
-

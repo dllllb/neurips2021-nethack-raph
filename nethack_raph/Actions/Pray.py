@@ -8,7 +8,7 @@ class Pray:
         self.kernel = kernel
         self.prev_pray = -1000
 
-    def can(self):
+    def can(self, level):
         if self.kernel().hero.turns - self.prev_pray < 1000:
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 

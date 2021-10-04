@@ -1,5 +1,4 @@
 from nethack_raph.myconstants import TTY_WIDTH, TTY_HEIGHT, TTY_BRIGHT, DUNGEON_WIDTH
-from nethack_raph.TermColor import TermColor
 from nethack_raph.Personality import Personality
 from nethack_raph.Senses import Senses
 from nethack_raph.Hero import Hero
@@ -34,8 +33,6 @@ class Kernel:
 
         self.personality.setBrain(self.curBrain)  # Default brain
 
-        self.signalReceivers = []
-
         self.action = ' '
 
         self.stdout("\u001b[2J\u001b[0;0H")
@@ -57,7 +54,7 @@ class Kernel:
         return self.dungeon.curBranch.curLevel
 
     def curTile(self):
-        return self.dungeon.curBranch.curLevel.tiles[self.hero.x + self.hero.y * DUNGEON_WIDTH]
+        return self.dungeon.curBranch.curLevel.tiles[self.hero.x, self.hero.y]
 
     def searchBot(self, regex):
         return re.search(regex, self.bot)
@@ -77,6 +74,9 @@ class Kernel:
         return self.tty_chars[row * TTY_WIDTH: (row + 1) * TTY_WIDTH]
 
     def step(self, obs):
+        if self.hero.score >= 1000:
+            self.die('reached 1000')
+            return self.action
         self.steps += 1
 
         self.state = np.zeros((2, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
@@ -95,7 +95,7 @@ class Kernel:
                     ch = self.state[0][y, x]
                     color = 30 + int(self.state[1][y, x] & ~TTY_BRIGHT)
                     self.stdout("\x1b[%dm\x1b[%d;%dH%c" % (color, y+1, x+1, ch))
-            self.log_screen(chars=self.state[0], log=self._frames_log)
+            self.log_screen(chars=self.state[0], log=self._frames_log, coords=(obs['blstats'][1], obs['blstats'][0]))
 
         if len(self.action) != 0:
             self.action = self.action[1:]
@@ -124,7 +124,7 @@ class Kernel:
 
         self.log("--------- DUNGEON ---------")
         self.dungeon.dlvl = obs['blstats'][12]
-        self.dungeon.update(bytes(obs['chars']).decode('ascii'), obs['colors'].flat, obs['glyphs'].flat)
+        self.dungeon.update(bytes(obs['chars']).decode('ascii'), obs['glyphs'])
         assert len(self.action) == 0
 
         # this checks for a foreground overlay message
@@ -149,14 +149,6 @@ class Kernel:
 
         self.log("\n\nUpdates ended.")
         return self.action
-
-    def addSignalReceiver(self, sr):
-        self.signalReceivers.append(sr)
-
-    def sendSignal(self, s, *args, **args2):
-        self.log("Sending signal " + s)
-        for sr in self.signalReceivers:
-            sr.signal(s, *args, **args2)
 
     def send(self, line):
         self.action = self.action + line
@@ -184,9 +176,9 @@ class Kernel:
     def draw_path(self, path, color=41):
         if self.verbose:
             for tile in path:
-                self.stdout("\x1b[%dm\x1b[%d;%dH%s\x1b[m" % (color, tile.y + 2, tile.x + 1, tile.appearance()))
+                self.stdout("\x1b[%dm\x1b[%d;%dH%s\x1b[m" % (color, tile[0] + 2, tile[1] + 1, 'X'))
 
-    def log_screen(self, chars, log):
+    def log_screen(self, chars, log, coords):
         if not self.verbose:
             return
 
@@ -195,7 +187,7 @@ class Kernel:
             for ch in row:
                 log.write(chr(ch))
         if self.dungeon.curBranch:
-            log.write(str(self.curTile().coords()))
+            log.write(str(coords))
         log.flush()
 
     def stdout(self, msg):

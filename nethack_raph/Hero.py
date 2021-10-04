@@ -1,5 +1,3 @@
-from nethack_raph.TermColor import TermColor
-
 import re
 
 
@@ -52,7 +50,7 @@ class Hero:
         self.armor_class_before = None
 
     def coords(self):
-        return self.y, self.x
+        return self.x, self.y
 
     def update(self, blstats, top_line, bot_line):
         # TODO: use them
@@ -65,7 +63,7 @@ class Hero:
         self.hallu = bool(re.search("Hallu", bot_line))
         self.levitating = bool(re.search("Lev", bot_line))
 
-        self.x, self.y, strength_percentage, strength, dexterity, constitution, \
+        self.y, self.x, strength_percentage, strength, dexterity, constitution, \
             intelligence, wisdom, charisma, self.score, self.curhp, self.maxhp, \
             _, self.gold, self.curpw, self.maxpw, self.armor_class, monster_level, \
             self.xp, self.xp_next, self.turns, self.hunger, carrying_capacity, dungeon_number, \
@@ -75,36 +73,19 @@ class Hero:
         self.kernel().log(f'Hero hp: {self.curhp}/{self.maxhp}, hero coords: {self.coords()}')
 
     def attack(self, tile):
-        dir = self._get_direction(self.kernel().curTile(), tile)
+        dir = self._get_direction(self.coords(), tile)
         self.kernel().drawString("Attacking -> %s (%s)" % (dir, tile))
         self.kernel().send("F"+dir)
         self.lastActionedTile = tile
         self.lastAction = 'attack'
 
     def move(self, tile):
-        if self.beforeMove == (self.x, self.y) and self.tmpCount < 5 and not (self.inBearTrap or self.inPit):
-            self.kernel().log("Hero asked to move, but I still havn't moved after last update, ignoring this")
-            self.tmpCount = self.tmpCount + 1
-        else:
-            if self.beforeMove != (self.x, self.y):
-                self.inBearTrap = False
-                self.inPit = False
-            else:
-                if self.tmpCount > 3:
-                    if not tile.char:
-                        self.kernel().log("Made a door at %s" % tile)
-                        tile.char = '-'
-                        tile.color = TermColor(33, 0, False, False)
-                        self.kernel().sendSignal("interrupt_action")
+        dir = self._get_direction(self.coords(), tile, allowed_door_diagonally=False)
+        self.kernel().drawString("Walking -> %s (%s)" % (dir, tile))
 
-            dir = self._get_direction(self.kernel().curTile(), tile)
-            self.kernel().drawString("Walking -> %s (%s)" % (dir, tile))
-
-            self.beforeMove = (self.x, self.y)
-            self.tmpCount = 0
-
-            self.lastActionedTile = tile
-            self.kernel().send(dir)
+        self.beforeMove = (self.x, self.y)
+        self.kernel().send(dir)
+        self.lastActionedTile = tile
         self.lastAction = 'move'
 
     def descend(self):
@@ -113,24 +94,25 @@ class Hero:
         self.lastAction = 'descend'
 
     def open(self, tile):
-        dir = self._get_direction(self.kernel().curTile(), tile)
+        dir = self._get_direction(self.coords(), tile)
         self.kernel().log("Hero is opening a door..")
         self.kernel().send("o%s" % dir)
         self.lastActionedTile = tile
         self.lastAction = 'open'
 
     def kick(self, tile):
-        dir = self._get_direction(self.kernel().curTile(), tile)
+        dir = self._get_direction(self.coords(), tile)
         self.kernel().log("Hero is kicking a door..")
         self.kernel().send("\x04%s" % dir)
         self.lastAction = 'kick'
 
     def search(self, times=1):
         self.kernel().send("%ds" % times)
-        for neighbour in self.kernel().curTile().neighbours():
-            neighbour.searches = neighbour.searches + times
-            if neighbour.searches >= self.kernel().curLevel().maxSearches:
-                neighbour.searched = True
+
+        neighbours = self.kernel().curLevel().neighbours[self.kernel().hero.coords()]
+        neighbours.searches += times
+        neighbours.searched[neighbours.searches >= self.kernel().curLevel().maxSearches] = True
+
         self.lastAction = 'search'
 
     def eat(self):
@@ -186,28 +168,48 @@ class Hero:
         self.lastAction = 'take_off'
         self.kernel().hero.lastActionedItem = armor_letter
 
-    def canPickupHeavy(self):
-        # for poly and stuff
-        return False
+    def _get_direction(self, source, target, allowed_door_diagonally=True):
+        source_x, source_y = source
+        target_x, target_y = target
 
-    def _get_direction(self, source, target):
-        if abs(source.y - target.y) > 1 or abs(source.x - target.x) > 1:
+        if abs(source_y - target_y) > 1 or abs(source_x - target_x) > 1:
             self.kernel().die(f"\n\nAsked for directions to a nonadjacent tile {source} -> {target}\n\n")
-        if source.y < target.y and source.x < target.x:
+
+        if not allowed_door_diagonally:
+            # A small hack. can't move diagonally into the doorway and out of the doorway
+            target_tile = self.kernel().curLevel().tiles[target]
+            source_tile = self.kernel().curLevel().tiles[source]
+            if (source_tile.is_opened_door or target_tile.is_opened_door) and abs(source_y - target_y) + abs(source_x - target_x) > 1:
+
+                if self.kernel().curLevel().tiles[target_x, source_y].walkable_tile:
+                    self.kernel().log(f'walk to {(target_x, source_y)} instead of {target}')
+                    target_y = source_y
+
+                elif self.kernel().curLevel().tiles[source_x, target_y].walkable_tile:
+                    self.kernel().log(f'walk to {(source_x, target_y)} instead of {target}')
+                    target_x = source_x
+
+                else:
+                    target_tile.shop_entrance = True
+                    self.kernel().curLevel().update_walk_cost(target_tile)
+                    self.kernel().log(f'{target} should be a shop_entrance')
+                    return ' '
+
+        if source_x < target_x and source_y < target_y:
             return 'n'
-        if source.y < target.y and source.x == target.x:
+        if source_x < target_x and source_y == target_y:
             return 'j'
-        if source.y < target.y and source.x > target.x:
+        if source_x < target_x and source_y > target_y:
             return 'b'
-        if source.y == target.y and source.x < target.x:
+        if source_x == target_x and source_y < target_y:
             return 'l'
-        if source.y == target.y and source.x > target.x:
+        if source_x == target_x and source_y > target_y:
             return 'h'
-        if source.y > target.y and source.x < target.x:
+        if source_x > target_x and source_y < target_y:
             return 'u'
-        if source.y > target.y and source.x == target.x:
+        if source_x > target_x and source_y == target_y:
             return 'k'
-        if source.y > target.y and source.x > target.x:
+        if source_x > target_x and source_y > target_y:
             return 'y'
 
     def set_attributes(self, msg):

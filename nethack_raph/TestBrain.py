@@ -1,54 +1,70 @@
 from nethack_raph.Brain import *
-from nethack_raph.Pathing import dijkstra
+from nethack_raph.Pathing import dijkstra_pathing, mcp_pathing, check_neighbours
+from nethack_raph.myconstants import DUNGEON_WIDTH
 
 
 class TestBrain(Brain):
     def __init__(self, kernel):
         Brain.__init__(self, "TestBrain", kernel)
 
-        self.actions = [
-            Elbereth(kernel),
-            RestoreHP(kernel),
-            AttackMonster(kernel),
-            EatFromInventory(kernel),
-            Eat(kernel),
-            Pray(kernel),
-            PickUpStuff(kernel),
-            FixStatus(kernel),
-            Explore(kernel),
-            OpenDoors(kernel),
-            # [DipForExcalibur(), 1600],
-            # [GetPhatz(),        1500],
-            Descend(kernel),
-            SearchSpot(kernel),
-            Search(kernel),
-            RandomWalk(kernel),
-        ]
+        self.actions = {
+            'Elbereth': Elbereth(kernel),
+            'RestoreHP': RestoreHP(kernel),
+            'AttackMonster': AttackMonster(kernel),
+            'EatFromInventory': EatFromInventory(kernel),
+            'Eat': Eat(kernel),
+            'Pray': Pray(kernel),
+            'PickUpStuff': PickUpStuff(kernel),
+            'FixStatus': FixStatus(kernel),
+            'Explore': Explore(kernel),
+            'OpenDoors': OpenDoors(kernel),
+            # 'Descend': Descend(kernel),
+            'Search': Search(kernel),
+            'RandomWalk': RandomWalk(kernel),
+        }
+        self.prev_action = -1
+        self.prev_path = []
 
-    def executeNext(self):
-        self.kernel().log(self.actions)
-        condition_fns = []
-        enabled_coords = []
-        enabled_actions = []
-        for action in self.actions:
-            can_act, coords = action.can()
+    def execute_next(self, level):
+        for action, action_instance in self.actions.items():
+            can_act, coords = action_instance.can(level)
             if not can_act:
-                action.after_search(None)
+                action_instance.after_search(None)
                 continue
-            enabled_coords.append(coords)
-            condition_fns.append(lambda coords_id, tile: enabled_coords[coords_id][tile.coords()])
-            enabled_actions.append(action)
 
-            path = dijkstra(self.kernel().curTile(), [lambda _, tile: coords[tile.coords()]])[0]
-            action.after_search(path)
-
+            path = self.find_path(level, coords, action)
+            action_instance.after_search(path)
             if path is not None:
-                self.kernel().log(f'found path: {[x.coords() for x in path]} for {action}')
-                action.execute(path)
+                self.prev_action, self.prev_path = action, path
+                self.kernel().log(f'found path length {len(path)} for {action}')
+                action_instance.execute(path)
                 return
             else:
-                self.kernel().log(f"Didn't find path: for {action}")
+                self.kernel().log(f"Didn't find path for {action}")
 
-    def s_isWeak(self):
-        self.kernel().log("Praying because I'm weak")
-        self.kernel().send("#pray\r")
+    def find_path(self, level, coords, action):
+        if coords[self.kernel().hero.coords()]:  # we are at the aim already
+            return [self.kernel().hero.coords()]
+
+        start = int(self.kernel().hero.x * DUNGEON_WIDTH + self.kernel().hero.y)
+        flat_coords = coords.reshape(-1)
+
+        use_prev_path = True
+        if action != self.prev_action:  # doing not the same action as before
+            use_prev_path = False
+        elif len(self.prev_path) <= 3:  # less then 2 steps remaining
+            use_prev_path = False
+        elif self.prev_path[-2] != self.kernel().hero.coords():  # didn't make a step to the right direction
+            use_prev_path = False
+        elif level.tiles.walk_cost[self.prev_path[-3]] != 1:  # Next step is not save
+            use_prev_path = False
+        elif check_neighbours(start, flat_coords):  # there is a goal nearby
+            use_prev_path = False
+
+        if use_prev_path:
+            self.kernel().log(f'Use previous path')
+            return self.prev_path[:-1]
+
+        path = dijkstra_pathing(level.tiles.walk_cost.reshape(-1), start, [lambda _, xy: flat_coords[xy]])[0]
+
+        return path
