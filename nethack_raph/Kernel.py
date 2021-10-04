@@ -33,9 +33,9 @@ class Kernel:
 
         self.personality.setBrain(self.curBrain)  # Default brain
 
-        self.action = ' '
 
         self.stdout("\u001b[2J\u001b[0;0H")
+        self.action = None
         self.state = None
         self.bot = None
         self.top = None
@@ -74,9 +74,7 @@ class Kernel:
         return self.tty_chars[row * TTY_WIDTH: (row + 1) * TTY_WIDTH]
 
     def step(self, obs):
-        if self.hero.score >= 1000:
-            self.die('reached 1000')
-            return self.action
+        self.action = ''
         self.steps += 1
 
         self.state = np.zeros((2, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
@@ -97,12 +95,6 @@ class Kernel:
                     self.stdout("\x1b[%dm\x1b[%d;%dH%c" % (color, y+1, x+1, ch))
             self.log_screen(chars=self.state[0], log=self._frames_log, coords=(obs['blstats'][1], obs['blstats'][0]))
 
-        if len(self.action) != 0:
-            self.action = self.action[1:]
-
-        if self.action:
-            return self.action
-
         self.log(f"\n ------------------ STEP {self.steps} ------------------ ")
         if self.hero.turns != obs['blstats'][20]:
             self.last_turn_update = self.steps
@@ -117,6 +109,10 @@ class Kernel:
         self.log("--------- HERO ---------")
         self.hero.update(obs['blstats'], self.top, self.bot)
         assert len(self.action) == 0
+
+        # if self.hero.score > 1100:
+        #     self.die(f'score = {self.hero.score}')
+        #     return self.action
 
         self.log("-------- INVENTORY -------- ")
         self.inventory.update(obs)

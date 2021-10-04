@@ -70,6 +70,7 @@ class Senses:
             "[a-z] - ": ['picked_up'],
             "You finish your dressing maneuver.": ['dressed'],
             "You finish taking off your mail.": ['took_off'],
+            r".*rop.*gold.*": ['drop_gold']
         }
 
     def update(self):
@@ -86,10 +87,6 @@ class Senses:
             self.messages.append("Things that are here:")
             self.kernel().log("Found some items (row 3).")
             self.kernel().send("    ")
-
-        if self.kernel().searchTop("Really attack"):
-            self.kernel().log("Asked if I really want to attack.")
-            self.kernel().send("y")
 
         #TODO MOVE THE ABOWE TO UPDATE
 
@@ -117,10 +114,20 @@ class Senses:
         elif self.kernel().searchTop("You have a little trouble .*"):
             self.kernel().send('y')
             return
+        elif self.kernel().searchTop("Really attack the guard\? \[yn\] \(n\)"):
+            self.kernel().send('n')
+            return
+        if self.kernel().searchTop("Really attack"):
+            self.kernel().log("Asked if I really want to attack.")
+            self.kernel().send("y")
+            return
 
         elif self.kernel().searchTop("\? \[(.*?)\]"):
             self.kernel().log("Found a prompt we can't handle: %s" % self.kernel().top_line())
             self.kernel().send(" ")
+
+    def drop_gold(self):
+        self.kernel().send('d$')
 
     def got_expelled(self):
         self.kernel().log("Got expelled. Phew!")

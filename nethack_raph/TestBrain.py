@@ -10,17 +10,17 @@ class TestBrain(Brain):
         self.actions = {
             'Elbereth': Elbereth(kernel),
             'RestoreHP': RestoreHP(kernel),
-            'AttackMonster': AttackMonster(kernel),
             'EatFromInventory': EatFromInventory(kernel),
-            'Eat': Eat(kernel),
             'Pray': Pray(kernel),
+            'AttackMonster': AttackMonster(kernel),
+            'Eat': Eat(kernel),
             'PickUpStuff': PickUpStuff(kernel),
             'FixStatus': FixStatus(kernel),
             'Explore': Explore(kernel),
             'OpenDoors': OpenDoors(kernel),
             # 'Descend': Descend(kernel),
             'Search': Search(kernel),
-            'RandomWalk': RandomWalk(kernel),
+            # 'RandomWalk': RandomWalk(kernel),
         }
         self.prev_action = -1
         self.prev_path = []

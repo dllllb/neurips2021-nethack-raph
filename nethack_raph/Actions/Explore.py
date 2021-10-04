@@ -12,7 +12,10 @@ class Explore:
             self.kernel().log("Level is explored.")
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
-        targets = np.logical_not(level.tiles.explored) & level.tiles.walkable_tile & np.logical_not(level.tiles.is_hero)
+        targets = \
+            np.logical_not(level.tiles.explored) & level.tiles.walkable_tile & \
+            np.logical_not(level.tiles.is_hero) & np.logical_not(level.tiles.in_shop)
+
         self.kernel().log(f"Found {targets.sum()} goals to explore")
         return targets.sum() > 0, targets
 

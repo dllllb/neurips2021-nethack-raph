@@ -16,15 +16,20 @@ class Agent:
         }
         self.verbose = verbose
         self.kernel = Kernel(verbose=self.verbose)
+        self.action_queue = ''
 
     def reset(self):
         del self.kernel
+        self.action_queue = ''
         self.kernel = Kernel(verbose=self.verbose)
 
     def step(self, obs):
-        action = self.kernel.step(obs)
-        if len(action):
-            ch = action[0]
+        if not self.action_queue:
+            self.action_queue = self.kernel.step(obs)
+
+        if len(self.action_queue):
+            ch = self.action_queue[0]
+            self.action_queue = self.action_queue[1:]
         else:
             #TODO check if it happens
             ch = ' '

@@ -23,6 +23,10 @@ class Monster:
         # 159,  # red mold
     }
 
+    guard_glyphs = {
+        268
+    }
+
     def __init__(self, char, glyph, kernel):
         self.char = char
         self.glyph = glyph
@@ -36,8 +40,9 @@ class Monster:
         self.respect_elbereth = MONSTERS_GLOSSARY.get(self.glyph, {}).get('elbereth', 1)
         self.peaceful = any([l <= self.glyph <= r for l, r in Monster.peacefuls_monster_glyphs])
         self.passive = self.glyph in Monster.passive_monster_glyphs
+        self.guard = self.glyph in Monster.guard_glyphs
         self.range_attack = False
-        self.is_attackable = self.is_monster and not self.peaceful and not self.passive
+        self.is_attackable = self.is_monster and not self.peaceful and not self.passive and not self.guard
 
     def __str__(self):
         return "n:%s, ch:%s, g:%s, o:%s" % tuple(map(str, [self.name, self.char, self.glyph, self.spoiler]))

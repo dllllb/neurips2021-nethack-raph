@@ -8,8 +8,8 @@ class EatFromInventory:
         self.kernel = kernel
 
     def can(self, state):
-        if self.kernel().hero.hunger == 0:
-            self.kernel().log(f"Hero is Satiated")
+        if self.kernel().hero.hunger < 3:
+            self.kernel().log(f"Hero is not weak")
             return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
 
         self.kernel().log(f"Hero have food: {self.kernel().inventory.have_food()}")

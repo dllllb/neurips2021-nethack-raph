@@ -26,13 +26,13 @@ class Search:
     def after_search(self, path):
         if path is None:
             self.kernel().log(f"Didn't find a path to searchspot. Clear searched")
-            self.kernel().curLevel().maxSearches = self.kernel().curLevel().maxSearches + 5
+            self.kernel().curLevel().maxSearches = self.kernel().curLevel().maxSearches + 60
             self.kernel().curLevel().tiles.searched = False
 
     def execute(self, path):
         if len(path) == 1:
             assert path[0] == tuple(self.kernel().curTile().xy)
-            self.kernel().hero.search(2)
+            self.kernel().hero.search(60)
             return
 
         self.kernel().log("Going towards searchspot")
