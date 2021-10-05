@@ -32,6 +32,18 @@ dtTile = np.dtype([
 ])
 
 
+def fold(array, k=1, *, writeable=True):
+    d0, d1, *shape = array.shape
+    s0, s1, *strides = array.strides
+
+    return np.lib.stride_tricks.as_strided(
+        array,
+        (d0 - 2 * k, d1 - 2 * k, 1 + 2 * k, 1 + 2 * k, *shape),
+        (s0, s1, s0, s1, *strides),
+        writeable=writeable,
+    )
+
+
 class Level:
     glyph_ranges = {
         'monster': (0, 380),
@@ -93,11 +105,7 @@ class Level:
         data.xy[:] = (-1, -1)  # map to the same x-y
 
         # setup O(1) lookup for adjacent tiles on the bordered map
-        sh, sw = data.strides
-        self.neighbours = np.lib.stride_tricks.as_strided(
-            data, (height, width, 3, 3), (sh, sw, sh, sw),
-            # writeable=False,
-        ).view(np.recarray)
+        self.neighbours = fold(data, 1, writeable=True).view(np.recarray)
 
         # the level proper
         self.tiles = tiles = data[1:-1, 1:-1]
@@ -108,13 +116,18 @@ class Level:
         self.monsters = defaultdict(lambda: None)  # the monster population
         self.items = defaultdict(list)  # sparse table of item piles
 
+    @property
+    def shape(self):
+        return self.tiles.shape
+
     def update_one(self, tile, char, glyph):
         # update one tile at the specified location
         x, y = tile.xy
 
         glyph_type = self.glyph_type(glyph)
 
-        if (x, y) in self.monsters: del self.monsters[x, y]
+        if (x, y) in self.monsters:
+            del self.monsters[x, y]
 
         if glyph_type == 'dungeon':
             tile.char = char
@@ -183,7 +196,7 @@ class Level:
 
         if tile.walkable_tile:
             tile.walk_cost = Level.walkables.get(tile.char, 1)
-            if self.monsters[x, y] is not None and not self.monsters[x, y].pet:
+            if (x, y) in self.monsters and not self.monsters[x, y].pet:
                 tile.walk_cost += 100
         else:
             tile.walk_cost = 0
