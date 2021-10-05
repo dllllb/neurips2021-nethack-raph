@@ -8,14 +8,16 @@ class Pray(BaseAction):
 
     def can(self, level):
         if self.hero.turns - self.last_pray_turn < self.timeout:
-            return False, np.zeros(level.shape, dtype=bool)
+            return False, None
 
         hero = self.hero
         if hero.hunger >= 3 or hero.isLycanthropy or hero.curhp <= 5 or hero.curhp <= hero.maxhp / 7:
-            return True, np.ones(level.shape, dtype=bool)
+            return True, None
 
-        return False, np.zeros(level.shape, dtype=bool)
+        return False, None
 
-    def execute(self, path):
+    def execute(self, path=None):
+        assert path is None
+
         self.last_pray_turn = self.hero.turns
         self.hero.pray()

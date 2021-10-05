@@ -26,21 +26,28 @@ class TestBrain(Brain):
         self.prev_path = []
 
     def execute_next(self, level):
-        for action, action_instance in self.actions.items():
-            can_act, coords = action_instance.can(level)
+        for name, action in self.actions.items():
+            can_act, mask = action.can(level)
             if not can_act:
-                action_instance.after_search(None)
+                action.after_search(None)
                 continue
 
-            path = self.find_path(level, coords, action)
-            action_instance.after_search(path)
-            if path is not None:
-                self.prev_action, self.prev_path = action, path
-                self.kernel().log(f'found path length {len(path)} for {action}')
-                action_instance.execute(path)
+            # local actions do not need pathfinding and return mask = None
+            if mask is None:
+                action.execute()  # XXX path is None by default!
                 return
+
+            # movement actions
+            path = self.find_path(level, mask, name)
+            action.after_search(path)
+            if path is not None:
+                self.prev_action, self.prev_path = name, path
+                self.kernel().log(f'found path length {len(path)} for {name}')
+                action.execute(path)
+                return
+
             else:
-                self.kernel().log(f"Didn't find path for {action}")
+                self.kernel().log(f"Didn't find path for {name}")
 
     def find_path(self, level, coords, action):
         if coords[self.kernel().hero.coords()]:  # we are at the aim already

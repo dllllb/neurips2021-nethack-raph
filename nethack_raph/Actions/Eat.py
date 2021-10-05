@@ -3,6 +3,7 @@ import numpy as np
 from nethack_raph.Actions.base import BaseAction
 from nethack_raph.myconstants import COLOR_BG_YELLOW
 
+
 class EatFromInventory(BaseAction):
     def can(self, level):
         # XXX use meaningful constant name rather than a number here
@@ -10,14 +11,14 @@ class EatFromInventory(BaseAction):
             flag = self.kernel().inventory.have_food()
             self.log(f"Hero has food: {flag}")
             if flag:
-                return True, np.ones(level.shape, dtype=bool)
+                return True, None
 
         elif self.hero.hunger < 3:
             self.log(f"Hero is not weak")
 
-        return False, np.zeros(level.shape, dtype=bool)
+        return False, None
 
-    def execute(self, path):
+    def execute(self, path=None):
         self.hero.eat_from_inventory()
 
 

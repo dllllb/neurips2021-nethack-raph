@@ -25,5 +25,5 @@ class Descend(BaseAction):
 
             # XXX raise False?
             return
-        
+
         self.hero.descend()

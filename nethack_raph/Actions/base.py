@@ -13,7 +13,7 @@ class BaseAction:
         return self.kernel().hero
 
     def can(self, level):
-        return False, np.zeros(level.shape, dtype=bool)
+        return False, None
 
     def after_search(self, path):
         pass

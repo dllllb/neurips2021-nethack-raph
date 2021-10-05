@@ -7,7 +7,7 @@ class RestoreHP(BaseAction):
     def can(self, level):
         # hp is at an acceptable level
         if self.hero.curhp >= self.hero.maxhp / 2:
-            return False, np.zeros(level.shape, dtype=bool)
+            return False, None
 
         # monsters nearby
         neighbours = level.neighbours[self.hero.x, self.hero.y].xy.flat
@@ -16,7 +16,7 @@ class RestoreHP(BaseAction):
             if xy in level.monsters and level.monsters[xy].is_attackable
         ]
         if bad_monsters:
-            return False, np.zeros(level.shape, dtype=bool)
+            return False, None
 
         # monsters with range attack
         bad_monsters = [
@@ -24,10 +24,12 @@ class RestoreHP(BaseAction):
             if m.is_attackable and m.range_attack
         ]
         if bad_monsters:
-            return False, np.zeros(level.shape, dtype=bool)
+            return False, None
 
-        return True, np.ones(level.shape, dtype=bool)
+        return True, None
 
-    def execute(self, path):
+    def execute(self, path=None):
+        assert path is None
+
         self.log("Searching for 1 turns because my HP is low")
         self.hero.search(1)

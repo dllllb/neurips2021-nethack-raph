@@ -8,18 +8,17 @@ class Elbereth(BaseAction):
         # hp is at an acceptable level
         hero = self.hero
         if hero.curhp >= hero.maxhp / 2:
-            return False, np.zeros(level.shape, dtype=bool)
-
+            return False, None
 
         # we are staying on elbereth sign already
         tile = level.tiles[hero.x, hero.y]
         if hero.lastAction == 'read' and tile.has_elbereth:
             self.log("We are staying on elbereth sign already")
-            return False, np.zeros(level.shape, dtype=bool)
+            return False, None
 
         # can't write on the fountains
         if tile.char in ['{', '}']:
-            return False, np.zeros(level.shape, dtype=bool)
+            return False, None
 
         # too hard to write while blinded / confused / stunned, etc.
         if any([
@@ -31,7 +30,7 @@ class Elbereth(BaseAction):
             hero.isEngulfed,
             hero.isLycanthropy,
         ]):
-            return False, np.zeros(level.shape, dtype=bool)
+            return False, None
 
         # monsters with elbereth disrespect or range attack
         bad_monsters = [
@@ -40,11 +39,13 @@ class Elbereth(BaseAction):
         ]
         if bad_monsters:
             self.log("Beware, there is a monster with elbereth disrespect or range attack")
-            return False, np.zeros(level.shape, dtype=bool)
+            return False, None
 
-        return True, np.ones(level.shape, dtype=bool)
+        return True, None
 
-    def execute(self, path):
+    def execute(self, path=None):
+        assert path is None
+
         hero = self.hero
         if hero.lastAction != 'read':
             hero.read()
