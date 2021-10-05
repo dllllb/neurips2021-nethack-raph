@@ -1,26 +1,21 @@
-from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
-
 import numpy as np
 
+from nethack_raph.Actions.base import BaseAction
 
-class Pray:
-    def __init__(self, kernel):
-        self.kernel = kernel
-        self.prev_pray = -1000
+
+class Pray(BaseAction):
+    last_pray_turn, timeout = -1000, 1000
 
     def can(self, level):
-        if self.kernel().hero.turns - self.prev_pray < 1000:
-            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        if self.hero.turns - self.last_pray_turn < self.timeout:
+            return False, np.zeros(level.shape, dtype=bool)
 
-        hero = self.kernel().hero
-        if hero.hunger >= 3 or hero.curhp <= 5 or hero.isLycanthropy or hero.curhp <= hero.maxhp / 7:
-            return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        hero = self.hero
+        if hero.hunger >= 3 or hero.isLycanthropy or hero.curhp <= 5 or hero.curhp <= hero.maxhp / 7:
+            return True, np.ones(level.shape, dtype=bool)
 
-        return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-
-    def after_search(self, path):
-        pass
+        return False, np.zeros(level.shape, dtype=bool)
 
     def execute(self, path):
-        self.prev_pray = self.kernel().hero.turns
-        self.kernel().hero.pray()
+        self.last_pray_turn = self.hero.turns
+        self.hero.pray()

@@ -1,29 +1,38 @@
-from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
-
 import numpy as np
 
+from nethack_raph.Actions.base import BaseAction
 
-class RandomWalk:
-    def __init__(self, kernel):
-        self.kernel = kernel
 
+class RandomWalk(BaseAction):
     def can(self, level):
-        targets = \
-            np.logical_not(level.tiles.visited) & level.tiles.walkable_tile & \
-            np.logical_not(level.tiles.is_hero) & (level.tiles.char == '.') & \
-            np.logical_not(level.tiles.in_shop)
-        return targets.sum() > 0, targets
+        targets = level.tiles.walkable_tile & \
+            (level.tiles.char == '.') & \
+            ~level.tiles.visited & \
+            ~level.tiles.is_hero & \
+            ~level.tiles.in_shop
+
+        return targets.any(), targets
 
     def after_search(self, path):
         if path is None:
             self.kernel().curLevel().tiles.visited = False
-        self.kernel().hero.search(30)
+        self.hero.search(30)
 
     def execute(self, path):
-        self.kernel().hero.move(path[-2])
+        *tail, one = path
+        hero = self.hero
+        assert one == (hero.x, hero.y)
+
+        if not tail:  # XXX used to raise IndexError
+            raise RuntimeError
+
+        self.hero.move(tail[-1])
+
+        # XXX what do we do here?
+        level = self.kernel().curLevel()
         queue = [self.kernel().curTile()]
         while queue:
             front = queue.pop()
             if front.char == '.' and not front.visited:
-                self.kernel().curLevel().tiles[front.xy.x, front.xy.y].visited = True
-                queue.extend(self.kernel().curLevel().get_neighbours(front))
+                level.tiles[tuple(front.xy)].visited = True
+                queue.extend(level.get_neighbours(front))

@@ -1,38 +1,33 @@
-from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
-
 import numpy as np
 
+from nethack_raph.Actions.base import BaseAction
 
-class RestoreHP:
-    def __init__(self, kernel):
-        self.kernel = kernel
 
+class RestoreHP(BaseAction):
     def can(self, level):
         # hp is at an acceptable level
-        if self.kernel().hero.curhp >= self.kernel().hero.maxhp / 2:
-            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        if self.hero.curhp >= self.hero.maxhp / 2:
+            return False, np.zeros(level.shape, dtype=bool)
 
         # monsters nearby
-        neib_monsters = list(filter(
-            lambda xy: level.monsters[tuple(xy)] is not None and level.monsters[tuple(xy)].is_attackable,
-            level.neighbours[level.tiles.is_hero].xy.reshape(-1)
-        ))
-        if neib_monsters:
-            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        neighbours = level.neighbours[self.hero.x, self.hero.y].xy.flat
+        bad_monsters = [
+            level.monsters[xy] for xy in map(tuple, neighbours)
+            if xy in level.monsters and level.monsters[xy].is_attackable
+        ]
+        if bad_monsters:
+            return False, np.zeros(level.shape, dtype=bool)
 
         # monsters with range attack
-        neib_monsters = list(filter(
-            lambda m: m is not None and m.is_attackable and m.range_attack,
-            level.monsters.values()
-        ))
-        if neib_monsters:
-            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        bad_monsters = [
+            m for m in level.monsters.values()
+            if m.is_attackable and m.range_attack
+        ]
+        if bad_monsters:
+            return False, np.zeros(level.shape, dtype=bool)
 
-        return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-
-    def after_search(self, path):
-        pass
+        return True, np.ones(level.shape, dtype=bool)
 
     def execute(self, path):
-        self.kernel().log("Searching for 1 turns because my HP is low")
-        self.kernel().hero.search(1)
+        self.log("Searching for 1 turns because my HP is low")
+        self.hero.search(1)

@@ -1,31 +1,29 @@
-from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH, COLOR_BG_GREEN
-
 import numpy as np
 
+from nethack_raph.Actions.base import BaseAction
+from nethack_raph.myconstants import COLOR_BG_GREEN
 
-class Descend:
-    def __init__(self, kernel):
-        self.kernel = kernel
 
+class Descend(BaseAction):
     def can(self, level):
-        self.kernel().log("Finding '>' ..")
         stairs = level.tiles.char == '>'
-        self.kernel().log(f"Found {stairs.sum()} stairs")
-        return stairs.sum() > 0, stairs
-
-    def after_search(self, path):
-        pass
+        self.log(f"Found {stairs.sum()} stairs")
+        return stairs.any(), stairs
 
     def execute(self, path):
-        if len(path) == 1:
-            assert path[0] == tuple(self.kernel().curTile().xy)
-            if self.kernel().curTile().char == '>':
-                self.kernel().hero.descend()
-                return
-            self.kernel().log('door is absent')
-            self.kernel().send(' ')
+        *tail, one = path
+        assert one == (self.hero.x, self.hero.y)
+        if tail:
+            self.log("Going towards stairs")
+            self.draw_path(path, color=COLOR_BG_GREEN)
+            self.hero.move(tail[-1])
             return
 
-        self.kernel().log("Going towards stairs")
-        self.kernel().draw_path(path, color=COLOR_BG_GREEN)
-        self.kernel().hero.move(path[-2])
+        if self.kernel().curTile().char != '>':
+            self.log('door is absent')
+            self.kernel().send(' ')
+
+            # XXX raise False?
+            return
+        
+        self.hero.descend()

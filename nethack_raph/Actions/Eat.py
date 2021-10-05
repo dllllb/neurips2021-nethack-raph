@@ -1,57 +1,49 @@
-from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
-
 import numpy as np
 
+from nethack_raph.Actions.base import BaseAction
+from nethack_raph.myconstants import COLOR_BG_YELLOW
 
-class EatFromInventory:
-    def __init__(self, kernel):
-        self.kernel = kernel
-
-    def can(self, state):
-        if self.kernel().hero.hunger < 3:
-            self.kernel().log(f"Hero is not weak")
-            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-
-        self.kernel().log(f"Hero have food: {self.kernel().inventory.have_food()}")
-
-        if self.kernel().inventory.have_food():
-            return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-        else:
-            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-
-    def after_search(self, path):
-        pass
-
-    def execute(self, path):
-        self.kernel().hero.eat_from_inventory()
-
-
-class Eat:
-    def __init__(self, kernel):
-        self.kernel = kernel
-
+class EatFromInventory(BaseAction):
     def can(self, level):
-        if self.kernel().hero.hunger == 0:
-            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        # XXX use meaningful constant name rather than a number here
+        if self.hero.hunger >= 3:
+            flag = self.kernel().inventory.have_food()
+            self.log(f"Hero has food: {flag}")
+            if flag:
+                return True, np.ones(level.shape, dtype=bool)
 
-        food_tiles = np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-        for xy, items in level.items.items():
-            if level.tiles[xy].char == '^' or level.tiles[xy].in_shop: continue
-            if any([item.is_food and not item.is_tainted() for item in items]):
-                food_tiles[xy] = True
-                self.kernel().log(f"Found food {xy}: {list(map(lambda t: str(t), items))}")
+        elif self.hero.hunger < 3:
+            self.log(f"Hero is not weak")
 
-        return food_tiles.sum() > 0, food_tiles
-
-    def after_search(self, path):
-        pass
+        return False, np.zeros(level.shape, dtype=bool)
 
     def execute(self, path):
-        if len(path) == 1:
-            assert path[0] == tuple(self.kernel().curTile().xy)
-            self.kernel().hero.eat()
+        self.hero.eat_from_inventory()
+
+
+class Eat(BaseAction):
+    def can(self, level):
+        if self.hero.hunger == 0:
+            return False, np.zeros(level.shape, dtype=bool)
+
+        consumable = np.zeros(level.shape, dtype=bool)
+        for xy, items in level.items.items():
+            if level.tiles[xy].char == '^' or level.tiles[xy].in_shop:
+                continue
+
+            food = [it for it in items if it.is_food and not it.is_tainted()]
+            if food:
+                self.log(f"Found food {xy}: {list(map(str, food))}")
+                consumable[xy] = True
+
+        return consumable.any(), consumable
+
+    def execute(self, path):
+        *tail, one = path
+        assert one == (self.hero.x, self.hero.y)
+        if tail:
+            self.draw_path(path, color=COLOR_BG_YELLOW)
+            self.hero.move(tail[-1])
             return
 
-        self.kernel().log(path)
-        self.kernel().hero.move(path[-2])
-
+        self.hero.eat()

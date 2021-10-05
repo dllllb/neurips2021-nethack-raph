@@ -1,29 +1,37 @@
-from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH, COLOR_BG_BLUE
-
 import numpy as np
 
+from nethack_raph.Actions.base import BaseAction
+from nethack_raph.myconstants import COLOR_BG_BLUE
 
-class Explore:
-    def __init__(self, kernel):
-        self.kernel = kernel
 
+class Explore(BaseAction):
     def can(self, level):
-        if self.kernel().curLevel().explored:
-            self.kernel().log("Level is explored.")
-            return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        assert self.kernel().curLevel() is level
 
-        targets = \
-            np.logical_not(level.tiles.explored) & level.tiles.walkable_tile & \
-            np.logical_not(level.tiles.is_hero) & np.logical_not(level.tiles.in_shop)
+        if level.explored:
+            self.log("Level is explored.")
+            return False, np.zeros(level.shape, dtype=bool)
 
-        self.kernel().log(f"Found {targets.sum()} goals to explore")
-        return targets.sum() > 0, targets
+        targets = level.tiles.walkable_tile & \
+            ~level.tiles.explored & \
+            ~level.tiles.is_hero & \
+            ~level.tiles.in_shop
+
+        self.log(f"Found {targets.sum()} goals to explore")
+        return targets.any(), targets
 
     def after_search(self, path):
         if path is None:
-            self.kernel().log("Didn't find any goals.")
+            self.log("Didn't find any goals.")
             self.kernel().curLevel().explored = True
 
     def execute(self, path):
-        self.kernel().draw_path(path, color=COLOR_BG_BLUE)
-        self.kernel().hero.move(path[-2])
+        *tail, one = path
+        assert one == (self.hero.x, self.hero.y)
+
+        # move towards the exploration goal, unless we're there
+        if not tail:  # XXX the original could fail with IndexError
+            raise RuntimeError
+
+        self.draw_path(path, color=COLOR_BG_BLUE)
+        self.hero.move(tail[-1])

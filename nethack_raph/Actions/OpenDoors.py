@@ -1,39 +1,46 @@
-from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH, COLOR_BG_CYAN
-
 import numpy as np
 
+from nethack_raph.Actions.base import BaseAction
+from nethack_raph.myconstants import COLOR_BG_CYAN
 
-class OpenDoors:
-    def __init__(self, kernel):
-        self.kernel = kernel
-        self.mask = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
+
+class OpenDoors(BaseAction):
+    mask = np.array([
+        [0, 1, 0],
+        [1, 0, 1],
+        [0, 1, 0],
+    ], dtype=bool)
 
     def can(self, level):
         # all unexplored, walkable neighbours of closed door
-        doors = (level.neighbours.is_closed_door & np.logical_not(level.neighbours.shopkeep_door))
-        doors = (doors * self.mask).sum((-1, -2)) > 0
-        doors &= (level.tiles.walkable_tile & level.tiles.explored)
+        doors = ((
+                level.neighbours.is_closed_door &
+                ~ level.neighbours.shopkeep_door
+        ) & self.mask).any((-1, -2))
+        doors &= level.tiles.walkable_tile & level.tiles.explored
 
-        self.kernel().log(f"found door: {doors.sum() > 0}, {doors.nonzero()}")
-        return doors.sum() > 0, doors
-
-    def after_search(self, path):
-        pass
+        self.log(f"found door: {doors.sum() > 0}, {doors.nonzero()}")
+        return doors.any(), doors
 
     def execute(self, path):
-        if len(path) == 1:
-            assert path[0] == tuple(self.kernel().curTile().xy)
-            neighbours = self.kernel().curLevel().neighbours[self.kernel().hero.coords()]
-            for tile in neighbours[neighbours.is_closed_door]:
-                if tile.locked:
-                    self.kernel().hero.kick(tuple(tile.xy))
-                else:
-                    self.kernel().hero.open(tuple(tile.xy))
-                return
+        *tail, one = path
+        hero = self.hero
+        assert one == (hero.x, hero.y)
 
-            self.kernel().log('door is absent')
-            self.kernel().send(' ')
+        if tail:  # not there yet
+            self.draw_path(path, color=COLOR_BG_CYAN)
+            hero.move(tail[-1])
             return
-        else:
-            self.kernel().draw_path(path, color=COLOR_BG_CYAN)
-            self.kernel().hero.move(path[-2])
+
+        # are we next to a door?
+        neighbours = self.kernel().curLevel().neighbours[hero.x, hero.y]
+        for tile in neighbours[neighbours.is_closed_door]:
+            if tile.locked:
+                hero.kick(tuple(tile.xy))
+            else:
+                hero.open(tuple(tile.xy))
+
+            return
+
+        self.log('door is absent')
+        self.kernel().send(' ')

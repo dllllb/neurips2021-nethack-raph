@@ -1,19 +1,15 @@
-from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
-
 import numpy as np
 
+from nethack_raph.Actions.base import BaseAction
 
-class FixStatus:
-    def __init__(self, kernel):
-        self.kernel = kernel
 
+class FixStatus(BaseAction):
     def can(self, level):
-        if self.kernel().hero.blind or self.kernel().hero.isLycanthropy:
-            return True, np.ones((DUNGEON_HEIGHT, DUNGEON_WIDTH))
-        return False, np.zeros((DUNGEON_HEIGHT, DUNGEON_WIDTH))
+        if self.hero.blind or self.hero.isLycanthropy:
+            return True, np.ones(level.shape, dtype=bool)
 
-    def after_search(self, path):
-        pass
+        return False, np.zeros(level.shape, dtype=bool)
 
     def execute(self, path):
-        self.kernel().hero.search(5)
+        # XXX what is five?
+        self.hero.search(5)
