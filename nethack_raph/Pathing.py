@@ -1,7 +1,9 @@
-from nethack_raph.myconstants import DUNGEON_WIDTH, DUNGEON_HEIGHT
-
-import heapq
 import numpy as np
+
+from heapq import heappop, heappush
+from collections import defaultdict
+
+from nethack_raph.myconstants import DUNGEON_WIDTH, DUNGEON_HEIGHT
 
 # from skimage.graph import MCP
 
@@ -25,12 +27,14 @@ _NEIGHBOURS = calc_neighbours()
 
 
 class Node:
+    __slots__ = 'xy', 'cost'
+
     def __init__(self, xy, cost):
         self.xy = xy
-        self.total_cost = cost
+        self.cost = cost
 
     def __lt__(self, other):
-        return self.total_cost < other.total_cost
+        return self.cost < other.cost
 
     def __hash__(self):
         return self.xy
@@ -39,61 +43,64 @@ class Node:
         return self.xy == other.xy
 
 
-class PriorityQueue:
-    def __init__(self):
-        self.elements = []
-
-    def empty(self):
-        return not self.elements
-
-    def push(self, item):
-        heapq.heappush(self.elements, item)
-
-    def pop(self):
-        return heapq.heappop(self.elements)
-
-
-def reconstruct_path(came_from, start, goal):
-    current = goal
-    result = [divmod(goal.xy, DUNGEON_WIDTH)]
-    while current != start:
-        current = came_from[current]
-        result.append(divmod(current.xy, DUNGEON_WIDTH))
+def reconstruct_path(prev, goal):
+    result = []
+    while goal is not None:
+        result.append(divmod(goal.xy, DUNGEON_WIDTH))
+        goal = prev[goal]
     return result
 
 
 def dijkstra_pathing(walk_costs, start, condition_fns):
-    start_node = Node(start, 0)
-    frontier = PriorityQueue()
-    frontier.push(start_node)
-    came_from = {start_node: None}
-    cost_so_far = {start_node: 0}
+    # assert len(condition_fns) == 1
+
     results = [None] * len(condition_fns)
     n_results = 0
 
-    while not frontier.empty():
-        current = frontier.pop()
+    cost = defaultdict(lambda: float('inf'))
+    prev = {}
+
+    # init start
+    node = Node(start, 0)
+    frontier = [node]
+    cost[node] = 0.
+    prev[node] = None
+
+    # run dijkstra with premature termination
+    while frontier:
+        current = heappop(frontier)
+
         for condition_id, condition in enumerate(condition_fns):
             if results[condition_id] is None and condition(condition_id, current.xy):
-                results[condition_id] = reconstruct_path(came_from, start_node, current)
+                results[condition_id] = reconstruct_path(prev, current)
                 n_results += 1
+
             if n_results == len(results):
                 return results
 
+        # no need to re-inspect stale heap records
+        if cost[current] < current.cost:
+            continue
+
         for neighbour in _NEIGHBOURS[current.xy]:
+            # skip -ve costs indicate tiles to be skipped, since dijkstra
+            #  does requires +ve edge costs.
             walk_cost = walk_costs[neighbour]
-            if not walk_cost: continue
-            neighbour_cost = cost_so_far[current] + walk_cost
-            neighbour_node = Node(neighbour, neighbour_cost)
-            if neighbour_node not in cost_so_far or neighbour_cost < cost_so_far[neighbour_node]:
-                cost_so_far[neighbour_node] = neighbour_cost
-                frontier.push(neighbour_node)
-                came_from[neighbour_node] = current
+            if walk_cost <= 0:
+                continue
+
+            node = Node(neighbour, cost[current] + walk_cost)
+            if node.cost < cost[node]:
+                heappush(frontier, node)
+
+                cost[node] = node.cost
+                prev[node] = current
+
     return results
 
 
 def check_neighbours(xy, coords):
-    return bool(coords[np.array(_NEIGHBOURS[xy])].sum())
+    return coords[np.array(_NEIGHBOURS[xy])].any()
 
 
 def mcp_pathing(walk_costs, start, coords):
