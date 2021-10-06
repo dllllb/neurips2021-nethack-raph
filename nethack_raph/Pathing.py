@@ -1,4 +1,5 @@
 import numpy as np
+from math import isfinite
 
 from heapq import heappop, heappush
 from collections import defaultdict
@@ -83,18 +84,16 @@ def dijkstra_pathing(walk_costs, start, condition_fns):
             continue
 
         for neighbour in _NEIGHBOURS[current.xy]:
-            # skip -ve costs indicate tiles to be skipped, since dijkstra
-            #  does requires +ve edge costs.
+            # consider tiles with finite +ve costs only
             walk_cost = walk_costs[neighbour]
-            if walk_cost <= 0:
-                continue
+            if isfinite(walk_cost) and walk_cost >= 0:
 
-            node = Node(neighbour, cost[current] + walk_cost)
-            if node.cost < cost[node]:
-                heappush(frontier, node)
+                node = Node(neighbour, cost[current] + walk_cost)
+                if node.cost < cost[node]:
+                    heappush(frontier, node)
 
-                cost[node] = node.cost
-                prev[node] = current
+                    cost[node] = node.cost
+                    prev[node] = current
 
     return results
 

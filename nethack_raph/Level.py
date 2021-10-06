@@ -14,7 +14,7 @@ dtTile = np.dtype([
     ('char', np.dtype('<U1')),       # dungeon char. ansi char in unicode
     ('appearance', np.dtype('<U1')),  # appearance char. ansi char in unicode
     ('glyph', np.int16),      # glyph
-    ('walk_cost', int),  # pathfinding cost
+    ('walk_cost', float),  # pathfinding cost
     ('explored', bool),
     ('walkable_tile', bool),
     ('walkable_glyph', bool),
@@ -194,12 +194,11 @@ class Level:
         else:
             tile.walkable_tile = (tile.char in Level.walkables.keys() and tile.walkable_glyph) or tile.is_opened_door
 
+        tile.walk_cost = float('inf')
         if tile.walkable_tile:
             tile.walk_cost = Level.walkables.get(tile.char, 1)
             if (x, y) in self.monsters and not self.monsters[x, y].pet:
                 tile.walk_cost += 100
-        else:
-            tile.walk_cost = 0
 
     def update(self, chars, glyphs):
         hero = self.kernel().hero
