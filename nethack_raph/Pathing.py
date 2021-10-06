@@ -52,11 +52,10 @@ def reconstruct_path(prev, goal):
     return result
 
 
-def dijkstra_pathing(walk_costs, start, condition_fns):
-    # assert len(condition_fns) == 1
-
-    results = [None] * len(condition_fns)
-    n_results = 0
+def dijkstra_pathing(tiles, start, mask):
+    walk_costs = tiles.walk_cost.reshape(-1)
+    coords = mask.reshape(-1)
+    start = int(start[0] * DUNGEON_WIDTH + start[1])
 
     cost = defaultdict(lambda: float('inf'))
     prev = {}
@@ -71,13 +70,8 @@ def dijkstra_pathing(walk_costs, start, condition_fns):
     while frontier:
         current = heappop(frontier)
 
-        for condition_id, condition in enumerate(condition_fns):
-            if results[condition_id] is None and condition(condition_id, current.xy):
-                results[condition_id] = reconstruct_path(prev, current)
-                n_results += 1
-
-            if n_results == len(results):
-                return results
+        if coords[current.xy]:
+            return reconstruct_path(prev, current),
 
         # no need to re-inspect stale heap records
         if cost[current] < current.cost:
@@ -95,7 +89,7 @@ def dijkstra_pathing(walk_costs, start, condition_fns):
                     cost[node] = node.cost
                     prev[node] = current
 
-    return results
+    return None,
 
 
 def check_neighbours(xy, coords):

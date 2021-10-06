@@ -56,10 +56,12 @@ class TestBrain(Brain):
             break
 
     def find_path(self, level, coords, action):
-        if coords[self.kernel().hero.coords()]:  # we are at the aim already
-            return [self.kernel().hero.coords()]
+        hero = self.kernel().hero
+        x, y = xy = hero.coords()  # hero.x, hero.y
+        if coords[xy]:  # we are at the aim already
+            return [xy]
 
-        start = int(self.kernel().hero.x * DUNGEON_WIDTH + self.kernel().hero.y)
+        start = int(x * DUNGEON_WIDTH + y)
         flat_coords = coords.reshape(-1)
 
         use_prev_path = True
@@ -67,7 +69,7 @@ class TestBrain(Brain):
             use_prev_path = False
         elif len(self.prev_path) <= 3:  # less then 2 steps remaining
             use_prev_path = False
-        elif self.prev_path[-2] != self.kernel().hero.coords():  # didn't make a step to the right direction
+        elif self.prev_path[-2] != xy:  # didn't make a step to the right direction
             use_prev_path = False
         elif level.tiles.walk_cost[self.prev_path[-3]] != 1:  # Next step is not save
             use_prev_path = False
@@ -78,10 +80,6 @@ class TestBrain(Brain):
             self.kernel().log(f'Use previous path')
             return self.prev_path[:-1]
 
-        path, *ignore = dijkstra_pathing(
-            level.tiles.walk_cost.reshape(-1),
-            start, [
-                lambda _, xy: flat_coords[xy]
-            ])
+        path, *ignore = dijkstra_pathing(level.tiles, xy, coords)
 
         return path
