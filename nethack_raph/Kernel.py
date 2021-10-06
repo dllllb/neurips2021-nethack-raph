@@ -11,6 +11,26 @@ import sys
 import numpy as np
 import weakref
 
+def render(chrs, cols, offset=(1, 1)):
+    # begin by saving the current cursor, whatever it is
+    ansi = '\033[s'
+
+    # render output line by line with ANSI escapes
+    height, width = chrs.shape
+    L0, C0 = offset
+    for L in range(height):
+        # position the cursor at (L, C) with \033[<L>;<C>H 1-based
+        ansi += f'\033[{L0 + L:d};{C0:d}H'
+        for C in range(width):
+            # set fg color with \033[<bold?>;3<3-bit color>m
+            cl, ch = cols[L, C], chrs[L, C]
+            ansi += f'\033[{bool(cl & 8):1d};3{cl & 7:1d}m{ch:c}'
+
+    # flush after the final line, restore the cursor and reset the color
+    ansi += f'\033[{height+1};0H\033[u\033[m'
+
+    return ansi
+
 
 class Kernel:
     def __init__(self, verbose):
@@ -91,22 +111,10 @@ class Kernel:
         self.bot = self.tty_chars[22 * TTY_WIDTH:]
 
         if self.verbose:
-            chrs, cols = self.state
-            # render output line by line with ANSI escapes
-            ansi = ''
-            for L in range(TTY_HEIGHT):
-                # position the cursor at (L, C) with \033[<L>;<C>H 1-based
-                ansi += f'\033[{L+1};1H'
-                for C in range(TTY_WIDTH):
-                    # set fg color with \033[<bold?>;3<3-bit color>m
-                    cl, ch = cols[L, C], chrs[L, C]
-                    ansi += f'\033[{bool(cl & 8):1d};3{cl & 7:1d}m{ch:c}'
-            ansi += f'\033[{TTY_HEIGHT+1};1H'
-
-            # save/restore the cursor, and reset the color back to normal
-            self.stdout(f'\033[s{ansi}\033[u\033[m')
+            self.stdout(render(*self.state))
             self.log_screen(chars=self.state[0], log=self._frames_log,
                             coords=(obs['blstats'][1], obs['blstats'][0]))
+
 
         self.log(f"\n ------------------ STEP {self.steps} ------------------ ")
         if self.hero.turns != obs['blstats'][20]:
