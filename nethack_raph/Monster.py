@@ -13,7 +13,7 @@ class Monster:
 
     passive_monster_glyphs = {
         # 6,    # acid blob
-        # 27,   # gas spore
+        27,   # gas spore
         28,   # floating eye
         # 55,   # blue jelly
         # 56,   # spotted jelly

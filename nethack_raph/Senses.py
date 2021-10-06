@@ -56,7 +56,6 @@ class Senses:
             "Call a scroll labeled .*": ['read_scroll'],
             "(.+) engulfs you": ['got_engulfed'],
             "Call (.+) potion": ['call_potion'],
-            "Hello Agent, welcome to NetHack!": ['start_message'],
             "You kill .*": ["killed_monster"],
             "Continue eating\? .*": ['stop_eating'],
             "You see no objects here.": ['nothing_found'],
@@ -336,11 +335,6 @@ class Senses:
     def graffiti_on_floor(self):
         self.kernel().log("Found grafitti!")
 
-    def start_message(self):
-        msg = ' '.join(self.messages[1:])
-        self.kernel().hero.set_attributes(msg)
-        self.kernel().log(str(self.messages))
-
     def killed_monster(self, match, msg):
         if self.kernel().hero.lastActionedTile is None:
             return
@@ -433,6 +427,11 @@ class Senses:
             self.kernel().curLevel().clear_items(*self.kernel().hero.coords())
             self.kernel().log(f'Pick up what choice: {choice}')
             self.kernel().send(''.join(choice) + '\r')
+
+        elif header and header.find("attributes:") >= 0:  # parsing agent's attributes at the start
+            msg = self.kernel().get_row_line(3) + self.kernel().get_row_line(4)
+            self.kernel().hero.set_attributes(msg)
+            self.kernel().send('  ')
 
         elif header and header.find("There is an open door here") >= 0:
             self.open_door_here()
