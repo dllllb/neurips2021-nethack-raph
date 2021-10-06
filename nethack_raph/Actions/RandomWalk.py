@@ -35,4 +35,4 @@ class RandomWalk(BaseAction):
             front = queue.pop()
             if front.char == '.' and not front.visited:
                 level.tiles[tuple(front.xy)].visited = True
-                queue.extend(level.get_neighbours(front))
+                queue.extend(level.adjacent(front))

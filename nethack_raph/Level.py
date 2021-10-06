@@ -113,8 +113,10 @@ class Level:
             tiles[xy].xy = xy
 
         # sparse data structures x-y keys (unbordered coords)
-        self.monsters = defaultdict(lambda: None)  # the monster population
         self.items = defaultdict(list)  # sparse table of item piles
+
+        # XXX defdict spawns defaults on read-access which requires checks for None
+        self.monsters = {}  # the monster population
 
     @property
     def shape(self):
@@ -177,8 +179,11 @@ class Level:
         tile.glyph = 2373
         self.update_walk_cost(tile)
 
-    def get_neighbours(self, tile):
-        return [t for t in self.neighbours[tuple(tile.xy)].reshape(-1) if t.xy.x < 255 and t.xy.y < 255]
+    def adjacent(self, tile):
+        for adj in self.neighbours[tuple(tile.xy)].flat:
+            # ignore center and invalid glyphs
+            if adj.glyph != MAX_GLYPH and adj.xy != tile.xy:
+                yield adj
 
     def set_as_trap(self, tile):
         tile.char = '^'
