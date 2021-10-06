@@ -1,11 +1,14 @@
+import numpy as np
+
 from nethack_raph.Brain import *
 from nethack_raph.Pathing import dijkstra_pathing, mcp_pathing, check_neighbours
+
 from nethack_raph.myconstants import DUNGEON_WIDTH
 
 
 class TestBrain(Brain):
     def __init__(self, kernel):
-        Brain.__init__(self, "TestBrain", kernel)
+        super().__init__("TestBrain", kernel)
 
         self.actions = {
             'Elbereth': Elbereth(kernel),
@@ -26,7 +29,9 @@ class TestBrain(Brain):
         self.prev_path = []
 
     def execute_next(self, level):
+        # first-fit action selection
         for name, action in self.actions.items():
+            # check if an action can be taken
             can_act, mask = action.can(level)
             if not can_act:
                 action.after_search(None)
@@ -35,19 +40,20 @@ class TestBrain(Brain):
             # local actions do not need pathfinding and return mask = None
             if mask is None:
                 action.execute()  # XXX path is None by default!
-                return
+                action.after_search(None)
+                break
 
-            # movement actions
+            # actions that potentially require navigaton
             path = self.find_path(level, mask, name)
             action.after_search(path)
-            if path is not None:
-                self.prev_action, self.prev_path = name, path
-                self.kernel().log(f'found path length {len(path)} for {name}')
-                action.execute(path)
-                return
-
-            else:
+            if path is None:
                 self.kernel().log(f"Didn't find path for {name}")
+                continue
+
+            self.prev_action, self.prev_path = name, path
+            self.kernel().log(f'found path length {len(path)} for {name}')
+            action.execute(path)
+            break
 
     def find_path(self, level, coords, action):
         if coords[self.kernel().hero.coords()]:  # we are at the aim already
@@ -72,6 +78,10 @@ class TestBrain(Brain):
             self.kernel().log(f'Use previous path')
             return self.prev_path[:-1]
 
-        path = dijkstra_pathing(level.tiles.walk_cost.reshape(-1), start, [lambda _, xy: flat_coords[xy]])[0]
+        path, *ignore = dijkstra_pathing(
+            level.tiles.walk_cost.reshape(-1),
+            start, [
+                lambda _, xy: flat_coords[xy]
+            ])
 
         return path
