@@ -3,6 +3,8 @@ from nethack_raph.Item import Item
 from nethack_raph.Monster import Monster
 from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
 
+from nethack_raph.areas import flood
+
 import numpy as np
 from collections import defaultdict
 
@@ -29,6 +31,7 @@ dtTile = np.dtype([
     ('shopkeep_door', bool),
     ('dropped_here', bool),
     ('has_elbereth', bool),
+    ('area', int),
 ])
 
 
@@ -103,6 +106,7 @@ class Level:
         data.glyph[:] = MAX_GLYPH
         data.walkable_glyph[:] = True
         data.xy[:] = (-1, -1)  # map to the same x-y
+        data.area[:] = -1
 
         # setup O(1) lookup for adjacent tiles on the bordered map
         self.neighbours = fold(data, 1, writeable=True).view(np.recarray)
@@ -117,6 +121,7 @@ class Level:
 
         # XXX defdict spawns defaults on read-access which requires checks for None
         self.monsters = {}  # the monster population
+        self.areas = {}  # database of flood-filled areas
 
     @property
     def shape(self):
@@ -208,6 +213,14 @@ class Level:
     def update(self, chars, glyphs):
         hero = self.kernel().hero
         tiles = self.tiles
+
+        # flood-fill and merge areas (essentially discovered/visited)
+        area = flood(
+            self.areas,     # the pool of areas
+            glyphs,         # use raw glyphs
+            tiles.area,     # the area map (segmentation)
+            hero.coords(),  # the coords to start flooding from
+        )
 
         chars = np.array([chars.translate({
             ord('`'): '0',
