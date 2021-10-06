@@ -230,7 +230,7 @@ class Hero:
         elif 'Ranger' in msg:
             self.role = 'ran'
         elif 'Rogue' in msg:
-            self.role = 'rogue'
+            self.role = 'rog'
         elif 'Samurai' in msg:
             self.role = 'sam'
         elif 'Tourist' in msg:
@@ -240,7 +240,7 @@ class Hero:
         elif 'Wizard' in msg:
             self.role = 'wiz'
         # else:
-        #    raise Exception(f"Unknown role from '{msg}'")
+        #     raise Exception(f"Unknown role from '{msg}'")
 
         if 'human' in msg:
             self.race = 'hum'
@@ -253,14 +253,14 @@ class Hero:
         elif 'orc' in msg:
             self.race = 'orc'
         # else:
-        #    raise Exception(f"Unknown race from '{msg}'")
+        #     raise Exception(f"Unknown race from '{msg}'")
 
-        if 'female' in msg or 'woman' in msg or 'Priestess' in msg:
+        if 'female' in msg or 'woman' in msg or 'Priestess' in msg or 'dwarven' in msg:
             self.gender = 'fem'
-        elif 'male' in msg or 'man' in msg or 'Priest' in msg:
+        elif 'male' in msg or 'man' in msg or 'Priest' in msg or 'dwarf' in msg:
             self.gender = 'mal'
         # else:
-        #    raise Exception(f"Unknown gender from '{msg}'")
+        #     raise Exception(f"Unknown gender from '{msg}'")
 
         if 'neutral' in msg:
             self.moral = 'neu'
@@ -269,6 +269,6 @@ class Hero:
         elif 'chaotic' in msg:
             self.moral = 'cha'
         # else:
-        #    raise Exception(f"Unknown moral from '{msg}'")
+        #     raise Exception(f"Unknown moral from '{msg}'")
 
         self.kernel().log(f"Hero is {self.role}-{self.race}-{self.moral}-{self.gender}")

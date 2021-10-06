@@ -77,6 +77,10 @@ class Kernel:
         self.action = ''
         self.steps += 1
 
+        if self.steps == 1:  # parsing agent's attributes at the start
+            self.send('\x18') # ctrl + x = player info
+            return self.action
+
         self.state = np.zeros((2, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
         self.state[0] = obs['tty_chars']
         self.state[1] = obs['tty_colors']
@@ -109,10 +113,6 @@ class Kernel:
         self.log("--------- HERO ---------")
         self.hero.update(obs['blstats'], self.top, self.bot)
         assert len(self.action) == 0
-
-        # if self.hero.score > 1100:
-        #     self.die(f'score = {self.hero.score}')
-        #     return self.action
 
         self.log("-------- INVENTORY -------- ")
         self.inventory.update(obs)
