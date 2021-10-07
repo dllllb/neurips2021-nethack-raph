@@ -22,7 +22,8 @@ def evaluate(seed=None):
         save_on='close,done',
     ) as env:
         # ensure seed prior to making a lambda factory
-        env.seed(seed=tuple(seed))
+        if seed is not None:
+            env.seed(seed=tuple(seed))
 
         batched_env = BatchedEnv(env_make_fn=lambda: env, num_envs=1)
         agent = CustomAgent(1, batched_env.num_actions, verbose=True)
