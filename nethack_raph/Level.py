@@ -225,16 +225,16 @@ class Level:
         #  covered by a single area. Also since the hero glyph is movable
         #  (`334` by default) and not floodable, we should not use is as
         #  a starting point.
-        x, y = hero.coords()
-        area = flood(
-            self.areas,     # the pool of areas
-            glyphs,         # use raw glyphs
-            tiles.area,     # the area map (segmentation)
-            (x-1, y),         # the coords to start flooding from
-        )
+        # x, y = hero.coords()
+        # area = flood(
+        #     self.areas,     # the pool of areas
+        #     glyphs,         # use raw glyphs
+        #     tiles.area,     # the area map (segmentation)
+        #     (x-1, y),         # the coords to start flooding from
+        # )
 
-        if area is not None:
-            self.kernel().stdout(area.render(rect=False))
+        # if area is not None:
+        #     self.kernel().stdout(area.render(rect=False))
 
         chars = np.array([chars.translate({
             ord('`'): '0',
