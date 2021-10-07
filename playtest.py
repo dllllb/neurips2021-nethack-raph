@@ -11,13 +11,12 @@ from envs.wrappers import addtimelimitwrapper_fn
 from rollout import run_batched_rollout
 from envs.batched_env import BatchedEnv
 
-from nle_toolbox.wrappers.replay import Replay, ReplayToFile
+from nle_toolbox.wrappers.replay import ReplayToFile
 
 
 def evaluate(seed=None):
-
     with ReplayToFile(
-        Replay(addtimelimitwrapper_fn()),
+        addtimelimitwrapper_fn(),
         folder='./replays',
         save_on='close,done',
     ) as env:
