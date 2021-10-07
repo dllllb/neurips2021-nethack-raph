@@ -3,7 +3,7 @@ from nethack_raph.Item import Item
 from nethack_raph.Monster import Monster
 from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
 
-from nethack_raph.areas import flood
+from nethack_raph.areas import flood, Area
 
 import numpy as np
 from collections import defaultdict
@@ -119,9 +119,13 @@ class Level:
         # sparse data structures x-y keys (unbordered coords)
         self.items = defaultdict(list)  # sparse table of item piles
 
+        # the monster population
         # XXX defdict spawns defaults on read-access which requires checks for None
-        self.monsters = {}  # the monster population
-        self.areas = {}  # database of flood-filled areas
+        self.monsters = {}
+
+        # database of flood-filled areas
+        # XXX `-1` is reserved for "the Universe" area
+        self.areas = {-1: Area(-1, tiles.area)}
 
     @property
     def shape(self):
@@ -136,6 +140,7 @@ class Level:
         if (x, y) in self.monsters:
             del self.monsters[x, y]
 
+        # FIXME tile.glyph is not updated unless it is `dungeon`.
         if glyph_type == 'dungeon':
             tile.char = char
             tile.glyph = glyph
@@ -215,12 +220,21 @@ class Level:
         tiles = self.tiles
 
         # flood-fill and merge areas (essentially discovered/visited)
+        # XXX need to clean up glyphs before flooding, since otherwise making
+        #  mobile glyphs floodable makes it so that all map is eventually
+        #  covered by a single area. Also since the hero glyph is movable
+        #  (`334` by default) and not floodable, we should not use is as
+        #  a starting point.
+        x, y = hero.coords()
         area = flood(
             self.areas,     # the pool of areas
             glyphs,         # use raw glyphs
             tiles.area,     # the area map (segmentation)
-            hero.coords(),  # the coords to start flooding from
+            (x-1, y),         # the coords to start flooding from
         )
+
+        if area is not None:
+            self.kernel().stdout(area.render(rect=False))
 
         chars = np.array([chars.translate({
             ord('`'): '0',
