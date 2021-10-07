@@ -1,4 +1,8 @@
+import numpy
+
 from collections import deque
+
+from nle.nethack import glyph_is_cmap
 
 from nle.nethack import (
     GLYPH_MON_OFF,      # a monster
@@ -89,8 +93,15 @@ class ScreenSymbol:
 
 # manually determined based on close inspection of rm.h and display.h
 glyph_is_floodable = {
+    # *range(GLYPH_BODY_OFF, GLYPH_RIDDEN_OFF),  # all corpses
+    # *range(GLYPH_OBJ_OFF, GLYPH_CMAP_OFF),     # all objects
+
     GLYPH_CMAP_OFF + ScreenSymbol.S_room,
     GLYPH_CMAP_OFF + ScreenSymbol.S_darkroom,
+
+    # an empty doorway is like a floor
+    # GLYPH_CMAP_OFF + ScreenSymbol.S_ndoor,
+
     GLYPH_CMAP_OFF + ScreenSymbol.S_upstair,
     GLYPH_CMAP_OFF + ScreenSymbol.S_dnstair,
     GLYPH_CMAP_OFF + ScreenSymbol.S_upladder,
@@ -102,7 +113,7 @@ glyph_is_floodable = {
     GLYPH_CMAP_OFF + ScreenSymbol.S_fountain,
     GLYPH_CMAP_OFF + ScreenSymbol.S_pool,
 
-    # if we're swallowed, then threat the belly as a room
+    # if we're swallowed, then treat the belly as a room
     GLYPH_SWALLOW_OFF + ScreenSymbol.S_sw_tl,
     GLYPH_SWALLOW_OFF + ScreenSymbol.S_sw_tc,
     GLYPH_SWALLOW_OFF + ScreenSymbol.S_sw_tr,
@@ -112,6 +123,8 @@ glyph_is_floodable = {
     GLYPH_SWALLOW_OFF + ScreenSymbol.S_sw_bl,
     GLYPH_SWALLOW_OFF + ScreenSymbol.S_sw_bc,
     GLYPH_SWALLOW_OFF + ScreenSymbol.S_sw_br,
+
+    *range(GLYPH_STATUE_OFF, MAX_GLYPH),   # all statues
 }
 
 
@@ -131,7 +144,7 @@ class UnionFind:
         root = self
         while root._parent is not None:
             root = root._parent
-        
+
         # no need to do anything if we're looping
         if self._parent is None:
             return self
@@ -142,6 +155,7 @@ class UnionFind:
 
         return root
 
+
 class Area(UnionFind):
     """A flood filled area."""
 
@@ -149,16 +163,35 @@ class Area(UnionFind):
         self.area_id = area_id
         self.mask = map == area_id
 
-    def isin(self, x, y):
-        return self.mask[x, y]
+        # get a crude bounding rect (top-left, bot-right)
+        x, y = self.mask.nonzero()
+        self.rect = (x.min(), y.min()), (x.max(), y.max())
+
+    def __contains__(self, xy):
+        return self.mask[xy]
 
     def __repr__(self):
         return f"Area({self.area_id:d}) :: {self.mask.sum()}"
+
+    def render(self, rect=False):
+        ansi = ''
+        if rect:
+            (t, l), (b, r) = self.rect
+            xy = list(zip(*[(x, y) for x in range(t, b+1) for y in range(l, r+1)]))
+            # breakpoint()
+        else:
+            xy = self.mask.nonzero()
+
+        for r, c in zip(*xy):
+            ansi += f'\x1b[6;31m\x1b[{r+2};{c+1}H{self.area_id&15:1X}\x1b[m'
+
+        return ansi
 
 
 def flood(pool, glyphs, map, at, *, floodable=glyph_is_floodable):
     """Simple lazy flood filler on glyphs.
     """
+    assert map.shape == glyphs.shape
 
     # cannot flood anything
     if glyphs[at] not in floodable:
@@ -174,9 +207,15 @@ def flood(pool, glyphs, map, at, *, floodable=glyph_is_floodable):
     # allocate new id in the managed pool of areas (dict)
     value = 1 + max(pool.keys(), default=-1)
 
+    # bfs tracks `visitation` at the point of enqueuing adjacent nodes. Cannot
+    # reuse `map` for this, since it is updated out of sync with the frontier.
+    visited = numpy.zeros(map.shape, dtype=bool)
+
     # flood fill with the new value, optionally spilling over
     #  to connecting areas filled previously.
     frontier, merged, n_cells = deque([at]), set(), 0
+    visited[at] = True
+
     h, w = glyphs.shape
     while frontier:
         r, c = frontier.popleft()
@@ -194,8 +233,9 @@ def flood(pool, glyphs, map, at, *, floodable=glyph_is_floodable):
             for cc in c-1, c, c+1:
                 assert 0 <= cc < w
                 # fill wilderness (-1) and spillover to touching areas (>= 0)
-                if map[rr, cc] != value:
+                if map[rr, cc] != value and not visited[rr, cc]:
                     frontier.append((rr, cc))
+                    visited[rr, cc] = True
 
                     # remember the merged areas
                     if map[rr, cc] >= 0:
