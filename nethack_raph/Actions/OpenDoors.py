@@ -16,7 +16,12 @@ class OpenDoors(BaseAction):
         doors = ((
                 level.neighbours.is_closed_door &
                 ~ level.neighbours.shopkeep_door
-        ) & self.mask).any((-1, -2))
+        ) & self.mask)
+
+        if self.hero.levitating:  # cant kick while levitating
+            doors &= ~level.neighbours.locked
+
+        doors = doors.any((-1, -2))
         doors &= level.tiles.walkable_tile & level.tiles.explored
 
         self.log(f"found door: {doors.sum() > 0}, {doors.nonzero()}")

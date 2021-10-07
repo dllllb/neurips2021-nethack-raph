@@ -11,7 +11,8 @@ class Pray(BaseAction):
             return False, None
 
         hero = self.hero
-        if hero.hunger >= 3 or hero.isLycanthropy or hero.curhp <= 5 or hero.curhp <= hero.maxhp / 7:
+        if hero.hunger >= 3 or hero.isLycanthropy or hero.curhp <= 5 or \
+                hero.curhp <= hero.maxhp / 7 or hero.levitating_curse:
             return True, None
 
         return False, None
