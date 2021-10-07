@@ -168,12 +168,15 @@ class Area(UnionFind):
         self.rect = (x.min(), y.min()), (x.max(), y.max())
 
     def __contains__(self, xy):
-        return self.mask[xy]
+        # delegate to the parent area if we have been merged
+        return self.parent.mask[xy]
 
     def __repr__(self):
         return f"Area({self.area_id:d}) :: {self.mask.sum()}"
 
     def render(self, rect=False):
+        self = self.parent
+
         ansi = ''
         if rect:
             (t, l), (b, r) = self.rect
