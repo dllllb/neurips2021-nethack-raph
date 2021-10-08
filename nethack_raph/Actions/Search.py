@@ -22,7 +22,7 @@ class Search(BaseAction):
         targets = targets.sum((-1, -2))
         targets *= tiles.walkable_tile & tiles.explored
         if targets.max() == 0:
-            return False, None
+            return False, np.zeros(level.shape, dtype=bool)
         else:
             targets = targets == targets.max()
             return True, targets
