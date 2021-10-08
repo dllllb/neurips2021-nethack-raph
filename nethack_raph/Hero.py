@@ -29,6 +29,8 @@ class Hero:
         self.stun = False
         self.levitating = False
         self.legShape = True
+        self.gain_levitation = False
+        self.levitating_curse = False
 
         self.inBearTrap = False
         self.inPit = False
@@ -57,11 +59,16 @@ class Hero:
         # strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, condition
         # condition (aka `unk`) == 64 -> Deaf
 
+        levitating = bool(re.search("Lev", bot_line))
+        self.gain_levitation = not self.levitating and levitating
+        if self.levitating and not levitating:
+            self.levitating_curse = False
+        self.levitating = levitating
+
         self.blind = bool(re.search("Blind", bot_line))
         self.confused = bool(re.search("Conf", bot_line))
         self.stun = bool(re.search("Stun", bot_line))
         self.hallu = bool(re.search("Hallu", bot_line))
-        self.levitating = bool(re.search("Lev", bot_line))
 
         self.y, self.x, strength_percentage, strength, dexterity, constitution, \
             intelligence, wisdom, charisma, self.score, self.curhp, self.maxhp, \

@@ -27,6 +27,9 @@ class Eat(BaseAction):
         if self.hero.hunger == 0:
             return False, np.zeros(level.shape, dtype=bool)
 
+        if self.hero.levitating:  # cant eat while levitating
+            return False, np.zeros(level.shape, dtype=bool)
+
         consumable = np.zeros(level.shape, dtype=bool)
         for xy, items in level.items.items():
             if level.tiles[xy].char == '^' or level.tiles[xy].in_shop:

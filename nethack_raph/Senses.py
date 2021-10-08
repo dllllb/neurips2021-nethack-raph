@@ -74,7 +74,8 @@ class Senses:
             "[a-z] - ":                                                      ['picked_up'],
             "You finish your dressing maneuver.":                            ['dressed'],
             "You finish taking off your mail.":                              ['took_off'],
-            r".*rop.*gold.*":                                                ['drop_gold']
+            r".*rop.*gold.*":                                                ['drop_gold'],
+            "They are cursed.":                                              ['cursed_boots'],
         }
 
     def update(self):
@@ -401,7 +402,6 @@ class Senses:
         ker = self.kernel()
         lev = ker.curLevel()
 
-        # FIXME (dima) drop smth
         last = ker.hero.lastActionedTile  # x-y coords
         if last is None:
             return
@@ -446,12 +446,20 @@ class Senses:
         if ker.hero.armor_class >= ker.hero.armor_class_before:
             ker.inventory.take_off_armors.append(ker.hero.lastActionedItem)
 
+        if ker.hero.gain_levitation:  # consider levitation as a bad thing
+            ker.inventory.take_off_armors.append(ker.hero.lastActionedItem)
+
     def took_off(self, *, match=None, message=None):
         ker = self.kernel()
         # Drop unused item:
         ker.log(f'Drop item {ker.hero.lastActionedItem}')
         ker.send(f'd{ker.hero.lastActionedItem}')
         ker.curTile().dropped_here = True
+
+    def cursed_boots(self, *, match=None, message=None):
+        ker = self.kernel()
+        if ker.hero.levitating:
+            ker.hero.levitating_curse = True
 
     def cant_wear(self, *, match=None, message=None):
         ker = self.kernel()

@@ -6,6 +6,9 @@ from nethack_raph.myconstants import COLOR_BG_GREEN
 
 class Descend(BaseAction):
     def can(self, level):
+        if self.hero.levitating:  # cant descend while levitating
+            return False, np.zeros(level.shape, dtype=bool)
+
         stairs = level.tiles.char == '>'
         self.log(f"Found {stairs.sum()} stairs")
         return stairs.any(), stairs

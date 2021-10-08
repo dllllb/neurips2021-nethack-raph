@@ -19,8 +19,13 @@ class Search(BaseAction):
         targets = np.isin(adj.char, ('|', '-', ' ')) & self.mask
         targets &= ~adj.searched & ~adj.in_shop
 
-        targets = targets.any((-1, -2)) & tiles.walkable_tile & tiles.explored
-        return targets.any(), targets
+        targets = targets.sum((-1, -2))
+        targets *= tiles.walkable_tile & tiles.explored
+        if targets.max() == 0:
+            return False, np.zeros(level.shape, dtype=bool)
+        else:
+            targets = targets == targets.max()
+            return True, targets
 
     def after_search(self, path):
         if path is None:
