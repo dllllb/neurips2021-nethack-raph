@@ -1,3 +1,3 @@
 from nethack_raph.glossaries.ArmorGlossary import ARMOR_GLOSSARY
 from nethack_raph.glossaries.MonsterGlossary import MONSTERS_GLOSSARY
-from nethack_raph.glossaries.WeaponGlossary import WEAPON_GLOSSARY
+from nethack_raph.glossaries.WeaponGlossary import WEAPON_GLOSSARY, ITEMS_TO_THROW

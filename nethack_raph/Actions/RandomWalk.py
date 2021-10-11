@@ -13,7 +13,7 @@ class RandomWalk(BaseAction):
 
         return targets.any(), targets
 
-    def after_search(self, path):
+    def after_search(self, targets, path):
         if path is None:
             self.kernel().curLevel().tiles.visited = False
         self.hero.search(30)

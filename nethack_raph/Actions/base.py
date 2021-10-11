@@ -15,7 +15,7 @@ class BaseAction:
     def can(self, level):
         return False, None
 
-    def after_search(self, path):
+    def after_search(self, targets, path):
         pass
 
     def execute(self, path):

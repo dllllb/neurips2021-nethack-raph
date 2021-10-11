@@ -15,6 +15,7 @@ class TestBrain(Brain):
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),
             'Pray': Pray(kernel),
+            'RangeAttackMonster': RangeAttackMonster(kernel),
             'AttackMonster': AttackMonster(kernel),
             'Eat': Eat(kernel),
             'PickUpStuff': PickUpStuff(kernel),
@@ -34,18 +35,18 @@ class TestBrain(Brain):
             # check if an action can be taken
             can_act, mask = action.can(level)
             if not can_act:
-                action.after_search(None)
+                action.after_search(mask, None)
                 continue
 
             # local actions do not need pathfinding and return mask = None
             if mask is None:
                 action.execute()  # XXX path is None by default!
-                action.after_search(None)
+                action.after_search(None, None)
                 break
 
             # actions that potentially require navigaton
             path = self.find_path(level, mask, name)
-            action.after_search(path)
+            action.after_search(mask, path)
             if path is None:
                 self.kernel().log(f"Didn't find path for {name}")
                 continue

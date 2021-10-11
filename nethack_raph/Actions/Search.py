@@ -27,12 +27,16 @@ class Search(BaseAction):
             targets = targets == targets.max()
             return True, targets
 
-    def after_search(self, path):
+    def after_search(self, targets, path):
         if path is None:
             level = self.kernel().curLevel()
-            self.log(f"Didn't find a path to searchspot. Clear searched")
-            level.maxSearches = level.maxSearches + 60
-            level.tiles.searched = False
+            if not targets.any():  # searched everywhere
+                self.log(f"Didn't find any search points. Clear searched")
+                level.maxSearches = level.maxSearches + 60
+                level.tiles.searched = False
+            else:
+                self.log(f"Didn't find path to search points. Mark as searched")
+                level.neighbours.searched[targets] = True
 
     def execute(self, path):
         *tail, one = path

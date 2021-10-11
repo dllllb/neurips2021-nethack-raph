@@ -24,6 +24,14 @@ class PickUpStuff(BaseAction):
             if level.tiles[xy].in_shop or level.tiles[xy].dropped_here:
                 continue
 
+            # if xy in level.monsters:
+            #    continue
+
+            if self.hero.pick_up_projectives and any([item.projective for item in items]):
+                stuff_tiles[xy] = True
+                self.action_to_do = 'pick_up'
+                self.log(f"Found stuff {xy}: {list(map(lambda t: str(t), items))}")
+
             stuff = [it for it in items if it.item_type in ('armor', 'gold_piece')]
             if stuff:
                 stuff_tiles[xy] = True

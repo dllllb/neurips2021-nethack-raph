@@ -20,7 +20,7 @@ class Explore(BaseAction):
         self.log(f"Found {targets.sum()} goals to explore")
         return targets.any(), targets
 
-    def after_search(self, path):
+    def after_search(self, targets, path):
         if path is None:
             self.log("Didn't find any goals.")
             self.kernel().curLevel().explored = True

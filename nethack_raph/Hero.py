@@ -10,7 +10,12 @@ class Hero:
         self.tmpCount = 0
         self.turns = 0
 
-        self.attributes = None  # check https://nethackwiki.com/wiki/Attribute for more details
+        self.strength = None
+        self.dexterity = None
+        self.constitution = None
+        self.intelligence = None
+        self.wisdom = None
+        self.charisma = None
 
         self.score = 0
         self.curhp = None
@@ -51,6 +56,11 @@ class Hero:
 
         self.armor_class_before = None
 
+        self.pick_up_armor = True
+        self.pick_up_projectives = True
+        self.use_range_attack = True
+        self.prefer_melee_attack = True
+
     def coords(self):
         return self.x, self.y
 
@@ -70,13 +80,12 @@ class Hero:
         self.stun = bool(re.search("Stun", bot_line))
         self.hallu = bool(re.search("Hallu", bot_line))
 
-        self.y, self.x, strength_percentage, strength, dexterity, constitution, \
-            intelligence, wisdom, charisma, self.score, self.curhp, self.maxhp, \
+        self.y, self.x, strength_percentage, self.strength, self.dexterity, self.constitution, \
+            self.intelligence, self.wisdom, self.charisma, self.score, self.curhp, self.maxhp, \
             _, self.gold, self.curpw, self.maxpw, self.armor_class, monster_level, \
             self.xp, self.xp_next, self.turns, self.hunger, carrying_capacity, dungeon_number, \
             level_number, condition = blstats
 
-        self.attributes = (strength, dexterity, constitution, intelligence, wisdom, charisma)
         self.kernel().log(f'Hero hp: {self.curhp}/{self.maxhp}, hero coords: {self.coords()}')
 
     def attack(self, tile):
@@ -85,6 +94,13 @@ class Hero:
         self.kernel().send("F"+dir)
         self.lastActionedTile = tile
         self.lastAction = 'attack'
+
+    def throw(self, tile, weapon_letter):
+        dir = self._get_direction(self.coords(), tile)
+        self.kernel().drawString("Attacking -> %s (%s)" % (dir, tile))
+        self.kernel().send("t" + weapon_letter + dir)
+        self.lastActionedTile = tile
+        self.lastAction = 'range_attack'
 
     def move(self, tile):
         dir = self._get_direction(self.coords(), tile, allowed_door_diagonally=False)
@@ -174,6 +190,11 @@ class Hero:
             self.kernel().send('T')
         self.lastAction = 'take_off'
         self.kernel().hero.lastActionedItem = armor_letter
+
+    def wield(self, weapon_letter):
+        self.kernel().log("Hero::wield")
+        self.kernel().send(f'w*{weapon_letter}')
+        self.lastAction = 'wield'
 
     def _get_direction(self, source, target, allowed_door_diagonally=True):
         source_x, source_y = source
@@ -279,3 +300,29 @@ class Hero:
         #     raise Exception(f"Unknown moral from '{msg}'")
 
         self.kernel().log(f"Hero is {self.role}-{self.race}-{self.moral}-{self.gender}")
+
+        if self.role in {'tou'}:
+            self.prefer_melee_attack = False
+
+    def pick_up_choice(self, rows):
+        # choose all armors to inventory
+        projectives = [" spear", " dagger", " dart", " shuriken", " throwing star",
+                       " knife", " stiletto", " scalpel", " crysknife"]
+        choice = []
+        is_armor = False
+        for row in rows:
+            if self.pick_up_armor:
+                if 'Armor' in row:
+                    is_armor = True
+                    continue
+
+                if is_armor:
+                    if row[0].islower():
+                        choice.append(row[0])
+                    else:
+                        is_armor = False
+
+            if self.pick_up_projectives and any(x in row for x in projectives):
+                choice.append(row[0])
+
+        return choice
