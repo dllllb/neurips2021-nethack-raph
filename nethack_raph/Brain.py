@@ -1,6 +1,7 @@
 from nethack_raph.Actions.RandomWalk import *
 from nethack_raph.Actions.Explore import *
 from nethack_raph.Actions.AttackMonster import *
+from nethack_raph.Actions.RangeAttackMonster import *
 from nethack_raph.Actions.OpenDoors import *
 from nethack_raph.Actions.Descend import *
 from nethack_raph.Actions.Search import *

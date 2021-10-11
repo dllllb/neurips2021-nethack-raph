@@ -1,5 +1,5 @@
 from nethack_raph.Findable import *
-from nethack_raph.glossaries import MONSTERS_GLOSSARY
+from nethack_raph.glossaries import MONSTERS_GLOSSARY, ITEMS_TO_THROW
 
 
 class Item(Findable):
@@ -20,7 +20,7 @@ class Item(Findable):
                     'increase strength', 'increase energy', 'teleportitis', 'invisibility'
                     ]
 
-    item_glyp_ranges = {
+    item_glyp_ranges = { # TODO: refactor
         'corpse': (1144, 1524),
         'weapon': (1907, 1976),
         'armor': (1977, 2055),
@@ -44,11 +44,7 @@ class Item(Findable):
         self.enchants = 0
         self.buc = Item.UNKNOWNBUC
 
-        self.slot = None
-        self.page = None
-
         self.char = char
-
         self.glyph = glyph
         self.kernel = kernel
 
@@ -56,6 +52,7 @@ class Item(Findable):
         self.turn_of_death = -1000
         self.is_food = self.check_if_food()
 
+        self.projective = self.glyph in ITEMS_TO_THROW
         self.item_type = None
         for k, v in Item.item_glyp_ranges.items():
             if v[0] <= self.glyph <= v[1]:

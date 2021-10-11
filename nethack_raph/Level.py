@@ -77,11 +77,15 @@ class Level:
         '^': 100,
         ' ': 1
     }
-    wereCreaturesGlyphs = (
+    wereCreaturesGlyphs = {
         15,  # werejackal
         21,  # werewolf
         90,  # wererat
-    )
+    }
+    dark_glyph = {
+        '2379',  # dark part of a room
+        '2380',  # corridor
+    }
 
     def log(self, message):
         self.kernel().log(message)
@@ -137,7 +141,7 @@ class Level:
 
         glyph_type = self.glyph_type(glyph)
 
-        if (x, y) in self.monsters:
+        if (x, y) in self.monsters and glyph not in Level.dark_glyph:
             del self.monsters[x, y]
 
         # FIXME tile.glyph is not updated unless it is `dungeon`.
@@ -174,13 +178,19 @@ class Level:
         if (x, y) in self.items: del self.items[x, y]
 
     def update_hero(self, glyph):
+        ker = self.kernel()
+        x, y = ker.hero.coords()
+        tile = self.tiles[x, y]
+
+        ker.hero.isLycanthropy = glyph in Level.wereCreaturesGlyphs
+
         self.tiles.is_hero[:] = False
-        tile = self.tiles[self.kernel().hero.coords()]
         tile.is_hero = True
         tile.explored = True
         tile.walkable_glyph = True
         self.update_walk_cost(tile)
-        self.kernel().hero.isLycanthropy = glyph in Level.wereCreaturesGlyphs
+        if (x, y) in self.monsters:
+            del self.monsters[x, y]
 
     def set_as_door(self, tile):
         tile.is_opened_door = True

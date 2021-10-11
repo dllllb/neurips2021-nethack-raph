@@ -16,7 +16,6 @@ class Senses:
             "Your (right|left) leg is in no shape":                          ['leg_no_shape'],
             "Your leg feels somewhat better":                                ['leg_feels_better'],
             "You see here":                                                  ['found_items'],
-            "Things that are here":                                          ['found_items'],
             "There are (several|many) objects here":                         ['found_items'],
             "There's some graffiti on the floor here":                       ['graffiti_on_floor'],
             "You read: \"(.*?)\"":                                           ['you_read'],
@@ -69,9 +68,10 @@ class Senses:
             "There is nothing here to pick up.":                             ['no_pickup'],
             "The stairs are solidly fixed to the floor.":                    ['no_pickup'],
             "You could drink the water...":                                  ['no_pickup'],
+            "It won't come off the hinges.":                                 ['no_pickup'],
             "You cannot wear .*":                                            ['cant_wear'],
             "You are already wearing .*":                                    ['cant_wear'],
-            "[a-z] - ":                                                      ['picked_up'],
+            "[a-zA-Z] - ":                                                   ['picked_up'],
             "You finish your dressing maneuver.":                            ['dressed'],
             "You finish taking off your mail.":                              ['took_off'],
             r".*rop.*gold.*":                                                ['drop_gold'],
@@ -84,16 +84,6 @@ class Senses:
         # XXX this is where the top line is used, can we reuse the message?
         top = ker.top_line()
         self.messages = self.messages + top.strip().split("  ")
-
-        ker.log(str(self.messages))
-        if ker.searchTop("Things that are here:"):
-            ker.log("Found some items. (Row 3)")
-            ker.send("    ")
-
-        elif ker.get_row_line(3).find("Things that are here:") >= 0:
-            self.messages.append("Things that are here:")
-            ker.log("Found some items (row 3).")
-            ker.send("    ")
 
         #TODO MOVE THE ABOWE TO UPDATE
 
@@ -304,19 +294,19 @@ class Senses:
         hero, lev = ker.hero, ker.curLevel()
         curr = lev.tiles[hero.coords()]
 
-        # TODO (level refactor)
         ker.log("Found a shop.")
         if curr.is_opened_door and hero.lastAction == 'move':
             prev_coords = hero.beforeMove
             cur_coords = hero.coords()
+            if max(abs(c - p) for c, p in zip(cur_coords, prev_coords)) == 1:
 
-            # entrance is opposite to the tile where we came from
-            entrance_x, entrance_y = tuple((2 * c - p) for c, p in list(zip(cur_coords, prev_coords)))
-            entrance_tile = lev.tiles[entrance_x, entrance_y]
+                # entrance is opposite to the tile where we came from
+                entrance_x, entrance_y = tuple((2 * c - p) for c, p in zip(cur_coords, prev_coords))
+                entrance_tile = lev.tiles[entrance_x, entrance_y]
 
-            entrance_tile.shop_entrance = True
-            lev.update_walk_cost(entrance_tile)
-            ker.log(f'Shop entrance: {entrance_tile}')
+                entrance_tile.shop_entrance = True
+                lev.update_walk_cost(entrance_tile)
+                ker.log(f'Shop entrance: {entrance_tile}')
 
         buf = [curr]
         while buf:
@@ -488,25 +478,16 @@ class Senses:
 
     def parse_menu(self):
         ker = self.kernel()
+        lev = ker.curLevel()
+        x, y = ker.hero.coords()
         header = ker.get_row_line(0)
         skip_first = len(header) - len(header.lstrip())
 
         # What to pick up menu
         if header and header.find("Pick up what?") >= 0:
-            # choose all armors to inventory
-            choice = []
-            is_armor = False
-            for i in range(1, TTY_HEIGHT+1):
-                row = ker.get_row_line(i)[skip_first:]
-                if 'Armor' in row:
-                    is_armor = True
-                    continue
 
-                if is_armor:
-                    if row[0].islower():
-                        choice.append(row[0])
-                    else:
-                        break
+            rows = [ker.get_row_line(i)[skip_first:] for i in range(1, TTY_HEIGHT + 1)]
+            choice = self.kernel().hero.pick_up_choice(rows)
 
             ker.curLevel().clear_items(*ker.hero.coords())
             ker.log(f'Pick up what choice: {choice}')
@@ -519,6 +500,15 @@ class Senses:
 
         elif header and header.find("There is an open door here") >= 0:
             self.open_door_here()
+            ker.send(' ')
+
+        elif header and header.find("Things that are here:") >= 0:
+            rows = [ker.get_row_line(i)[skip_first:] for i in range(1, TTY_HEIGHT + 1)]
+            if sum(['corpse' in row for row in rows]) > 1:  # there are several corpse here. don't want to mix them up
+                ker.log(f'corpse savety check {[row for row in rows[:8]]}')
+                for it in lev.items[x, y]:
+                    if it.is_food and it.corpse:
+                        it.is_food = False
             ker.send(' ')
 
         else:

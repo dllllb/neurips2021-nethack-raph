@@ -11,6 +11,7 @@ import sys
 import numpy as np
 import weakref
 
+
 def render(chrs, cols, offset=(1, 1)):
     # begin by saving the current cursor, whatever it is
     ansi = '\033[s'
@@ -52,7 +53,6 @@ class Kernel:
         self.curBrain = TestBrain(weakref.ref(self))
 
         self.personality.setBrain(self.curBrain)  # Default brain
-
 
         self.stdout("\u001b[2J\u001b[0;0H")
         self.action = None
@@ -114,7 +114,6 @@ class Kernel:
             self.stdout(render(*self.state))
             self.log_screen(chars=self.state[0], log=self._frames_log,
                             coords=(obs['blstats'][1], obs['blstats'][0]))
-
 
         self.log(f"\n ------------------ STEP {self.steps} ------------------ ")
         if self.hero.turns != obs['blstats'][20]:

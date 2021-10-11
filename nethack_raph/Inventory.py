@@ -1,6 +1,6 @@
 from nethack_raph.myconstants import OBJECT_CLASSES as OCLASSES
+from nethack_raph.glossaries import WEAPON_GLOSSARY, ITEMS_TO_THROW
 
-from collections import Counter
 import numpy as np
 
 
@@ -53,3 +53,14 @@ class Inventory:
 
     def have_food(self):
         return bool((self.inv_oclasses == OCLASSES['FOOD_CLASS']).sum())
+
+    def range_weapon(self):
+        # TODO: weapon skills
+        range_weapons = [(l, g) for l, g, s in zip(self.inv_letters, self.inv_glyphs, self.inv_strs) \
+                         if g in ITEMS_TO_THROW and 'weapon in hand' not in s]
+        if range_weapons:
+            range_weapon_letter, _ = max(
+                [(l, int(WEAPON_GLOSSARY[g]['damage_S'][1:])) for l, g in range_weapons],
+                key=lambda x: -x[1]
+            )
+            return range_weapon_letter
