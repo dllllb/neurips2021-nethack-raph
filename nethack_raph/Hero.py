@@ -102,6 +102,11 @@ class Hero:
         self.lastActionedTile = tile
         self.lastAction = 'range_attack'
 
+    def cast_dir_spell(self, tile, spell_letter):
+        dir = self._get_direction(self.coords(), tile)
+        self.kernel().drawString(f"Casting -> ${dir} (${tile})")
+        self.kernel().send("Z" + spell_letter + dir)
+
     def move(self, tile):
         dir = self._get_direction(self.coords(), tile, allowed_door_diagonally=False)
         self.kernel().drawString("Walking -> %s (%s)" % (dir, tile))

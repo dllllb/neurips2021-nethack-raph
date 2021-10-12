@@ -1,4 +1,5 @@
 from nethack_raph.Actions.base import BaseAction
+from nethack_raph.Hero import Hero
 from nethack_raph.myconstants import COLOR_BG_RED
 
 import numpy as np
@@ -8,6 +9,7 @@ class RangeAttackMonster(BaseAction):
     def __init__(self, kernel):
         self.weapon_letter = None
         self.attack_direction = None
+        self.cast = False
         super().__init__(kernel)
 
     def get_way_(self, array, start, end):
@@ -71,11 +73,18 @@ class RangeAttackMonster(BaseAction):
         if not self.kernel().hero.use_range_attack:
             return False, None
 
-        self.weapon_letter = self.kernel().inventory.range_weapon()
-        if self.weapon_letter is None:
-            return False, None
+        if self.hero.role == 'wiz' and self.hero.curpw > 4:
+            self.weapon_letter = 'a'
+            self.cast = True
+            max_range = 12
+        else:
+            self.weapon_letter = self.kernel().inventory.range_weapon()
+            if self.weapon_letter is None:
+                return False, None
 
-        max_range = min(self.hero.strength // 2, 12)
+            max_range = min(self.hero.strength // 2, 12)
+            self.cast = False
+
         monsters = []
         for xy, monster in level.monsters.items():
             if monster is None or (not monster.is_attackable and not monster.passive):
@@ -121,4 +130,7 @@ class RangeAttackMonster(BaseAction):
     def execute(self, path=None):
         assert path is None
         self.log(f'Range attack {self.attack_direction}')
-        self.hero.throw(self.attack_direction, self.weapon_letter)
+        if self.cast:
+            self.hero.cast_dir_spell(self.attack_direction, self.weapon_letter)
+        else:
+            self.hero.throw(self.attack_direction, self.weapon_letter)
