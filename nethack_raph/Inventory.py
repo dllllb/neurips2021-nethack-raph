@@ -16,6 +16,10 @@ class Inventory:
         self.new_armors = []
         self.take_off_armors = []
         self.being_worn_count = None
+        
+        self.heal_pot = []
+        self.gain_pot = []
+        self.enc_scroll = []
 
     def update(self, obs):
         self.raw_glyphs = np.copy(obs['inv_glyphs'])

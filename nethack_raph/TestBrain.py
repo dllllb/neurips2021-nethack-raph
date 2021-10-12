@@ -1,4 +1,5 @@
 import numpy as np
+from nethack_raph.Actions.EmergencyHeal import EmergencyHeal
 
 from nethack_raph.Brain import *
 from nethack_raph.Pathing import dijkstra_pathing, mcp_pathing, check_neighbours
@@ -11,6 +12,7 @@ class TestBrain(Brain):
         super().__init__("TestBrain", kernel)
 
         self.actions = {
+            'EmergencyHeal': EmergencyHeal(kernel),
             'Elbereth': Elbereth(kernel),
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),
