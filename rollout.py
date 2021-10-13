@@ -6,6 +6,7 @@
 ## This file generates the rollouts, with the specific agent, ##
 ## batch_size and wrappers specified in subminssion_config.py ##
 ################################################################
+from collections import defaultdict
 from tqdm import tqdm
 import numpy as np
 
@@ -37,10 +38,16 @@ def run_batched_rollout(num_episodes, batched_env, agent):
 
     ascension_count = 0
     all_returns = []
+    role_stats = defaultdict(list)
     returns = [0.0 for _ in range(num_envs)]
     # The evaluator will automatically stop after the episodes based on the development/test phase
     while episode_count < num_episodes:
-        actions = agent.batched_step(observations, rewards, dones, infos)
+        actions, agent_infos = agent.batched_step(observations, rewards, dones, infos)
+
+        for ai in agent_infos:
+            if ai != None:
+                role, score = agent_infos[done_idx]
+                role_stats[role].append(score)
 
         observations, rewards, dones, infos = batched_env.batch_step(actions)
         
@@ -57,10 +64,15 @@ def run_batched_rollout(num_episodes, batched_env, agent):
                 num_remaining -= 1
                 
                 ascension_count += int(infos[done_idx]["is_ascended"])
+
                 pbar.update(1)
             
             returns[done_idx] = 0.0
     pbar.close()
+
+    for role, r_scores in role_stats.items():
+        print(role, np.median(r_scores), np.mean(r_scores))
+
     return ascension_count, all_returns
 
 if __name__ == "__main__":
