@@ -19,13 +19,13 @@ class PickUpStuff(BaseAction):
         if self.hero.levitating:  # You cannot reach the floor.
             return False, np.zeros(level.shape, dtype=bool)
 
+        if self.hero.encumbered_status >= 1:  # hero is burdened at least
+            return False, np.zeros(level.shape, dtype=bool)
+
         stuff_tiles = np.zeros(level.shape, dtype=bool)
         for xy, items in level.items.items():
             if level.tiles[xy].in_shop or level.tiles[xy].dropped_here:
                 continue
-
-            # if xy in level.monsters:
-            #    continue
 
             if self.hero.pick_up_projectives and any([item.projective for item in items]):
                 stuff_tiles[xy] = True

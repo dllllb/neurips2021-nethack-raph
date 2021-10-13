@@ -27,6 +27,7 @@ class Hero:
         self.armor_class = None
         self.xp = None
         self.xp_next = None
+        self.encumbered_status = None  # Unencumbered / Burdened / Stressed / Strained / Overtaxed / Overloaded
 
         self.blind = False
         self.confused = False
@@ -66,7 +67,7 @@ class Hero:
 
     def update(self, blstats, top_line, bot_line):
         # TODO: use them
-        # strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, condition
+        # strength_percentage, monster_level, dungeon_number, level_number, condition
         # condition (aka `unk`) == 64 -> Deaf
 
         levitating = bool(re.search("Lev", bot_line))
@@ -83,7 +84,7 @@ class Hero:
         self.y, self.x, strength_percentage, self.strength, self.dexterity, self.constitution, \
             self.intelligence, self.wisdom, self.charisma, self.score, self.curhp, self.maxhp, \
             _, self.gold, self.curpw, self.maxpw, self.armor_class, monster_level, \
-            self.xp, self.xp_next, self.turns, self.hunger, carrying_capacity, dungeon_number, \
+            self.xp, self.xp_next, self.turns, self.hunger, self.encumbered_status, dungeon_number, \
             level_number, condition = blstats
 
         self.kernel().log(f'Hero hp: {self.curhp}/{self.maxhp}, hero coords: {self.coords()}')
@@ -208,14 +209,13 @@ class Hero:
             target_tile = self.kernel().curLevel().tiles[target]
             source_tile = self.kernel().curLevel().tiles[source]
             if (source_tile.is_opened_door or target_tile.is_opened_door) and abs(source_y - target_y) + abs(source_x - target_x) > 1:
-
                 if self.kernel().curLevel().tiles[target_x, source_y].walkable_tile:
-                    self.kernel().log(f'walk to {(target_x, source_y)} instead of {target}')
-                    target_y = source_y
+                    return self._get_direction(source, (target_x, source_y)) + \
+                           self._get_direction((target_x, source_y), target)
 
                 elif self.kernel().curLevel().tiles[source_x, target_y].walkable_tile:
-                    self.kernel().log(f'walk to {(source_x, target_y)} instead of {target}')
-                    target_x = source_x
+                    return self._get_direction(source, (source_x, target_y)) + \
+                           self._get_direction((source_x, target_y), target)
 
                 else:
                     target_tile.shop_entrance = True
