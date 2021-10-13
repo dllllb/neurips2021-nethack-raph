@@ -5,7 +5,7 @@ from nethack_raph.Actions.base import BaseAction
 
 class EmergencyHeal(BaseAction):
     def can(self, level):
-        if self.hero.curhp >= self.hero.maxhp / 3:
+        if self.hero.curhp >= self.hero.maxhp / 2:
             return False, None
 
         if self.hero.role == 'hea' and self.hero.curpw > 4:

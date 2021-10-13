@@ -73,7 +73,7 @@ class RangeAttackMonster(BaseAction):
         if not self.kernel().hero.use_range_attack:
             return False, None
 
-        if self.hero.role == 'wiz' and self.hero.curpw > 4:
+        if self.hero.role == 'wiz' and self.hero.curpw > 4 and self.hero.curhp <= self.hero.maxhp * .6:
             self.weapon_letter = 'a'
             self.cast = True
             max_range = 12

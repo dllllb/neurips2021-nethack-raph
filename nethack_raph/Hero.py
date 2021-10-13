@@ -109,7 +109,7 @@ class Hero:
 
     def cast_spell(self, spell_letter):
         self.kernel().drawString(f"Casting {spell_letter}")
-        self.kernel().send("Z" + spell_letter)
+        self.kernel().send("Z" + spell_letter + '.')
 
     def move(self, tile):
         dir = self._get_direction(self.coords(), tile, allowed_door_diagonally=False)
