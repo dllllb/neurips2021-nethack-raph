@@ -310,7 +310,7 @@ class Hero:
 
         self.kernel().log(f"Hero is {self.role}-{self.race}-{self.moral}-{self.gender}")
 
-        if self.role in {'tou'}:
+        if self.role in {'tou', 'wiz'}:
             self.prefer_melee_attack = False
 
     def pick_up_choice(self, rows):
