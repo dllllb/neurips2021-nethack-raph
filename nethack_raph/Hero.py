@@ -104,11 +104,11 @@ class Hero:
 
     def cast_dir_spell(self, tile, spell_letter):
         dir = self._get_direction(self.coords(), tile)
-        self.kernel().drawString(f"Casting -> ${dir} (${tile})")
+        self.kernel().drawString(f"Casting -> {dir} ({tile}), ({spell_letter})")
         self.kernel().send("Z" + spell_letter + dir)
 
     def cast_spell(self, spell_letter):
-        self.kernel().drawString("Casting")
+        self.kernel().drawString(f"Casting {spell_letter}")
         self.kernel().send("Z" + spell_letter)
 
     def move(self, tile):
