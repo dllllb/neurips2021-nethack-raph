@@ -66,6 +66,8 @@ class Kernel:
 
     def set_verbose(self, value):
         if not self.verbose and value:
+            from pathlib import Path
+            Path("logs").mkdir(parents=True, exist_ok=True)
             self._file = open("logs/log.txt", "w")
             self._frames_log = open("logs/frames.txt", "w")
         self.verbose = value
