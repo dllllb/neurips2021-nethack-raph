@@ -207,3 +207,6 @@ class Kernel:
             sys.stdout.write(msg)
             sys.stdout.flush()
 
+    def __del__(self):
+        hero = self.hero
+        self.log(f"Episode stats: {hero.role}-{hero.race}-{hero.moral}-{hero.gender} {hero.score}\n")
