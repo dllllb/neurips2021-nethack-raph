@@ -14,9 +14,9 @@ from envs.batched_env import BatchedEnv
 from nle_toolbox.wrappers.replay import ReplayToFile
 
 
-def evaluate(seed=None):
+def evaluate(seed, character):
     with ReplayToFile(
-        addtimelimitwrapper_fn(),
+        aicrowd_gym.make("NetHackChallenge-v0", character=character),
         folder='./replays',
         save_on='close,done',
     ) as env:
@@ -47,6 +47,8 @@ if __name__ == "__main__":
         '--seed', type=int, nargs=2, required=False, dest='seed',
         help='The seed pair to use. See `python -m nle_toolbox.utils.play replay.pkl`.',
     )
+
+    parser.add_argument('--character', default='mon-hum-neu-mal')
 
     parser.set_defaults(seed=None)
 
