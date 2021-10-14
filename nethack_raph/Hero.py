@@ -197,6 +197,11 @@ class Hero:
         self.kernel().send(f'w*{weapon_letter}')
         self.lastAction = 'wield'
 
+    def quaff(self, potion_letter):
+        self.kernel().log("Hero::quaff")
+        self.kernel().send(f'q{potion_letter}')
+        self.lastAction = 'quaff'
+
     def _get_direction(self, source, target, allowed_door_diagonally=True):
         source_x, source_y = source
         target_x, target_y = target

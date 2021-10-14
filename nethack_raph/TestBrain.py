@@ -15,6 +15,7 @@ class TestBrain(Brain):
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),
             'Pray': Pray(kernel),
+            'UseItem': UseItem(kernel),
             'RangeAttackMonster': RangeAttackMonster(kernel),
             'AttackMonster': AttackMonster(kernel),
             'Eat': Eat(kernel),

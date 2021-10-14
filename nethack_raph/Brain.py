@@ -11,6 +11,7 @@ from nethack_raph.Actions.Eat import *
 from nethack_raph.Actions.Pray import Pray
 from nethack_raph.Actions.PickUpStuff import PickUpStuff
 from nethack_raph.Actions.Elbereth import Elbereth
+from nethack_raph.Actions.UseItem import UseItem
 
 
 class Brain:
