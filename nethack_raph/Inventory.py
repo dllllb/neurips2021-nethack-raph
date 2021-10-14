@@ -50,19 +50,22 @@ class Inventory:
                                      if oc == OCLASSES['ARMOR_CLASS'] and 'being worn' in inv_str])
 
         if (self.inv_oclasses == OCLASSES['TOOL_CLASS']).sum() < (inv_oclasses == OCLASSES['TOOL_CLASS']).sum():
-            query = 'camera'
+            query = b'camera'
             query_mask = np.char.find(inv_strs, query) > 0
 
             if query_mask.any():
-                camera_str = inv_strs[query_mask][0]
+                camera_str = inv_strs[query_mask][0].decode()
+                self.kernel().log(f'camera is available: {camera_str}')
                 import re
-                charges = re.search('.+camera \([0-9]+:([0-9]+)\)')
+                charges = re.search('.+camera \([0-9]+:([0-9]+)\)', camera_str)
                 if charges:
-                    self.camera_charges = charges.group(1)
+                    self.camera_charges = int(charges.group(1))
+                    self.kernel().log(f'camera has {self.camera_charges} charges')
                 else:
-                    self.kernel.log(f'parsing error: {camera_str}')
-                self.camera_letter = inv_letters[query_mask].tolist()[0]
+                    self.kernel().log(f'parsing error: {camera_str}')
+                self.camera_letter = inv_letters[query_mask].tolist()[0].decode()
             else:
+                self.kernel().log(f'camera is not found')
                 self.camera_charges = 0
 
         self.inv_strs = inv_strs[index].astype(str)  # convert to utf8 strings
