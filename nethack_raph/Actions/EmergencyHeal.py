@@ -8,10 +8,10 @@ class EmergencyHeal(BaseAction):
         if self.hero.curhp >= self.hero.maxhp / 2:
             return False, None
 
-        if self.hero.role == 'hea' and self.hero.curpw > 4:
+        if 'healing' in self.hero.spells and self.hero.curpw > 4:
             return True, None
         
         return False, None
 
     def execute(self, path=None):
-        self.hero.cast_spell('a')
+        self.hero.cast_spell(self.hero.spells['healing'])

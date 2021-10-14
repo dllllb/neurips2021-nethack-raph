@@ -18,6 +18,7 @@ wandb = "*"
 nle-toolbox = {git = "https://github.com/ivannz/nle_toolbox.git"}
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.8"

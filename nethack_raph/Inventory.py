@@ -16,10 +16,8 @@ class Inventory:
         self.new_armors = []
         self.take_off_armors = []
         self.being_worn_count = None
-        
-        self.heal_pot = []
-        self.gain_pot = []
-        self.enc_scroll = []
+        self.camera = None
+        self.camera_charges = 0
 
     def update(self, obs):
         self.raw_glyphs = np.copy(obs['inv_glyphs'])
@@ -27,6 +25,7 @@ class Inventory:
         # parse the inventory
         inv_letters = obs['inv_letters'].view('c')  # uint8 to bytes
         index, = inv_letters.nonzero()  # keep non-empty slots only
+        inv_oclasses = obs['inv_oclasses'][index]
         inv_strs = obs['inv_strs'].view('S80')[:, 0]  # uint8 to sz
 
         if (self.inv_oclasses == OCLASSES['WEAPON_CLASS']).sum() < (obs['inv_oclasses'][index] == OCLASSES['WEAPON_CLASS']).sum():
@@ -49,6 +48,22 @@ class Inventory:
 
         self.being_worn_count = len([oc for oc, inv_str in zip(obs['inv_oclasses'][index], inv_strs[index].astype(str))
                                      if oc == OCLASSES['ARMOR_CLASS'] and 'being worn' in inv_str])
+
+        if (self.inv_oclasses == OCLASSES['TOOL_CLASS']).sum() < (inv_oclasses == OCLASSES['TOOL_CLASS']).sum():
+            query = 'camera'
+            query_mask = np.char.find(inv_strs, query) > 0
+
+            if query_mask.any():
+                camera_str = inv_strs[query_mask][0]
+                import re
+                charges = re.search('.+camera \([0-9]+:([0-9]+)\)')
+                if charges:
+                    self.camera_charges = charges.group(1)
+                else:
+                    self.kernel.log(f'parsing error: {camera_str}')
+                self.camera_letter = inv_letters[query_mask].tolist()[0]
+            else:
+                self.camera_charges = 0
 
         self.inv_strs = inv_strs[index].astype(str)  # convert to utf8 strings
         self.inv_letters = inv_letters[index].astype(str)
