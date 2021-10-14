@@ -172,6 +172,8 @@ class Level:
             if tile.char == '+':  # The door is open
                 self.set_as_door(tile)
 
+        if not tile.explored:
+            self.explored = False
         self.update_walk_cost(tile)
 
     def clear_items(self, x, y):
@@ -256,11 +258,11 @@ class Level:
         # BULK COPY: reinterprete and copy ('no' raises if anything goes bad)
         np.copyto(tiles.appearance, chars, 'no')
 
+        self.update_hero(glyphs[hero.coords()])
+
         for pt in zip(*xy):
             tile, char, gly = tiles[pt], chars[pt], glyphs[pt]
             self.update_one(tile, char, gly)
-            if tuple(tile.xy) != hero.coords():
-                self.explored = False
 
         neighbours = self.neighbours[hero.coords()]
         neighbours = neighbours[(neighbours.appearance == ' ') & neighbours.walkable_glyph].xy
@@ -269,8 +271,6 @@ class Level:
             tile = self.tiles[x, y]
             tile.walkable_glyph = False
             self.update_walk_cost(tile)
-
-        self.update_hero(glyphs[hero.coords()])
 
     @staticmethod
     def glyph_type(glyph):

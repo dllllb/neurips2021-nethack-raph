@@ -104,7 +104,7 @@ class Hero:
         self.lastAction = 'range_attack'
 
     def move(self, tile):
-        dir = self._get_direction(self.coords(), tile, allowed_door_diagonally=False)
+        dir = self._get_direction(self.coords(), tile)
         self.kernel().drawString("Walking -> %s (%s)" % (dir, tile))
 
         self.beforeMove = (self.x, self.y)
@@ -202,31 +202,12 @@ class Hero:
         self.kernel().send(f'q{potion_letter}')
         self.lastAction = 'quaff'
 
-    def _get_direction(self, source, target, allowed_door_diagonally=True):
+    def _get_direction(self, source, target):
         source_x, source_y = source
         target_x, target_y = target
 
         if abs(source_y - target_y) > 1 or abs(source_x - target_x) > 1:
             self.kernel().die(f"\n\nAsked for directions to a nonadjacent tile {source} -> {target}\n\n")
-
-        if not allowed_door_diagonally:
-            # A small hack. can't move diagonally into the doorway and out of the doorway
-            target_tile = self.kernel().curLevel().tiles[target]
-            source_tile = self.kernel().curLevel().tiles[source]
-            if (source_tile.is_opened_door or target_tile.is_opened_door) and abs(source_y - target_y) + abs(source_x - target_x) > 1:
-                if self.kernel().curLevel().tiles[target_x, source_y].walkable_tile:
-                    return self._get_direction(source, (target_x, source_y)) + \
-                           self._get_direction((target_x, source_y), target)
-
-                elif self.kernel().curLevel().tiles[source_x, target_y].walkable_tile:
-                    return self._get_direction(source, (source_x, target_y)) + \
-                           self._get_direction((source_x, target_y), target)
-
-                else:
-                    target_tile.shop_entrance = True
-                    self.kernel().curLevel().update_walk_cost(target_tile)
-                    self.kernel().log(f'{target} should be a shop_entrance')
-                    return ' '
 
         if source_x < target_x and source_y < target_y:
             return 'n'

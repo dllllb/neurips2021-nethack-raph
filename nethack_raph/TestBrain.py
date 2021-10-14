@@ -1,7 +1,5 @@
-import numpy as np
-
 from nethack_raph.Brain import *
-from nethack_raph.Pathing import dijkstra_pathing, mcp_pathing, check_neighbours
+from nethack_raph.Pathing import dijkstra_pathing, check_neighbours
 
 from nethack_raph.myconstants import DUNGEON_WIDTH
 
@@ -82,6 +80,6 @@ class TestBrain(Brain):
             self.kernel().log(f'Use previous path')
             return self.prev_path[:-1]
 
-        path, *ignore = dijkstra_pathing(level.tiles, xy, coords)
+        path, *ignore = dijkstra_pathing(level.tiles, xy, coords, level.tiles.is_opened_door)
 
         return path
