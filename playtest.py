@@ -16,7 +16,7 @@ from nle_toolbox.wrappers.replay import ReplayToFile
 
 def evaluate(seed, character):
     with ReplayToFile(
-        aicrowd_gym.make("NetHackChallenge-v0", character=character),
+        addtimelimitwrapper_fn(character=character),
         folder='./replays',
         save_on='close,done',
     ) as env:
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         help='The seed pair to use. See `python -m nle_toolbox.utils.play replay.pkl`.',
     )
 
-    parser.add_argument('--character', default='mon-hum-neu-mal')
+    parser.add_argument('--character', default='@')
 
     parser.set_defaults(seed=None)
 

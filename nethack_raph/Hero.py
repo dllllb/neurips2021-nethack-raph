@@ -115,7 +115,7 @@ class Hero:
 
     def use_dir_item(self, tile, letter):
         dir = self._get_direction(self.coords(), tile)
-        self.kernel().drawString(f"Using item {letter}")
+        self.kernel().drawString(f"Using item -> {dir} ({tile}) {letter}")
         self.kernel().send("a" + letter + dir)
 
     def move(self, tile):
