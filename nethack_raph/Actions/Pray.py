@@ -4,7 +4,7 @@ from nethack_raph.Actions.base import BaseAction
 
 
 class Pray(BaseAction):
-    last_pray_turn, timeout = -1000, 1000
+    last_pray_turn, timeout = -1000, 800
 
     def can(self, level):
         if self.hero.turns - self.last_pray_turn < self.timeout:

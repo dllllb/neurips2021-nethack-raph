@@ -1,4 +1,7 @@
 import numpy as np
+from nethack_raph.Actions.EmergencyHeal import EmergencyHeal
+from nethack_raph.Actions.Flash import Flash
+from nethack_raph.Actions.ForceBolt import ForceBolt
 
 from nethack_raph.Brain import *
 from nethack_raph.Pathing import dijkstra_pathing, mcp_pathing, check_neighbours
@@ -11,10 +14,13 @@ class TestBrain(Brain):
         super().__init__("TestBrain", kernel)
 
         self.actions = {
+            'EmergencyHeal': EmergencyHeal(kernel),
             'Elbereth': Elbereth(kernel),
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),
             'Pray': Pray(kernel),
+            'ForceBolt': ForceBolt(kernel),
+            'Flash': Flash(kernel),
             'RangeAttackMonster': RangeAttackMonster(kernel),
             'AttackMonster': AttackMonster(kernel),
             'Eat': Eat(kernel),
