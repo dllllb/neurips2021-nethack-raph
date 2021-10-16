@@ -44,11 +44,6 @@ def run_batched_rollout(num_episodes, batched_env, agent):
     while episode_count < num_episodes:
         actions, agent_infos = agent.batched_step(observations, rewards, dones, infos)
 
-        for ai in agent_infos:
-            if ai != None:
-                role, score = agent_infos[done_idx]
-                role_stats[role].append(score)
-
         observations, rewards, dones, infos = batched_env.batch_step(actions)
         
         for i, r in enumerate(rewards):
@@ -64,6 +59,9 @@ def run_batched_rollout(num_episodes, batched_env, agent):
                 num_remaining -= 1
                 
                 ascension_count += int(infos[done_idx]["is_ascended"])
+
+                role, score = agent_infos[done_idx]
+                role_stats[role].append(score)
 
                 pbar.update(1)
             

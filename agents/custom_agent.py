@@ -55,12 +55,13 @@ class Process(mp.Process):
             try:
                 observation, done = self.remote.recv()
                 if done:
-                    hero = self.agent.kernel.hero
-                    info = (hero.role, hero.score)
                     self.agent.reset()
-                else:
-                    info = None
+
                 action = self.agent.step(observation)
+                
+                hero = self.agent.kernel.hero
+                info = (hero.role, hero.score)
+                
                 self.remote.send((action, info))
             except EOFError:
                 break
