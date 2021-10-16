@@ -152,4 +152,4 @@ class CustomAgent(BatchedAgent):
         self.maxtime = max(self.maxtime, after - before)
         self.agent.kernel.log(f'action full: {self.agent.kernel.action}')
         self.agent.kernel.log(f'action time: {after - before}, maxtime: {self.maxtime}')
-        return [action], [None]
+        return [action], [(self.agent.kernel.hero.role, self.agent.kernel.hero.score)]
