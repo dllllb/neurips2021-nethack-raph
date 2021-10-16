@@ -2,6 +2,7 @@ import numpy as np
 from nethack_raph.Actions.EmergencyHeal import EmergencyHeal
 from nethack_raph.Actions.Flash import Flash
 from nethack_raph.Actions.ForceBolt import ForceBolt
+from nethack_raph.Actions.CheckTraps import CheckTraps
 
 from nethack_raph.Brain import *
 from nethack_raph.Pathing import dijkstra_pathing, mcp_pathing, check_neighbours
@@ -26,6 +27,7 @@ class TestBrain(Brain):
             'Eat': Eat(kernel),
             'PickUpStuff': PickUpStuff(kernel),
             'FixStatus': FixStatus(kernel),
+            # 'CheckTraps': CheckTraps(kernel),
             'Explore': Explore(kernel),
             'OpenDoors': OpenDoors(kernel),
             # 'Descend': Descend(kernel),

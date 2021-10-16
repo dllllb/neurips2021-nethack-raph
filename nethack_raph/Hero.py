@@ -27,6 +27,7 @@ class Hero:
         self.armor_class = None
         self.xp = None
         self.xp_next = None
+        self.level_number = None
 
         self.blind = False
         self.confused = False
@@ -86,7 +87,7 @@ class Hero:
             self.intelligence, self.wisdom, self.charisma, self.score, self.curhp, self.maxhp, \
             _, self.gold, self.curpw, self.maxpw, self.armor_class, monster_level, \
             self.xp, self.xp_next, self.turns, self.hunger, carrying_capacity, dungeon_number, \
-            level_number, condition = blstats
+            self.level_number, condition = blstats
 
         self.kernel().log(f'Hero hp: {self.curhp}/{self.maxhp}, hero coords: {self.coords()}')
 
@@ -128,7 +129,7 @@ class Hero:
         self.lastAction = 'move'
 
     def descend(self):
-        self.kernel().log("Hero is descending..")
+        self.kernel().drawString(f"Hero (level: {self.xp}) is descending from level {self.level_number}")
         self.kernel().send(">")
         self.lastAction = 'descend'
 
