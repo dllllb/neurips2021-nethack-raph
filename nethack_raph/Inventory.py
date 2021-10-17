@@ -19,6 +19,7 @@ class Inventory:
         self.being_worn_count = None
         self.camera = None
         self.camera_charges = 0
+        self.camera_letter = None
 
     def update(self, obs):
         self.raw_glyphs = np.copy(obs['inv_glyphs'])
@@ -47,6 +48,26 @@ class Inventory:
                 self.healing_potions = inv_letters[potion_mask][query_mask].tolist()
             else:
                 self.healing_potions = []
+
+        # tools
+        if (self.inv_oclasses == OCLASSES['TOOL_CLASS']).sum() < (inv_oclasses == OCLASSES['TOOL_CLASS']).sum():
+            query = 'camera'
+            query_mask = np.char.find(inv_strs, query) > 0
+
+            if query_mask.any():
+                camera_str = inv_strs[query_mask][0]
+                self.kernel().log(f'camera is available: {camera_str}')
+                import re
+                charges = re.search('.+camera \([0-9]+:([0-9]+)\)', camera_str)
+                if charges:
+                    self.camera_charges = int(charges.group(1))
+                    self.kernel().log(f'camera has {self.camera_charges} charges')
+                else:
+                    self.kernel().log(f'parsing error: {camera_str}')
+                self.camera_letter = inv_letters[query_mask].tolist()[0]
+            else:
+                self.kernel().log(f'camera is not found')
+                self.camera_charges = 0
 
         self.being_worn_count = len([oc for oc, inv_str in zip(inv_oclasses, inv_strs)
                                      if oc == OCLASSES['ARMOR_CLASS'] and 'being worn' in inv_str])

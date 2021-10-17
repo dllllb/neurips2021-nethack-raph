@@ -14,6 +14,7 @@ class TestBrain(Brain):
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),
             'Pray': Pray(kernel),
+            'UseItem': UseItem(kernel),
             'ForceBolt': ForceBolt(kernel),
             'Flash': Flash(kernel),
             'RangeAttackMonster': RangeAttackMonster(kernel),
