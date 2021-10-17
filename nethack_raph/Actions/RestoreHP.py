@@ -32,4 +32,4 @@ class RestoreHP(BaseAction):
         assert path is None
 
         self.log("Searching for 1 turns because my HP is low")
-        self.hero.search(1)
+        self.hero.search(10)

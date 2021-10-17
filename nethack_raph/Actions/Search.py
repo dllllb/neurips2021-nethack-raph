@@ -21,6 +21,11 @@ class Search(BaseAction):
 
         targets = targets.sum((-1, -2))
         targets *= tiles.walkable_tile & tiles.explored
+
+        for xy, mon in level.monsters.items():
+            if not mon.pet:
+                targets[xy] = 0
+
         if targets.max() == 0:
             return False, np.zeros(level.shape, dtype=bool)
         else:

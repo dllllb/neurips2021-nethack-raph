@@ -12,15 +12,15 @@ class Monster:
     }
 
     passive_monster_glyphs = {
-        # 6,    # acid blob
+        6,    # acid blob
         27,   # gas spore
         28,   # floating eye
-        # 55,   # blue jelly
-        # 56,   # spotted jelly
-        # 156,  # brown mold
-        # 157,  # yellow mold
-        # 158,  # green mold
-        # 159,  # red mold
+        55,   # blue jelly
+        56,   # spotted jelly
+        156,  # brown mold
+        157,  # yellow mold
+        158,  # green mold
+        159,  # red mold
     }
 
     guard_glyphs = {

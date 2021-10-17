@@ -89,6 +89,4 @@ class Item(Findable):
 
     def is_tainted(self):
         tainted = bool(self.corpse) and self.kernel().hero.turns - self.turn_of_death >= 30
-        if self.corpse:
-            self.kernel().log(f"Corpse is {'' if tainted else 'not'} tainted: {(self.kernel().hero.turns, self.turn_of_death)}")
         return tainted

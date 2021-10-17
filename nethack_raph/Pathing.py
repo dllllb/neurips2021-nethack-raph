@@ -6,11 +6,9 @@ from collections import defaultdict
 
 from nethack_raph.myconstants import DUNGEON_WIDTH, DUNGEON_HEIGHT
 
-# from skimage.graph import MCP
 
-
-def calc_neighbours():
-    offsets = {(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)}
+def calc_corner_adjacent():
+    offsets = {(-1, -1), (-1, 1), (1, -1), (1, 1)}
     result = []
     for x in range(DUNGEON_HEIGHT):
         for y in range(DUNGEON_WIDTH):
@@ -24,7 +22,24 @@ def calc_neighbours():
             result.append(tuple(neibs))
     return result
 
-_NEIGHBOURS = calc_neighbours()
+
+def calc_edge_adjacent():
+    offsets = {(-1, 0), (0, -1), (0, 1), (1, 0)}
+    result = []
+    for x in range(DUNGEON_HEIGHT):
+        for y in range(DUNGEON_WIDTH):
+            neibs = []
+            for h, w in offsets:
+                if x + h >= DUNGEON_HEIGHT: continue
+                if x + h < 0: continue
+                if y + w >= DUNGEON_WIDTH: continue
+                if y + w < 0: continue
+                neibs.append((x + h) * DUNGEON_WIDTH + y + w)
+            result.append(tuple(neibs))
+    return result
+
+_CORNER_ADJACENT = calc_corner_adjacent()
+_EDGE_ADJACENT = calc_edge_adjacent()
 
 
 class Node:
@@ -52,10 +67,19 @@ def reconstruct_path(prev, goal):
     return result
 
 
-def dijkstra_pathing(tiles, start, mask):
+def dijkstra_pathing(tiles, start, mask, doors):
     walk_costs = tiles.walk_cost.reshape(-1)
     coords = mask.reshape(-1)
+    doors = doors.reshape(-1)
     start = int(start[0] * DUNGEON_WIDTH + start[1])
+
+    def neighbours_gen(xy, doors):
+        for neib in _EDGE_ADJACENT[xy]:
+            yield neib
+        if not doors[xy]:
+            for neib in _CORNER_ADJACENT[xy]:
+                if not doors[neib]:
+                    yield neib
 
     cost = defaultdict(lambda: float('inf'))
     prev = {}
@@ -77,7 +101,8 @@ def dijkstra_pathing(tiles, start, mask):
         if cost[current] < current.cost:
             continue
 
-        for neighbour in _NEIGHBOURS[current.xy]:
+        # edge adjacent
+        for neighbour in neighbours_gen(current.xy, doors):
             # consider tiles with finite +ve costs only
             walk_cost = walk_costs[neighbour]
             if isfinite(walk_cost) and walk_cost >= 0:
@@ -93,22 +118,4 @@ def dijkstra_pathing(tiles, start, mask):
 
 
 def check_neighbours(xy, coords):
-    return coords[np.array(_NEIGHBOURS[xy])].any()
-
-
-def mcp_pathing(walk_costs, start, coords):
-    if coords[start]:
-        return [start]
-
-    end_points = [(i, j) for i, j in zip(*np.where(coords))]
-    mcp = MCP(walk_costs, fully_connected=True)
-    costs, traceback = mcp.find_costs([start], end_points, find_all_ends=False)
-    costs_to_endpoints = costs[np.array([y for y, x in end_points]), np.array([x for y, x in end_points])]
-
-    if costs_to_endpoints.min() == np.inf:
-        return None
-
-    else:
-        closest_end_point = end_points[costs_to_endpoints.argmin()]
-        path = mcp.traceback(closest_end_point)[::-1]
-        return path
+    return coords[np.array(_EDGE_ADJACENT[xy])].any() or coords[np.array(_CORNER_ADJACENT[xy])].any()
