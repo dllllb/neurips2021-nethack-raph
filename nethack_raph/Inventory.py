@@ -17,6 +17,8 @@ class Inventory:
         self.take_off_armors = []
         self.healing_potions = []
         self.being_worn_count = None
+        self.camera = None
+        self.camera_charges = 0
 
     def update(self, obs):
         self.raw_glyphs = np.copy(obs['inv_glyphs'])

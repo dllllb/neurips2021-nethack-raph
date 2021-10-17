@@ -62,6 +62,8 @@ class Hero:
         self.use_range_attack = True
         self.prefer_melee_attack = True
 
+        self.spells = {}
+
     def coords(self):
         return self.x, self.y
 
@@ -98,10 +100,24 @@ class Hero:
 
     def throw(self, tile, weapon_letter):
         dir = self._get_direction(self.coords(), tile)
-        self.kernel().drawString("Attacking -> %s (%s)" % (dir, tile))
+        self.kernel().drawString(f"Range attacking -> {dir} ({tile}) {weapon_letter}")
         self.kernel().send("t" + weapon_letter + dir)
         self.lastActionedTile = tile
         self.lastAction = 'range_attack'
+
+    def cast_dir_spell(self, tile, spell_letter):
+        dir = self._get_direction(self.coords(), tile)
+        self.kernel().drawString(f"Casting -> {dir} ({tile}) ({spell_letter})")
+        self.kernel().send("Z" + spell_letter + dir)
+
+    def cast_spell(self, spell_letter):
+        self.kernel().drawString(f"Casting {spell_letter}")
+        self.kernel().send("Z" + spell_letter + '.')
+
+    def use_dir_item(self, tile, letter):
+        dir = self._get_direction(self.coords(), tile)
+        self.kernel().drawString(f"Using item -> {dir} ({tile}) {letter}")
+        self.kernel().send("a" + letter + dir)
 
     def move(self, tile):
         dir = self._get_direction(self.coords(), tile)
@@ -287,8 +303,15 @@ class Hero:
 
         self.kernel().log(f"Hero is {self.role}-{self.race}-{self.moral}-{self.gender}")
 
-        if self.role in {'tou'}:
+        if self.role in {'tou', 'wiz'}:
             self.prefer_melee_attack = False
+
+        if self.role == 'wiz':
+            self.spells['force_bolt'] = 'a'
+
+        if self.role == 'hea':
+            self.spells['healing'] = 'a'
+
 
     def pick_up_choice(self, rows):
         # choose all armors to inventory

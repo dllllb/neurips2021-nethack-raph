@@ -66,6 +66,8 @@ class Kernel:
 
     def set_verbose(self, value):
         if not self.verbose and value:
+            from pathlib import Path
+            Path("logs").mkdir(parents=True, exist_ok=True)
             self._file = open("logs/log.txt", "w")
             self._frames_log = open("logs/frames.txt", "w")
         self.verbose = value
@@ -207,3 +209,6 @@ class Kernel:
             sys.stdout.write(msg)
             sys.stdout.flush()
 
+    def __del__(self):
+        hero = self.hero
+        self.log(f"Episode stats: {hero.role}-{hero.race}-{hero.moral}-{hero.gender} {hero.score}\n")

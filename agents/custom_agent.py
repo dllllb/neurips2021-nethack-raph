@@ -55,9 +55,13 @@ class Process(mp.Process):
             try:
                 observation, done = self.remote.recv()
                 if done:
+                    hero = self.agent.kernel.hero
+                    info = (hero.role, hero.score)
                     self.agent.reset()
+                else:
+                    info = None
                 action = self.agent.step(observation)
-                self.remote.send(action)
+                self.remote.send((action, info))
             except EOFError:
                 break
 
@@ -93,8 +97,9 @@ class SubprocVecEnv:
 
     def step_wait(self):
         results = [remote.recv() for remote in self.remotes]
+        actions, infos = zip(*results)
         self.waiting = False
-        return results
+        return actions, infos
 
 
 class CustomAgentMP(BatchedAgent):
@@ -146,4 +151,4 @@ class CustomAgent(BatchedAgent):
         self.maxtime = max(self.maxtime, after - before)
         self.agent.kernel.log(f'action full: {self.agent.kernel.action}')
         self.agent.kernel.log(f'action time: {after - before}, maxtime: {self.maxtime}')
-        return [action]
+        return [action], [None]

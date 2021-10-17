@@ -3,9 +3,11 @@ nle/
 data/
 shared/
 logs/
+replays/
 .gradle/
 *.pyc
 .idea
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

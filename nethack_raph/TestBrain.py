@@ -9,11 +9,13 @@ class TestBrain(Brain):
         super().__init__("TestBrain", kernel)
 
         self.actions = {
+            'EmergencyHeal': EmergencyHeal(kernel),
             'Elbereth': Elbereth(kernel),
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),
             'Pray': Pray(kernel),
-            'UseItem': UseItem(kernel),
+            'ForceBolt': ForceBolt(kernel),
+            'Flash': Flash(kernel),
             'RangeAttackMonster': RangeAttackMonster(kernel),
             'AttackMonster': AttackMonster(kernel),
             'Eat': Eat(kernel),
