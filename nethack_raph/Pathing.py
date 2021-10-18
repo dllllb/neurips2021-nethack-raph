@@ -152,9 +152,9 @@ def dijkstra_cpp(tiles, start, targets_mask, doors):
         return nparray.ctypes.data_as(POINTER(dtype))
 
     walk_costs = tiles.walk_cost.reshape(-1)
-    targets_mask = targets_mask.astype(np.bool)
-    doors = doors.astype(np.bool)
-    start = start[0] * DUNGEON_WIDTH + start[1]
+    targets_mask = targets_mask.reshape(-1).astype(np.bool)
+    doors = doors.reshape(-1).astype(np.bool)
+    start = int(start[0] * DUNGEON_WIDTH + start[1])
 
     path = np.full((2 * DUNGEON_WIDTH * DUNGEON_HEIGHT), -1, dtype=np.int32)
     libc.dijkstra(
