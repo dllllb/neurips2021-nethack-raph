@@ -6,6 +6,7 @@
 #include <queue>
 #include <climits>
 #include <cmath>
+#include <tuple>
 
 constexpr int DUNGEON_WIDTH = 79;
 constexpr int DUNGEON_HEIGHT = 21;
