@@ -68,7 +68,7 @@ def run_batched_rollout(num_episodes, batched_env, agent):
             returns[done_idx] = 0.0
     pbar.close()
 
-    for role, r_scores in role_stats.items():
+    for role, r_scores in sorted(role_stats.items()):
         print(role, int(np.median(r_scores)), int(np.mean(r_scores)), len(r_scores))
 
     return ascension_count, all_returns
