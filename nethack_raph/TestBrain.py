@@ -17,6 +17,7 @@ class TestBrain(Brain):
         self.actions = {
             'EmergencyHeal': EmergencyHeal(kernel),
             'Elbereth': Elbereth(kernel),
+            'Eat': Eat(kernel),
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),
             'Pray': Pray(kernel),
@@ -24,7 +25,6 @@ class TestBrain(Brain):
             'Flash': Flash(kernel),
             'RangeAttackMonster': RangeAttackMonster(kernel),
             'AttackMonster': AttackMonster(kernel),
-            'Eat': Eat(kernel),
             'PickUpStuff': PickUpStuff(kernel),
             'FixStatus': FixStatus(kernel),
             # 'CheckTraps': CheckTraps(kernel),

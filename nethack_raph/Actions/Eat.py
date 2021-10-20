@@ -30,6 +30,13 @@ class Eat(BaseAction):
         if self.hero.levitating:  # cant eat while levitating
             return False, np.zeros(level.shape, dtype=bool)
 
+        bad_monsters = [
+            m for m in level.monsters.values()
+            if m.is_attackable
+        ]
+        if bad_monsters:
+            return False, np.zeros(level.shape, dtype=bool)
+
         consumable = np.zeros(level.shape, dtype=bool)
         for xy, items in level.items.items():
             if level.tiles[xy].char == '^' or level.tiles[xy].in_shop:
