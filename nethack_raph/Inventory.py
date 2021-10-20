@@ -138,7 +138,7 @@ class Inventory:
 
     def current_exp_attack(self):
         hero = self.kernel().hero
-        wielded = (np.char.find(self.inv_strs, 'weapon in hands') > 0).nonzero()[0]
+        wielded = (np.char.find(self.inv_strs, 'weapon in hand') > 0).nonzero()[0]
         if wielded.size > 0:
             ind = wielded[0]
             attack = self.weapon_exp_attack(self.inv_glyphs[ind], self.inv_strs[ind])
@@ -154,11 +154,16 @@ class Inventory:
         return attack
 
     def weapon_exp_attack(self, glyph, string):
-        damage_str = WEAPON_GLOSSARY[glyph]['damage_S']
+        weapon = WEAPON_GLOSSARY.get(
+            glyph,
+            {'damage_S': '0', 'skill': '_'}  # for case when wielded not a weapon
+        )
+
+        damage_str = weapon['damage_S']
         damage = self.parse_damage_str(damage_str)
 
         # skill bonus
-        skill = self.kernel().hero.skills[WEAPON_GLOSSARY[glyph]['skill']]
+        skill = self.kernel().hero.skills[weapon['skill']]
         damage += self.skill_bonus[skill]
 
         # example '+2 knife'

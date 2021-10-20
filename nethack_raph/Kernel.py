@@ -100,7 +100,6 @@ class Kernel:
         self.steps += 1
 
         if self.steps == 1:  # parsing agent's attributes at the start
-            # self.send('@')    # autopickup off
             self.send('\x18')  # ctrl + x = player info
             return self.action
 

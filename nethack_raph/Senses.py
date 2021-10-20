@@ -93,12 +93,13 @@ class Senses:
             "The stairs are solidly fixed to the floor.":                    ['no_pickup'],
             "You could drink the water...":                                  ['no_pickup'],
             "It won't come off the hinges.":                                 ['no_pickup'],
+            "The plumbing connects it to the floor.":                        ['no_pickup'],
             "You cannot wear .*":                                            ['cant_wear'],
             "You are already wearing .*":                                    ['cant_wear'],
             "[a-zA-Z] - ":                                                   ['picked_up'],
             "You finish your dressing maneuver.":                            ['dressed'],
             "You finish taking off your mail.":                              ['took_off'],
-            r".*rop.*gold.*":                                                ['drop_gold'],
+            r".*rop .*gold.*":                                               ['drop_gold'],
             "They are cursed.":                                              ['cursed_boots'],
         }
 
