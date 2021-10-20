@@ -222,9 +222,10 @@ class Level:
             tile.walkable_tile = (tile.char in Level.walkables.keys() and tile.walkable_glyph) or tile.is_opened_door
 
         tile.walk_cost = float('inf')
-        if tile.walkable_tile:
+        monster = self.monsters.get((x, y))
+        if tile.walkable_tile or monster:
             tile.walk_cost = Level.walkables.get(tile.char, 1)
-            if (x, y) in self.monsters and not self.monsters[x, y].pet:
+            if monster and not self.monsters[x, y].pet:
                 tile.walk_cost += 100
 
     def update(self, chars, glyphs):

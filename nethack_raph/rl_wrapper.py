@@ -55,6 +55,7 @@ class RLWrapper(gym.Wrapper):
 
         self.episode_reward = 0
         self.offsets = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        self.is_corner = [False, False, False, False, True, True, True, True]
         self.roles = np.array(['arc', 'bar', 'cav', 'hea', 'kni', 'mon', 'pri', 'ran', 'rog', 'sam', 'tou', 'val', 'wiz'])
         self.races = np.array(['dwa', 'elf', 'gno', 'hum', 'orc'])
         self.genders = np.array(['fem', 'mal'])
@@ -129,11 +130,20 @@ class RLWrapper(gym.Wrapper):
         action_mask = np.zeros(16, dtype=np.float32)
 
         x, y = self.kernel.hero.coords()
+        doors = lvl.tiles.is_opened_door
+
         for i, off in enumerate(self.offsets):
             tile = (x + off[0], y + off[1])
             if tile[0] < 0 or tile[0] >= DUNGEON_HEIGHT or tile[1] < 0 or tile[1] >= DUNGEON_WIDTH:
                 continue
-            if tiles[tile].walkable_tile or tile in lvl.monsters:
+
+            if tile in lvl.monsters:
+                action_mask[i] = 1.0
+
+            if self.is_corner[i] and (doors[tile] or doors[(x, y)]):
+                continue
+
+            if tiles[tile].walkable_tile:
                 action_mask[i] = 1.0
 
         if can_throw:

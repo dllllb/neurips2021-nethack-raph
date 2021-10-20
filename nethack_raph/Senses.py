@@ -125,7 +125,9 @@ class Senses:
             ker.send(" ")
 
     def drop_gold(self, *, match=None, message=None):
-        self.kernel().send('d$')
+        ker = self.kernel()
+        ker.send('d$')
+        ker.curTile().dropped_here = True
 
     def got_expelled(self, *, match=None, message=None):
         ker = self.kernel()

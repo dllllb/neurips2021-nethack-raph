@@ -15,6 +15,7 @@ from nethack_raph.Actions.UseItem import UseItem
 from nethack_raph.Actions.ForceBolt import ForceBolt
 from nethack_raph.Actions.Flash import Flash
 from nethack_raph.Actions.EmergencyHeal import EmergencyHeal
+from nethack_raph.Actions.FollowGuard import FollowGuard
 
 
 class Brain:
