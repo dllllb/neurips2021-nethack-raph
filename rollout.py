@@ -51,8 +51,8 @@ def run_batched_rollout(num_episodes, batched_env, agent):
         for done_idx in np.where(dones)[0]:
             if active_envs[done_idx]:
                 # We were 'counting' this episode
-                all_returns.append(infos[done_idx]['episode']['r'])
                 episode_count += 1
+                all_returns.append(returns[done_idx])
                 
                 active_envs[done_idx] = (num_remaining > 0)
                 num_remaining -= 1
@@ -60,7 +60,7 @@ def run_batched_rollout(num_episodes, batched_env, agent):
                 ascension_count += int(infos[done_idx]["is_ascended"])
 
                 role = infos[done_idx]['role']
-                role_stats[role].append(infos[done_idx]['episode']['r'])
+                role_stats[role].append(returns[done_idx])
 
                 pbar.update(1)
             

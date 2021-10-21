@@ -137,7 +137,5 @@ class RangeAttackMonster(BaseAction):
         else:
             return False, None
 
-    def execute(self, path=None):
-        assert path is None
-        self.log(f'Range attack {self.attack_direction}')
-        self.hero.throw(self.attack_direction, self.weapon_letter)
+    def execute(self, tile):
+        self.hero.throw(tile, self.weapon_letter)

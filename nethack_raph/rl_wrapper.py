@@ -1,45 +1,11 @@
 from nethack_raph.Kernel import Kernel
-from nethack_raph.Pathing import dijkstra_cpp
-from nethack_raph.Actions.AttackMonster import AttackMonster
-from nethack_raph.Actions.RangeAttackMonster import RangeAttackMonster
 from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
+from nethack_raph.Actions.RLTriggerAction import RLTriggerAction
 
 import gym
 import numpy as np
 from nle import nethack as nh
 from nle.nethack.actions import ACTIONS
-
-BLSTAT_NORMALIZATION_STATS = np.array([
-    0.0,  # hero col
-    0.0,  # hero row
-    0.0,  # strength pct
-    1.0 / 10,  # strength
-    1.0 / 10,  # dexterity
-    1.0 / 10,  # constitution
-    1.0 / 10,  # intelligence
-    1.0 / 10,  # wisdom
-    1.0 / 10,  # charisma
-    0.0,  # score
-    1.0 / 10,  # hitpoints
-    1.0 / 10,  # max hitpoints
-    0.0,  # depth
-    1.0 / 1000,  # gold
-    1.0 / 10,  # energy
-    1.0 / 10,  # max energy
-    1.0 / 10,  # armor class
-    0.0,  # monster level
-    1.0 / 10,  # experience level
-    1.0 / 100,  # experience points
-    1.0 / 1000,  # time
-    1.0,  # hunger_state
-    1.0 / 10,  # carrying capacity
-    0.0,  # carrying capacity
-    0.0,  # level number
-    0.0,  # condition bits
-])
-
-# Make sure we do not spook the network
-BLSTAT_CLIP_RANGE = (-5, 5)
 
 
 class RLWrapper(gym.Wrapper):
@@ -60,51 +26,77 @@ class RLWrapper(gym.Wrapper):
         self.races = np.array(['dwa', 'elf', 'gno', 'hum', 'orc'])
         self.genders = np.array(['fem', 'mal'])
         self.morals = np.array(['cha', 'law', 'neu'])
+        self.last_obs = None
+        self.reward = 0
+
+        self.actionid2name = dict()
+        for i in range(8):
+            self.actionid2name[i] = 'AttackMonster'
+        for i in range(8, 16):
+            self.actionid2name[i] = 'RangeAttackMonster'
+        self.actionid2name[16] = 'Continue'
 
     def reset(self):
-        self.episode_reward = 0
+        self.reward = 0
         del self.kernel
         self.kernel = Kernel(verbose=self.verbose)
-        obs = self.env.reset()
-        obs, done, can_throw = self.observation(obs)
-        if done:
-            return self.reset()
-        assert not done
-
-        return self._process_obs(obs, can_throw)
+        self.last_obs = self.env.reset()
+        return self._process_obs(self.last_obs, rl_triggered=False)
 
     def step(self, action_id):
-        walk = action_id < 8
-        action_id = action_id % 8
-        x, y = self.kernel.hero.coords()
-        tile_x, tile_y = self.offsets[action_id]
-        tile = (tile_x + x, tile_y + y)
-        lvl = self.kernel.curLevel()
-        monster = lvl.monsters.get(tile, None)
-        if walk:
-            if monster and monster.is_attackable:
-                self.kernel.hero.attack(tile)
-            else:
-                self.kernel.hero.move(tile)
+        self.reward = 0
+
+        action_id = int(action_id)
+        action_name = self.actionid2name[action_id]
+        if action_name in ('AttackMonster', 'RangeAttackMonster'):
+            x, y = self.kernel.hero.coords()
+            tile_x, tile_y = self.offsets[action_id % 8]
+            tile = (tile_x + x, tile_y + y)
+            self.kernel.brain.rl_actions[action_name].execute(tile)
+            assert len(self.kernel.action) > 0
         else:
-            self.kernel.hero.throw(tile, self.kernel.inventory.range_weapon())
+            assert len(self.kernel.action) == 0
 
-        while self.kernel.action:
-            obs, reward, done, info = self.env.step(self.action2id.get(self.kernel.action[0]))
-            self.episode_reward += reward
-            self.kernel.action = self.kernel.action[1:]
-
-        if not done:
-            obs, done, can_throw = self.observation(obs)
+        self.last_obs, _, done, info = self._step()
         if done:
-            can_throw = False
-            info['episode'] = {'r': self.episode_reward}
-            info['role'] = self.kernel.hero.role
+            return self._process_obs(self.last_obs, rl_triggered=False), self.reward, done, info
 
-        return self._process_obs(obs, can_throw), reward, done, info
+        self.kernel.update(self.last_obs)
+        if self.kernel.action:
+            self.last_obs, _, done, info = self._step()
+            return self._process_obs(self.last_obs, rl_triggered=False), self.reward, done, info
 
-    def _process_obs(self, obs, can_throw):
-        state = np.zeros((16, 21, 79), dtype=np.int32)
+        action, path = self.kernel.brain.execute_next(self.kernel.curLevel())
+        if not isinstance(action, RLTriggerAction):
+            action.execute(path)
+            self.last_obs, _, done, info = self._step()
+            return self._process_obs(self.last_obs, rl_triggered=False), self.reward, done, info
+
+        return self._process_obs(self.last_obs, rl_triggered=True), self.reward, done, info
+
+    def _step(self):
+        obs, done, info = self.last_obs, False, {}
+        while not done and self.kernel.action:
+            obs, rew, done, info = self.env.step(self.action2id.get(self.kernel.action[0]))
+            self.reward += rew
+            self.kernel.action = self.kernel.action[1:]
+        info['role'] = self.kernel.hero.role
+        return obs, self.reward, done, info
+
+    def _process_obs(self, obs, rl_triggered):
+        state = np.zeros((16, DUNGEON_HEIGHT, DUNGEON_WIDTH), dtype=np.int32)
+        action_mask = np.zeros(self.action_space.n, dtype=np.float32)
+
+        if not rl_triggered:
+            return {
+                'map': state,
+                'message': obs['message'],
+                'blstats': obs['blstats'],
+                'action_mask': action_mask,
+                'hero_stat': np.zeros(23),
+                'rl_triggered': rl_triggered,
+            }
+
         lvl = self.kernel.curLevel()
         tiles = lvl.tiles
         state[0] = tiles.explored
@@ -127,8 +119,6 @@ class RLWrapper(gym.Wrapper):
                 state[13, x, y] = mon_info.mlevel
                 state[14, x, y] = mon_info.mmove
 
-        action_mask = np.zeros(16, dtype=np.float32)
-
         x, y = self.kernel.hero.coords()
         doors = lvl.tiles.is_opened_door
 
@@ -146,8 +136,8 @@ class RLWrapper(gym.Wrapper):
             if tiles[tile].walkable_tile:
                 action_mask[i] = 1.0
 
-        if can_throw:
-            action_mask[8:] = 1.0
+        if self.kernel.brain.rl_actions['RangeAttackMonster'].can(lvl)[0]:
+            action_mask[8:16] = 1.0
 
         hero_stat = np.concatenate([
             self.kernel.hero.role == self.roles,
@@ -156,71 +146,12 @@ class RLWrapper(gym.Wrapper):
             self.kernel.hero.moral == self.morals
         ]).astype(np.float32)
 
-        # blstats = obs["blstats"] * BLSTAT_NORMALIZATION_STATS
-        # np.clip(
-        #     blstats,
-        #     BLSTAT_CLIP_RANGE[0],
-        #     BLSTAT_CLIP_RANGE[1],
-        #     out=blstats
-        # )
-
         return {
             'map': state,
             'message': obs['message'],
             'blstats': obs['blstats'],
             'action_mask': action_mask,
             'hero_stat': hero_stat,
+            'rl_triggered': rl_triggered,
+            'inventory': np.array([self.kernel.inventory.range_weapon() is not None])
         }
-
-    def observation(self, obs):
-        done = False
-        action_queue = ''
-        while not done:
-            if action_queue:
-                obs, reward, done, info = self.env.step(self.action2id.get(action_queue[0]))
-                self.episode_reward += reward
-                action_queue = action_queue[1:]
-                continue
-
-            action_queue = self.kernel.update(obs)
-            if action_queue:
-                continue
-
-            # first-fit action selection
-            level = self.kernel.curLevel()
-            for name, action in self.kernel.personality.curBrain.actions.items():
-                # check if an action can be taken
-                can_act, mask = action.can(level)
-                if not can_act:
-                    action.after_search(mask, None)
-                    continue
-
-                if type(action) == RangeAttackMonster:
-                    # return control to RL
-                    return obs, done, True
-
-                # local actions do not need pathfinding and return mask = None
-                if mask is None:
-                    action.execute()  # XXX path is None by default!
-                    action.after_search(mask, None)
-                    break
-
-                # actions that potentially require navigaton
-                path = dijkstra_cpp(level.tiles, self.kernel.hero.coords(), mask, level.tiles.is_opened_door)
-                action.after_search(mask, path)
-                if path is None:
-                    continue
-
-                # input(f'TYPE: {type(action)}')
-
-                if type(action) == AttackMonster:
-                    # return control to RL
-                    return obs, done, False
-
-                action.execute(path)
-                break
-
-            # input(f'actio_queue {action_queue}')
-            action_queue = self.kernel.action
-
-        return obs, done, False

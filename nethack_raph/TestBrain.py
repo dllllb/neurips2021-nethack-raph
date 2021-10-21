@@ -1,12 +1,36 @@
-from nethack_raph.Brain import *
-from nethack_raph.Pathing import dijkstra_py, check_neighbours
+from nethack_raph.Actions.RandomWalk import RandomWalk
+from nethack_raph.Actions.Explore import Explore
+from nethack_raph.Actions.AttackMonster import AttackMonster
+from nethack_raph.Actions.RangeAttackMonster import RangeAttackMonster
+from nethack_raph.Actions.OpenDoors import OpenDoors
+from nethack_raph.Actions.Descend import Descend
+from nethack_raph.Actions.Search import Search
+from nethack_raph.Actions.FixStatus import FixStatus
+from nethack_raph.Actions.RestoreHP import RestoreHP
+from nethack_raph.Actions.Eat import Eat, EatFromInventory
+from nethack_raph.Actions.Pray import Pray
+from nethack_raph.Actions.PickUpStuff import PickUpStuff
+from nethack_raph.Actions.Elbereth import Elbereth
+from nethack_raph.Actions.UseItem import UseItem
+from nethack_raph.Actions.ForceBolt import ForceBolt
+from nethack_raph.Actions.Flash import Flash
+from nethack_raph.Actions.EmergencyHeal import EmergencyHeal
+from nethack_raph.Actions.FollowGuard import FollowGuard
+from nethack_raph.Actions.Enhance import Enhance
+from nethack_raph.Actions.RLTriggerAction import RLTriggerAction
 
+from nethack_raph.Pathing import dijkstra_cpp, check_neighbours
 from nethack_raph.myconstants import DUNGEON_WIDTH
 
 
-class TestBrain(Brain):
+class TestBrain:
     def __init__(self, kernel):
-        super().__init__("TestBrain", kernel)
+        self.kernel = kernel
+
+        self.rl_actions = {
+            'RangeAttackMonster': RangeAttackMonster(kernel),
+            'AttackMonster': AttackMonster(kernel),
+        }
 
         self.actions = {
             'EmergencyHeal': EmergencyHeal(kernel),
@@ -20,8 +44,7 @@ class TestBrain(Brain):
             'Enhance': Enhance(kernel),
             'ForceBolt': ForceBolt(kernel),
             'Flash': Flash(kernel),
-            'RangeAttackMonster': RangeAttackMonster(kernel),
-            'AttackMonster': AttackMonster(kernel),
+            'RLTriggerAction': RLTriggerAction(kernel),
             'PickUpStuff': PickUpStuff(kernel),
             'FixStatus': FixStatus(kernel),
             # 'CheckTraps': CheckTraps(kernel),
@@ -29,7 +52,7 @@ class TestBrain(Brain):
             'OpenDoors': OpenDoors(kernel),
             # 'Descend': Descend(kernel),
             'Search': Search(kernel),
-            # 'RandomWalk': RandomWalk(kernel),
+            'RandomWalk': RandomWalk(kernel),
         }
         self.prev_action = -1
         self.prev_path = []
@@ -45,9 +68,8 @@ class TestBrain(Brain):
 
             # local actions do not need pathfinding and return mask = None
             if mask is None:
-                action.execute()  # XXX path is None by default!
                 action.after_search(None, None)
-                break
+                return action, None
 
             # actions that potentially require navigaton
             path = self.find_path(level, mask, name)
@@ -58,8 +80,7 @@ class TestBrain(Brain):
 
             self.prev_action, self.prev_path = name, path
             self.kernel().log(f'found path length {len(path)} for {name}')
-            action.execute(path)
-            break
+            return action, path
 
     def find_path(self, level, coords, action):
         hero = self.kernel().hero
@@ -86,6 +107,6 @@ class TestBrain(Brain):
             self.kernel().log(f'Use previous path')
             return self.prev_path[:-1]
 
-        path = dijkstra_py(level.tiles, xy, coords, level.tiles.is_opened_door)
+        path = dijkstra_cpp(level.tiles, xy, coords, level.tiles.is_opened_door)
 
         return path

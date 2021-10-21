@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+from collections import defaultdict
 
 from agents.base import BatchedAgent
 
@@ -18,6 +19,7 @@ class TorchBeastAgent(BatchedAgent):
         self.model_dir = MODEL_DIR
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.model = load_model(MODEL_DIR, self.device)
+        self.continue_action = num_actions
         print(f'Using Model In: {self.model_dir}, Device: {self.device}')
 
         self.core_state = [
@@ -25,28 +27,6 @@ class TorchBeastAgent(BatchedAgent):
         ]
 
         self.model.eval()
-
-    def batch_inputs(self, observations, dones):
-        """
-        Convert lists of observations, rewards, dones, infos to tensors for TorchBeast.
-
-        TorchBeast models:
-            * take tensors in the form: [T, B, ...]: B:= batch, T:= unroll (=1)
-            * take "done" as a BOOLEAN observation
-        """
-        states = list(observations[0].keys())
-        obs = {k: [] for k in states}
-
-        # Unpack List[Dicts] -> Dict[Lists]
-        for o in observations:
-            for k, t in o.items():
-                obs[k].append(t)
-
-        # Convert to Tensor, Add Unroll Dim (=1), Move to GPU
-        for k in states:
-            obs[k] = torch.Tensor(np.stack(obs[k])[None, ...]).to(self.device)
-        obs["done"] = torch.Tensor(np.array(dones)[None, ...]).bool().to(self.device)
-        return obs, dones
 
     def batched_step(self, observations, rewards, dones, infos):
         """
@@ -56,10 +36,28 @@ class TorchBeastAgent(BatchedAgent):
             * take the core (LSTM) state as input, and return as output
             * return outputs as a dict of "action", "policy_logits", "baseline"
         """
-        observations, dones = self.batch_inputs(observations, dones)
 
-        with torch.no_grad():
-            outputs, self.core_state = self.model(observations, self.core_state)
+        actions = np.zeros(len(observations))
+        rl_action_ids = []
+        rl_obs = defaultdict(list)
 
-        # return torch.distributions.Categorical(logits=outputs["policy_logits"]).sample().numpy()[0]
-        return outputs["action"].cpu().numpy()[0]
+        for i, obs in enumerate(observations):
+            if not obs['rl_triggered']:
+                actions[i] = self.continue_action
+                continue
+            rl_action_ids.append(i)
+            for key, value in obs.items():
+                rl_obs[key].append(value)
+            rl_obs['done'].append(dones[i])
+
+        for key in rl_obs:
+            rl_obs[key] = torch.Tensor(np.stack(rl_obs[key])[None, ...]).to(self.device)
+
+        if rl_obs:
+            with torch.no_grad():
+                outputs, self.core_state = self.model(rl_obs, self.core_state)
+                rl_actions = outputs["action"].cpu().numpy()[0]
+
+            actions[rl_action_ids] = rl_actions
+
+        return actions

@@ -57,10 +57,10 @@ class OracleAgent:
 
 
 def evaluate():
-    num_envs = 32
+    num_envs = 8
     Agent = SubmissionConfig.AGENT
 
-    num_episodes = 128
+    num_episodes = 512
 
     batched_env = BatchedEnv(env_make_fn=env_make_fn, num_envs=num_envs)
 

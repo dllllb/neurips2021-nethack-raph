@@ -1,5 +1,4 @@
 from nethack_raph.myconstants import TTY_WIDTH, TTY_HEIGHT, TTY_BRIGHT, DUNGEON_WIDTH
-from nethack_raph.Personality import Personality
 from nethack_raph.Senses import Senses
 from nethack_raph.Hero import Hero
 from nethack_raph.Dungeon import Dungeon
@@ -46,13 +45,10 @@ class Kernel:
         self.inventory = Inventory(weakref.ref(self))
 
         # AI
-        self.personality = Personality(weakref.ref(self))
         self.senses = Senses(weakref.ref(self))
 
         # Brains
-        self.curBrain = TestBrain(weakref.ref(self))
-
-        self.personality.setBrain(self.curBrain)  # Default brain
+        self.brain = TestBrain(weakref.ref(self))
 
         self.stdout("\u001b[2J\u001b[0;0H")
         self.action = ''
@@ -96,7 +92,8 @@ class Kernel:
         return self.tty_chars[row * TTY_WIDTH: (row + 1) * TTY_WIDTH]
 
     def update(self, obs):
-        self.action = ''
+        assert len(self.action) == 0
+
         self.steps += 1
 
         if self.steps == 1:  # parsing agent's attributes at the start

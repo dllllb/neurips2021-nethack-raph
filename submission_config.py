@@ -22,7 +22,7 @@ class SubmissionConfig:
     ## Change the NUM_ENVIRONMENTS as you need
     ## for example reduce it if your GPU doesn't fit
     ## Increasing above 32 is not advisable for the Nethack Challenge 2021
-    NUM_ENVIRONMENTS = 32
+    NUM_ENVIRONMENTS = 8
 
 
     ## Add a function that creates your nethack env
@@ -37,4 +37,4 @@ class TestEvaluationConfig:
     # Change this to locally check a different number of rollouts
     # The AIcrowd submission evaluator will not use this
     # It is only for your local evaluation
-    NUM_EPISODES = 512
+    NUM_EPISODES = 4096
