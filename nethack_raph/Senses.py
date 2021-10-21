@@ -7,6 +7,29 @@ import re
 class Senses:
     def __init__(self, kernel):
         self.kernel = kernel
+        self._state = 'default'
+        self.rx_paginated = re.compile(
+            r"""^[^\(]*
+            \(
+                (?P<curr>\d+)
+                \s of \s
+                (?P<total>\d+)
+            \)
+            [^\)]*$
+            """,
+            re.VERBOSE | re.IGNORECASE | re.MULTILINE | re.ASCII,
+        )
+        self.rx_enh_option = re.compile(
+        r"""^(?:
+            (?P<letter>[a-z])\s-  # the option letter [OPTIONAL]
+        )?\s+
+            (?P<skill>[^\[\n]+?)    # the skill name
+        \s+\[
+            (?P<level>[^\]]+)     # the skill level
+        \]\s*$
+        """,
+        re.VERBOSE | re.IGNORECASE | re.MULTILINE | re.ASCII,
+    )
         self.messages = []
 
         self.events = {
@@ -30,6 +53,7 @@ class Senses:
             "There is an open door here":                                    ['open_door_here'],
             "There is a bear trap here|You are caught in a bear trap":       ['found_beartrap'],
             "You feel more confident in your ([^ ]+) ":                      ['skill_up'],
+            "You feel you could be more dangerous!":                         ['skill_up'],
             "You feel quick":                                                ['gain_instrinct', 'fast'],
             "You are momentarily blinded by a flash of light":               ['blinded'],
             "You are still in a pit|You fall into a pit":                    ['fell_into_pit'],
@@ -190,10 +214,7 @@ class Senses:
         pass
 
     def skill_up(self, *, match, message=None):
-        ker = self.kernel()
-        if match.groups()[0] == 'weapon':
-            ker.log("Enhanced weaponskill!")
-            pass
+        self.kernel().hero.can_enhance = True
 
     def open_door_here(self, *, match=None, message=None):
         ker = self.kernel()
@@ -492,7 +513,7 @@ class Senses:
         if header and header.find("Pick up what?") >= 0:
 
             rows = [ker.get_row_line(i)[skip_first:] for i in range(1, TTY_HEIGHT + 1)]
-            choice = self.kernel().hero.pick_up_choice(rows)
+            choice = ker.hero.pick_up_choice(rows)
 
             ker.curLevel().clear_items(*ker.hero.coords())
             ker.log(f'Pick up what choice: {choice}')
@@ -514,6 +535,47 @@ class Senses:
                 for it in lev.items[x, y]:
                     if it.is_food and it.corpse:
                         it.is_food = False
+            ker.send(' ')
+        elif header and header.find("Current skills") >= 0 or self._state == 'in_skills_menu':
+            self._state = 'in_skills_menu'
+            rows = [ker.get_row_line(i)[skip_first:] for i in range(1, TTY_HEIGHT + 1)]
+            ker.hero.parse_current_skills(rows)
+
+            screen = '\n'.join([ker.get_row_line(i).strip() for i in range(1, TTY_HEIGHT + 1)])
+            match = self.rx_paginated.search(screen)
+            is_last_page = True
+            if match is not None:
+                curr, total = map(int, match.groups())
+                is_last_page = curr == total
+
+            self._state = 'default' if is_last_page else 'in_skills_menu'
+            ker.send(' ')
+
+        elif header and header.find("Pick a skill to advance") >= 0 or self._state == 'in_enhance_menu':
+            if self._state == 'in_enhance_menu':  # second page of the paginated menu
+                skip_first = 0
+
+            screen = '\n'.join([ker.get_row_line(i)[skip_first:].strip() for i in range(TTY_HEIGHT + 1)])
+            self._state = 'in_enhance_menu'
+
+            match = self.rx_paginated.search(screen)
+            is_last_page = True
+            if match is not None:
+                curr, total = map(int, match.groups())
+                is_last_page = curr == total
+
+            for letter, skill, level in self.rx_enh_option.findall(screen):
+                if letter:
+                    ker.send(letter)
+                    self._state = 'default'
+                    ker.hero.can_enhance = False
+                    ker.hero.skills[skill] += 1
+                    ker.log(f'current skills: {ker.hero.skills}')
+                    return
+
+            if is_last_page:
+                self._state = 'default'
+                ker.hero.can_enhance = False
             ker.send(' ')
 
         else:

@@ -1,5 +1,7 @@
 import re
 
+from collections import defaultdict
+
 
 class Hero:
     def __init__(self, kernel):
@@ -63,6 +65,8 @@ class Hero:
         self.prefer_melee_attack = True
 
         self.spells = {}
+        self.skills = defaultdict(int)
+        self.can_enhance = False
 
     def coords(self):
         return self.x, self.y
@@ -218,6 +222,10 @@ class Hero:
         self.kernel().send(f'q{potion_letter}')
         self.lastAction = 'quaff'
 
+    def enhance(self):
+        """Advance or check weapons skills."""
+        self.kernel().send('#enh\r')
+
     def _get_direction(self, source, target):
         source_x, source_y = source
         target_x, target_y = target
@@ -312,7 +320,6 @@ class Hero:
         if self.role == 'hea':
             self.spells['healing'] = 'a'
 
-
     def pick_up_choice(self, rows):
         # choose all armors to inventory
         projectives = [" spear", " dagger", " dart", " shuriken", " throwing star",
@@ -335,3 +342,17 @@ class Hero:
                 choice.append(row[0])
 
         return choice
+
+    def parse_current_skills(self, rows):
+        skill_levels = ["Unskilled", "Basic",  "Skilled", "Expert", "Master", "Grand Master"]
+        for row in rows:
+            start = row.find('[')
+            if start > 0:
+                end = row.find(']')
+                skill_level = row[start+1: end]
+                skill = row[:start].strip()
+
+                if skill_level in skill_levels and skill_levels.index(skill_level) > 0:
+                    self.skills[skill] = skill_levels.index(skill_level)
+
+        self.kernel().log(f'current skills: {self.skills}')
