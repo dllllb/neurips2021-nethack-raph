@@ -59,6 +59,7 @@ class Hero:
 
         self.armor_class_before = None
 
+        self.pick_up_weapon = True
         self.pick_up_armor = True
         self.pick_up_projectives = True
         self.use_range_attack = True
@@ -217,6 +218,12 @@ class Hero:
         self.kernel().send(f'w*{weapon_letter}')
         self.lastAction = 'wield'
 
+    def drop_item(self, item_letter):
+        self.kernel().log("Hero::drop item")
+        self.kernel().send(f'd{item_letter}')
+        self.kernel().curTile().dropped_here = True
+        self.lastAction = 'drop_item'
+
     def quaff(self, potion_letter):
         self.kernel().log("Hero::quaff")
         self.kernel().send(f'q{potion_letter}')
@@ -325,20 +332,28 @@ class Hero:
         projectives = [" spear", " dagger", " dart", " shuriken", " throwing star",
                        " knife", " stiletto", " scalpel", " crysknife"]
         choice = []
-        is_armor = False
+        current_type = None
         for row in rows:
-            if self.pick_up_armor:
-                if 'Armor' in row:
-                    is_armor = True
-                    continue
+            if 'Weapon' in row:
+                current_type = 'weapon'
+                continue
+            elif 'Armor' in row:
+                current_type = 'armor'
+                continue
 
-                if is_armor:
-                    if row[0].islower():
-                        choice.append(row[0])
-                    else:
-                        is_armor = False
+            if self.pick_up_weapon and current_type == 'weapon':
+                if row[0].islower():
+                    choice.append(row[0])
+                else:
+                    current_type = None
 
-            if self.pick_up_projectives and any(x in row for x in projectives):
+            elif self.pick_up_armor and current_type == 'armor':
+                if row[0].islower():
+                    choice.append(row[0])
+                else:
+                    current_type = None
+
+            elif self.pick_up_projectives and any(x in row for x in projectives):
                 choice.append(row[0])
 
         return choice

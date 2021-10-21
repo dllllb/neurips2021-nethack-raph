@@ -16,6 +16,14 @@ class PickUpStuff(BaseAction):
             self.action_to_do = 'wear'
             return True, np.ones(level.shape, dtype=bool)
 
+        if self.kernel().inventory.items_to_drop:
+            self.action_to_do = 'drop_item'
+            return True, np.ones(level.shape, dtype=bool)
+
+        if self.kernel().inventory.new_weapons:
+            self.action_to_do = 'wield'
+            return True, np.ones(level.shape, dtype=bool)
+
         if self.hero.levitating:  # You cannot reach the floor.
             return False, np.zeros(level.shape, dtype=bool)
 
@@ -30,10 +38,15 @@ class PickUpStuff(BaseAction):
             # if xy in level.monsters:
             #     continue
 
+            if self.hero.pick_up_weapon and [it for it in items if it.item_type == 'weapon']:
+                stuff_tiles[xy] = True
+                self.action_to_do = 'pick_up'
+                self.log(f"Found weapon {xy}: {list(map(lambda t: str(t), items))}")
+
             if self.hero.pick_up_projectives and any([item.projective for item in items]):
                 stuff_tiles[xy] = True
                 self.action_to_do = 'pick_up'
-                self.log(f"Found stuff {xy}: {list(map(lambda t: str(t), items))}")
+                self.log(f"Found projective {xy}: {list(map(lambda t: str(t), items))}")
 
             stuff = [it for it in items if it.item_type in ('armor', 'gold_piece')]
             if stuff:
@@ -49,9 +62,19 @@ class PickUpStuff(BaseAction):
             self.hero.wear(armor_letter)
             return
 
+        if self.action_to_do == 'wield':
+            weapon_letter = self.kernel().inventory.new_weapons.pop(0)
+            self.hero.wield(weapon_letter)
+            return
+
         if self.action_to_do == 'take_off':
             armor_letter = self.kernel().inventory.take_off_armors.pop(0)
             self.hero.take_off(armor_letter)
+            return
+
+        if self.action_to_do == 'drop_item':
+            weapon_letter = self.kernel().inventory.items_to_drop.pop(0)
+            self.hero.drop_item(weapon_letter)
             return
 
         # fetch an item
