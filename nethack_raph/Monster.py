@@ -23,6 +23,18 @@ class Monster:
         # 159,  # red mold
     }
 
+    passive_counter_attack_monster_glyphs = {
+        6,    # acid blob
+        27,   # gas spore
+        28,   # floating eye
+        55,   # blue jelly
+        56,   # spotted jelly
+        156,  # brown mold
+        157,  # yellow mold
+        158,  # green mold
+        159,  # red mold
+    }
+
     guard_glyphs = {
         268
     }
@@ -40,6 +52,7 @@ class Monster:
         self.respect_elbereth = MONSTERS_GLOSSARY.get(self.glyph, {}).get('elbereth', 1)
         self.peaceful = any([l <= self.glyph <= r for l, r in Monster.peacefuls_monster_glyphs])
         self.passive = self.glyph in Monster.passive_monster_glyphs
+        self.passive_counter_attack = self.glyph in Monster.passive_counter_attack_monster_glyphs
         self.guard = self.glyph in Monster.guard_glyphs
         self.range_attack = False
         self.is_attackable = self.is_monster and not self.peaceful and not self.passive and not self.guard
