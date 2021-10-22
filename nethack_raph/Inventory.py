@@ -71,7 +71,7 @@ class Inventory:
                         continue
                     elif glyph in MELEE_WEAPON:
                         current_attack = self.current_exp_attack()
-                        if self.weapon_exp_attack(glyph, inv_str) > current_attack:
+                        if self.weapon_exp_attack(glyph, inv_str) > current_attack + 1:
                             self.new_weapons.append(letter)
                         else:
                             self.items_to_drop.append(letter)
