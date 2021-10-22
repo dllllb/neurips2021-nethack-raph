@@ -57,12 +57,8 @@ class Process(mp.Process):
                 if done:
                     self.agent.reset()
 
-                action = self.agent.step(observation)
-                
-                hero = self.agent.kernel.hero
-                info = (hero.role, hero.score)
-                
-                self.remote.send((action, info))
+                action = self.agent.step(observation)                
+                self.remote.send(action)
             except EOFError:
                 break
 
@@ -151,4 +147,4 @@ class CustomAgent(BatchedAgent):
         self.maxtime = max(self.maxtime, after - before)
         self.agent.kernel.log(f'action full: {self.agent.kernel.action}')
         self.agent.kernel.log(f'action time: {after - before}, maxtime: {self.maxtime}')
-        return [action], [(self.agent.kernel.hero.role, self.agent.kernel.hero.score)]
+        return [action]
