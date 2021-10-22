@@ -28,6 +28,7 @@ class Hero:
         self.xp = None
         self.xp_next = None
         self.level_number = None
+        self.encumbered_status = None  # Unencumbered / Burdened / Stressed / Strained / Overtaxed / Overloaded
 
         self.blind = False
         self.confused = False
@@ -69,7 +70,7 @@ class Hero:
 
     def update(self, blstats, top_line, bot_line):
         # TODO: use them
-        # strength_percentage, monster_level, carrying_capacity, dungeon_number, level_number, condition
+        # strength_percentage, monster_level, dungeon_number, level_number, condition
         # condition (aka `unk`) == 64 -> Deaf
 
         levitating = bool(re.search("Lev", bot_line))
@@ -86,7 +87,7 @@ class Hero:
         self.y, self.x, strength_percentage, self.strength, self.dexterity, self.constitution, \
             self.intelligence, self.wisdom, self.charisma, self.score, self.curhp, self.maxhp, \
             _, self.gold, self.curpw, self.maxpw, self.armor_class, monster_level, \
-            self.xp, self.xp_next, self.turns, self.hunger, carrying_capacity, dungeon_number, \
+            self.xp, self.xp_next, self.turns, self.hunger, self.encumbered_status, dungeon_number, \
             self.level_number, condition = blstats
 
         self.kernel().log(f'Hero hp: {self.curhp}/{self.maxhp}, hero coords: {self.coords()}')
@@ -120,7 +121,7 @@ class Hero:
         self.kernel().send("a" + letter + dir)
 
     def move(self, tile):
-        dir = self._get_direction(self.coords(), tile, allowed_door_diagonally=False)
+        dir = self._get_direction(self.coords(), tile)
         self.kernel().drawString("Walking -> %s (%s)" % (dir, tile))
 
         self.beforeMove = (self.x, self.y)
@@ -213,32 +214,17 @@ class Hero:
         self.kernel().send(f'w*{weapon_letter}')
         self.lastAction = 'wield'
 
-    def _get_direction(self, source, target, allowed_door_diagonally=True):
+    def quaff(self, potion_letter):
+        self.kernel().log("Hero::quaff")
+        self.kernel().send(f'q{potion_letter}')
+        self.lastAction = 'quaff'
+
+    def _get_direction(self, source, target):
         source_x, source_y = source
         target_x, target_y = target
 
         if abs(source_y - target_y) > 1 or abs(source_x - target_x) > 1:
             self.kernel().die(f"\n\nAsked for directions to a nonadjacent tile {source} -> {target}\n\n")
-
-        if not allowed_door_diagonally:
-            # A small hack. can't move diagonally into the doorway and out of the doorway
-            target_tile = self.kernel().curLevel().tiles[target]
-            source_tile = self.kernel().curLevel().tiles[source]
-            if (source_tile.is_opened_door or target_tile.is_opened_door) and abs(source_y - target_y) + abs(source_x - target_x) > 1:
-
-                if self.kernel().curLevel().tiles[target_x, source_y].walkable_tile:
-                    self.kernel().log(f'walk to {(target_x, source_y)} instead of {target}')
-                    target_y = source_y
-
-                elif self.kernel().curLevel().tiles[source_x, target_y].walkable_tile:
-                    self.kernel().log(f'walk to {(source_x, target_y)} instead of {target}')
-                    target_x = source_x
-
-                else:
-                    target_tile.shop_entrance = True
-                    self.kernel().curLevel().update_walk_cost(target_tile)
-                    self.kernel().log(f'{target} should be a shop_entrance')
-                    return ' '
 
         if source_x < target_x and source_y < target_y:
             return 'n'

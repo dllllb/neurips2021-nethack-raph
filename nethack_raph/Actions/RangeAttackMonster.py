@@ -4,6 +4,7 @@ from nethack_raph.myconstants import COLOR_BG_RED
 
 import numpy as np
 
+
 def get_way(array, start, end):
     """
     Returns slice with tiles on the way from point start to point end.
@@ -61,6 +62,7 @@ def get_way(array, start, end):
     else:
         raise RuntimeError
 
+
 def range_attack_candidates(hero, level):
     monsters = []
     for xy, monster in level.monsters.items():
@@ -74,6 +76,9 @@ def range_attack_candidates(hero, level):
         distance = max(abs(c - h) for c, h in zip(xy, hero.coords()))
         if monster.passive and distance == 1:
             continue  # don't attack passive monster nearby
+
+        if distance == 0:
+            continue
 
         way = get_way(level.tiles, hero.coords(), xy)
         if not way[1:-1].walkable_glyph.all():
@@ -109,7 +114,7 @@ class RangeAttackMonster(BaseAction):
         if self.weapon_letter is None:
             return False, None
 
-        max_range = min(self.hero.strength // 2, 12)
+        max_range = min(self.hero.strength // 2, 5)
 
         monsters = range_attack_candidates(self.hero, level)
 

@@ -7,15 +7,23 @@ from nethack_raph.myconstants import COLOR_BG_RED
 class AttackMonster(BaseAction):
     def can(self, level):
         monsters = np.zeros(level.shape, dtype=bool)
+        currx, curry = self.kernel().hero.coords()
+
         if self.hero.isEngulfed:
             monsters[:] = True
+            monsters[(currx, curry)] = False
             self.log("Attacking while engulfed..")
+            return True, monsters
 
-        else:
-            for xy, m in level.monsters.items():
-                if m.is_attackable:
-                    monsters[xy] = True
-                    self.log(f"Found monster {xy}: {str(m)}")
+
+        def dist_form_current(xy):
+            tx, ty = xy
+            return abs(tx - currx) + abs(ty - curry)
+
+        for xy, m in level.monsters.items():
+            if m.is_attackable and dist_form_current(xy) < 5:
+                monsters[xy] = True
+                self.log(f"Found monster {xy}: {str(m)}")
 
         return monsters.any(), monsters
 

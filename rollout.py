@@ -45,14 +45,14 @@ def run_batched_rollout(num_episodes, batched_env, agent):
         actions, agent_infos = agent.batched_step(observations, rewards, dones, infos)
 
         observations, rewards, dones, infos = batched_env.batch_step(actions)
-        
+
         for i, r in enumerate(rewards):
             returns[i] += r
         
         for done_idx in np.where(dones)[0]:
             if active_envs[done_idx]:
                 # We were 'counting' this episode
-                all_returns.append(returns[done_idx])
+                all_returns.append(infos[done_idx]['episode']['r'])
                 episode_count += 1
                 
                 active_envs[done_idx] = (num_remaining > 0)

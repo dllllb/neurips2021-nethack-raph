@@ -55,7 +55,7 @@ class Kernel:
         self.personality.setBrain(self.curBrain)  # Default brain
 
         self.stdout("\u001b[2J\u001b[0;0H")
-        self.action = None
+        self.action = ''
         self.state = None
         self.bot = None
         self.top = None
@@ -95,7 +95,7 @@ class Kernel:
             return ""
         return self.tty_chars[row * TTY_WIDTH: (row + 1) * TTY_WIDTH]
 
-    def step(self, obs):
+    def update(self, obs):
         self.action = ''
         self.steps += 1
 
@@ -132,6 +132,10 @@ class Kernel:
         self.hero.update(obs['blstats'], self.top, self.bot)
         assert len(self.action) == 0
 
+        if self.hero.score > 1500:
+            self.die(f'score = {self.hero.score}')
+            return self.action
+
         self.log("-------- INVENTORY -------- ")
         self.inventory.update(obs)
         assert len(self.action) == 0
@@ -152,16 +156,7 @@ class Kernel:
         self.log("-------- MESSAGES -------- ")
         self.senses.parse_messages()
 
-        if len(self.action):
-            return self.action
-
-        if len(self.action):
-            return self.action
-
-        self.log("------ PERSONALITY ------  ")
-        self.personality.nextAction()
-
-        self.log("\n\nUpdates ended.")
+        # self.log("\n\nUpdates ended.")
         return self.action
 
     def send(self, line):

@@ -17,6 +17,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from einops import rearrange
+import re
 
 
 from nle import nethack
@@ -109,7 +110,7 @@ class BaselineNet(NetHackNet):
         self.flags = flags
 
         self.observation_shape = observation_shape
-        self.num_actions = len(action_space)
+        self.num_actions = 16 #len(action_space)
 
         self.H = observation_shape[0]
         self.W = observation_shape[1]
@@ -121,7 +122,7 @@ class BaselineNet(NetHackNet):
         self.glyph_model = GlyphEncoder(flags, self.H, self.W, flags.crop_dim, device)
 
         # MESSAGING MODEL
-        self.msg_model = MessageEncoder(
+        self.msg_model = HeroEncoder(
             flags.msg.hidden_dim, flags.msg.embedding_dim, device
         )
 
@@ -147,21 +148,23 @@ class BaselineNet(NetHackNet):
         self.policy = nn.Linear(self.h_dim, self.num_actions)
         self.baseline = nn.Linear(self.h_dim, 1)
 
-        if flags.restrict_action_space:
-            reduced_space = nethack.USEFUL_ACTIONS
-            logits_mask = get_action_space_mask(action_space, reduced_space)
-            self.policy_logits_mask = nn.parameter.Parameter(
-                logits_mask, requires_grad=False
-            )
+        #if flags.restrict_action_space:
+        #    reduced_space = nethack.USEFUL_ACTIONS
+        #    logits_mask = get_action_space_mask(action_space, reduced_space)
+        #    self.policy_logits_mask = nn.parameter.Parameter(
+        #        logits_mask, requires_grad=False
+        #    )
 
     def initial_state(self, batch_size=1):
-        return tuple(
-            torch.zeros(self.core.num_layers, batch_size, self.core.hidden_size)
-            for _ in range(2)
-        )
+        if self.use_lstm:
+            return tuple(
+                torch.zeros(self.core.num_layers, batch_size, self.core.hidden_size)
+                for _ in range(2)
+            )
+        return ()
 
     def forward(self, inputs, core_state, learning=False):
-        T, B, H, W = inputs["glyphs"].shape
+        T, B, K, H, W = inputs["map"].shape
 
         reps = []
 
@@ -205,10 +208,13 @@ class BaselineNet(NetHackNet):
         # -- [B' x 1]
         baseline = self.baseline(core_output)
 
-        if self.flags.restrict_action_space:
-            policy_logits = policy_logits * self.policy_logits_mask + (
-                (1 - self.policy_logits_mask) * -1e10
-            )
+        #if self.flags.restrict_action_space:
+        #    policy_logits = policy_logits * self.policy_logits_mask + (
+        #        (1 - self.policy_logits_mask) * -1e10
+        #    )
+
+        mask = inputs["action_mask"].view(policy_logits.shape)
+        policy_logits = policy_logits * mask + (1 - mask) * -1e10
 
         if self.training:
             action = torch.multinomial(F.softmax(policy_logits, dim=1), num_samples=1)
@@ -251,18 +257,6 @@ class GlyphEncoder(nn.Module):
             K % 8 == 0
         ), "This glyph embedding format needs embedding dim to be multiple of 8"
         unit = K // 8
-        self.chars_embedding = nn.Embedding(256, 2 * unit)
-        self.colors_embedding = nn.Embedding(16, unit)
-        self.specials_embedding = nn.Embedding(256, unit)
-
-        self.id_pairs_table = nn.parameter.Parameter(
-            torch.from_numpy(id_pairs_table()), requires_grad=False
-        )
-        num_groups = self.id_pairs_table.select(1, 1).max().item() + 1
-        num_ids = self.id_pairs_table.select(1, 0).max().item() + 1
-
-        self.groups_embedding = nn.Embedding(num_groups, unit)
-        self.ids_embedding = nn.Embedding(num_ids, 3 * unit)
 
         F = 3  # filter dimensions
         S = 1  # stride
@@ -274,19 +268,8 @@ class GlyphEncoder(nn.Module):
         out_channels = [M] * (L - 1) + [self.output_filters]
 
         h, w, c = rows, cols, crop_dim
-        conv_extract, conv_extract_crop = [], []
+        conv_extract_crop = []
         for i in range(L):
-            conv_extract.append(
-                nn.Conv2d(
-                    in_channels=in_channels[i],
-                    out_channels=out_channels[i],
-                    kernel_size=(F, F),
-                    stride=S,
-                    padding=P,
-                )
-            )
-            conv_extract.append(nn.ELU())
-
             conv_extract_crop.append(
                 nn.Conv2d(
                     in_channels=in_channels[i],
@@ -303,49 +286,35 @@ class GlyphEncoder(nn.Module):
             w = conv_outdim(w, F, P, S)
             c = conv_outdim(c, F, P, S)
 
-        self.hidden_dim = (h * w + c * c) * self.output_filters
-        self.extract_representation = nn.Sequential(*conv_extract)
+        self.hidden_dim = 648 #(h * w + c * c) * self.output_filters
         self.extract_crop_representation = nn.Sequential(*conv_extract_crop)
         self.select = lambda emb, x: select(emb, x, flags.use_index_select)
 
-    def glyphs_to_ids_groups(self, glyphs):
-        T, B, H, W = glyphs.shape
-        ids_groups = self.id_pairs_table.index_select(0, glyphs.view(-1).long())
-        ids = ids_groups.select(1, 0).view(T, B, H, W).long()
-        groups = ids_groups.select(1, 1).view(T, B, H, W).long()
-        return [ids, groups]
-
     def forward(self, inputs):
-        T, B, H, W = inputs["glyphs"].shape
-        ids, groups = self.glyphs_to_ids_groups(inputs["glyphs"])
-
-        glyph_tensors = [
-            self.select(self.chars_embedding, inputs["chars"].long()),
-            self.select(self.colors_embedding, inputs["colors"].long()),
-            self.select(self.specials_embedding, inputs["specials"].long()),
-            self.select(self.groups_embedding, groups),
-            self.select(self.ids_embedding, ids),
-        ]
-
-        glyphs_emb = torch.cat(glyph_tensors, dim=-1)
-        glyphs_emb = rearrange(glyphs_emb, "T B H W K -> (T B) K H W")
+        T, B, K, H, W = inputs["map"].shape
+        map_emb = inputs["map"]
 
         coordinates = inputs["blstats"].view(T * B, -1).float()[:, :2]
-        crop_emb = self.crop(glyphs_emb, coordinates)
+       
+        #crop_emb = torch.zeros((T * B, K, 9, 9), device=map_emb.device)
+        #for i in range(16):
+        #    crop_emb[:,i,:,:] = self.crop(map_emb[:,:,i,:,:].float(), coordinates)
 
-        glyphs_rep = self.extract_representation(glyphs_emb)
-        glyphs_rep = rearrange(glyphs_rep, "B C H W -> B (C H W)")
-        assert glyphs_rep.shape[0] == T * B
+        crop_emb = self.crop(map_emb.view(T * B, K, H, W).float(), coordinates)
+        # glyphs_rep = self.extract_representation(glyphs_emb)
+        # glyphs_rep = rearrange(glyphs_rep, "B C H W -> B (C H W)")
+        # assert glyphs_rep.shape[0] == T * B
 
         crop_rep = self.extract_crop_representation(crop_emb)
         crop_rep = rearrange(crop_rep, "B C H W -> B (C H W)")
+        # raise(ValueError(str(crop_rep.shape)))
         assert crop_rep.shape[0] == T * B
 
-        st = torch.cat([glyphs_rep, crop_rep], dim=1)
-        return st
+        # st = torch.cat([glyphs_rep, crop_rep], dim=1)
+        return crop_rep
 
 
-class MessageEncoder(nn.Module):
+class HeroEncoder(nn.Module):
     """This model encodes the the topline message into a fixed size representation.
 
     It works by using a learnt embedding for each character before passing the
@@ -357,47 +326,26 @@ class MessageEncoder(nn.Module):
     """
 
     def __init__(self, hidden_dim, embedding_dim, device=None):
-        super(MessageEncoder, self).__init__()
+        super(HeroEncoder, self).__init__()
 
         self.hidden_dim = hidden_dim
         self.msg_edim = embedding_dim
+        self.device = device
 
-        self.char_lt = nn.Embedding(NUM_CHARS, self.msg_edim, padding_idx=PAD_CHAR)
-        self.conv1 = nn.Conv1d(self.msg_edim, self.hidden_dim, kernel_size=7)
-        self.conv2_6_fc = nn.Sequential(
-            nn.ReLU(),
-            nn.MaxPool1d(kernel_size=3, stride=3),
-            # conv2
-            nn.Conv1d(self.hidden_dim, self.hidden_dim, kernel_size=7),
-            nn.ReLU(),
-            nn.MaxPool1d(kernel_size=3, stride=3),
-            # conv3
-            nn.Conv1d(self.hidden_dim, self.hidden_dim, kernel_size=3),
-            nn.ReLU(),
-            # conv4
-            nn.Conv1d(self.hidden_dim, self.hidden_dim, kernel_size=3),
-            nn.ReLU(),
-            # conv5
-            nn.Conv1d(self.hidden_dim, self.hidden_dim, kernel_size=3),
-            nn.ReLU(),
-            # conv6
-            nn.Conv1d(self.hidden_dim, self.hidden_dim, kernel_size=3),
-            nn.ReLU(),
-            nn.MaxPool1d(kernel_size=3, stride=3),
-            # fc receives -- [ B x h_dim x 5 ]
-            Flatten(),
-            nn.Linear(5 * self.hidden_dim, 2 * self.hidden_dim),
+        self.mlp = nn.Sequential(
+            nn.Linear(23, 2 * self.hidden_dim),
             nn.ReLU(),
             nn.Linear(2 * self.hidden_dim, self.hidden_dim),
         )  # final output -- [ B x h_dim x 5 ]
 
+        if device is not None:
+            self.mlp = self.mlp.to(device)
+
     def forward(self, inputs):
-        T, B, *_ = inputs["message"].shape
-        messages = inputs["message"].long().view(T * B, -1)
+        T, B, *_ = inputs["hero_stat"].shape
+        stat = inputs["hero_stat"].float().view(T * B, -1)
         # [ T * B x E x 256 ]
-        char_emb = self.char_lt(messages).transpose(1, 2)
-        char_rep = self.conv2_6_fc(self.conv1(char_emb))
-        return char_rep
+        return self.mlp(stat)
 
 
 class BLStatsEncoder(nn.Module):
@@ -463,6 +411,7 @@ class Crop(nn.Module):
         Returns:
            [B x C x H' x W'] inputs cropped and centered around x,y coordinates.
         """
+
         if inputs.dim() == 3:
             inputs = inputs.unsqueeze(1).float()
 
@@ -488,7 +437,6 @@ class Crop(nn.Module):
             ],
             dim=3,
         )
-
         crop = torch.round(F.grid_sample(inputs, grid, align_corners=True)).squeeze(1)
         return crop
 

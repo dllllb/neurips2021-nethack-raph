@@ -125,7 +125,9 @@ class Senses:
             ker.send(" ")
 
     def drop_gold(self, *, match=None, message=None):
-        self.kernel().send('d$')
+        ker = self.kernel()
+        ker.send('d$')
+        ker.curTile().dropped_here = True
 
     def got_expelled(self, *, match=None, message=None):
         ker = self.kernel()
@@ -204,6 +206,9 @@ class Senses:
     def open_door_there(self, *, match=None, message=None):
         ker = self.kernel()
         lev = ker.curLevel()
+        if ker.hero.lastActionedTile is None:
+            return
+        
 
         tile = lev.tiles[ker.hero.lastActionedTile]
         if not tile.is_opened_door:

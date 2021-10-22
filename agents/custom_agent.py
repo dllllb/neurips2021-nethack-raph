@@ -98,9 +98,8 @@ class SubprocVecEnv:
 
     def step_wait(self):
         results = [remote.recv() for remote in self.remotes]
-        actions, infos = zip(*results)
         self.waiting = False
-        return actions, infos
+        return results
 
 
 class CustomAgentMP(BatchedAgent):

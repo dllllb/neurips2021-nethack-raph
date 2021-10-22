@@ -4,6 +4,6 @@
     "siberian"
   ],
   "description": "dummy random actions",
-  "gpu": true
+  "gpu": false 
 }
 

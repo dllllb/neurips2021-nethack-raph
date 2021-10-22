@@ -1,11 +1,5 @@
-import numpy as np
-from nethack_raph.Actions.EmergencyHeal import EmergencyHeal
-from nethack_raph.Actions.Flash import Flash
-from nethack_raph.Actions.ForceBolt import ForceBolt
-from nethack_raph.Actions.CheckTraps import CheckTraps
-
 from nethack_raph.Brain import *
-from nethack_raph.Pathing import dijkstra_pathing, mcp_pathing, check_neighbours
+from nethack_raph.Pathing import dijkstra_py, check_neighbours
 
 from nethack_raph.myconstants import DUNGEON_WIDTH
 
@@ -21,6 +15,8 @@ class TestBrain(Brain):
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),
             'Pray': Pray(kernel),
+            'FollowGuard': FollowGuard(kernel),
+            'UseItem': UseItem(kernel),
             'ForceBolt': ForceBolt(kernel),
             'Flash': Flash(kernel),
             'RangeAttackMonster': RangeAttackMonster(kernel),
@@ -89,6 +85,6 @@ class TestBrain(Brain):
             self.kernel().log(f'Use previous path')
             return self.prev_path[:-1]
 
-        path, *ignore = dijkstra_pathing(level.tiles, xy, coords)
+        path = dijkstra_py(level.tiles, xy, coords, level.tiles.is_opened_door)
 
         return path

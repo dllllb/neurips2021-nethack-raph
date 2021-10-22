@@ -24,6 +24,10 @@ import libtorchbeast
 
 from models import ENVS
 
+import sys
+sys.path.append('/home/sorokin/dev/neurips-2021-the-nethack-challenge/')
+from nethack_raph.rl_wrapper import RLWrapper
+
 
 logging.basicConfig(
     format=(
@@ -78,6 +82,7 @@ def create_env(flags, env_id=0, lock=threading.Lock()):
                 "inv_strs",
                 "inv_letters",
                 "inv_oclasses",
+                "misc"
             ),
             penalty_step=flags.penalty_step,
             penalty_time=flags.penalty_time,
@@ -89,7 +94,7 @@ def create_env(flags, env_id=0, lock=threading.Lock()):
             print("Ignoring flags.reward_win and flags.reward_lose")
         if flags.state_counter != "none":
             kwargs.update(state_counter=flags.state_counter)
-        env = env_class(**kwargs)
+        env = RLWrapper(env_class(**kwargs))
         if flags.seedspath is not None and len(flags.seedspath) > 0:
             raise NotImplementedError("seedspath > 0 not implemented yet.")
 
