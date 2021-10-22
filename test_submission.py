@@ -29,7 +29,7 @@ def evaluate():
 
     env_make_fn = SubmissionConfig.MAKE_ENV_FN
     if args.character != '@':
-        env_make_fn = lambda: addtimelimitwrapper_fn(args.character)
+        env_make_fn = lambda: SubmissionConfig.MAKE_ENV_FN(args.character)
 
     Agent = SubmissionConfig.AGENT
 
