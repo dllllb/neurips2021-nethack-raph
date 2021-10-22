@@ -2,7 +2,7 @@ from agents.custom_agent import CustomAgent, CustomAgentMP
 from agents.torchbeast_agent import TorchBeastAgent
 from nethack_raph.rl_wrapper import RLWrapper
 
-from envs.wrappers import addtimelimitwrapper_fn, addtimelimitwrapper_fn_rl
+from envs.wrappers import addtimelimitwrapper_fn_custom, addtimelimitwrapper_fn_rl
 
 ################################################
 #         Import your own agent code           #
@@ -15,7 +15,7 @@ from envs.wrappers import addtimelimitwrapper_fn, addtimelimitwrapper_fn_rl
 
 class SubmissionConfig:
     ## Add your own agent class
-    #AGENT = CustomAgent
+    #AGENT = CustomAgentMP
     AGENT = TorchBeastAgent
 
 
@@ -30,7 +30,7 @@ class SubmissionConfig:
     ## Add your wrappers to envs/wrappers.py and change the name here
     ## IMPORTANT: Don't "call" the function, only provide the name
     MAKE_ENV_FN = addtimelimitwrapper_fn_rl
-    #MAKE_ENV_FN = addtimelimitwrapper_fn
+    #MAKE_ENV_FN = addtimelimitwrapper_fn_custom
 
 
 class TestEvaluationConfig:
