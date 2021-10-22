@@ -57,7 +57,7 @@ class Process(mp.Process):
                 if done:
                     self.agent.reset()
 
-                action = self.agent.step(observation)                
+                action = self.agent.step(observation)
                 self.remote.send(action)
             except EOFError:
                 break
