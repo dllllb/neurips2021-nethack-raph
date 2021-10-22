@@ -44,6 +44,7 @@ class Hero:
         self.inPit = False
         self.isEngulfed = False
         self.isLycanthropy = False
+        self.foodPoisoned = False
 
         self.hunger = None
         self.god_is_angry = False
@@ -87,6 +88,7 @@ class Hero:
         self.confused = bool(re.search("Conf", bot_line))
         self.stun = bool(re.search("Stun", bot_line))
         self.hallu = bool(re.search("Hallu", bot_line))
+        self.foodPoisoned = bool(re.search("FoodPois", bot_line))
 
         self.y, self.x, strength_percentage, self.strength, self.dexterity, self.constitution, \
             self.intelligence, self.wisdom, self.charisma, self.score, self.curhp, self.maxhp, \
@@ -355,6 +357,9 @@ class Hero:
 
             elif self.pick_up_projectives and any(x in row for x in projectives):
                 choice.append(row[0])
+
+            if 'gold piece' in row:
+                choice.append('$')
 
         return choice
 

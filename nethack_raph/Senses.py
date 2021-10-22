@@ -133,9 +133,13 @@ class Senses:
             ker.send('n')
             return
 
-        elif ker.searchTop("You have a little trouble .*"):
+        elif ker.searchTop("You have a little trouble lifting .* corpse .*"):
+            ker.curLevel().clear_items(*ker.hero.coords())
+            ker.send('n')
+        elif ker.searchTop("You have a little trouble lifting .*"):
             ker.send('y')
             return
+
         elif ker.searchTop("Really attack the guard\? \[yn\] \(n\)"):
             ker.send('n')
             return
@@ -248,7 +252,7 @@ class Senses:
             ker.send('n')
             return
 
-        if not all([it.is_food for it in lev.items[x, y] if it.char == '%']):
+        if not all([it.is_food for it in lev.items[x, y] if it.char == '%' and not it.corpse]):
             # otherwise we should check that food in msg correspond to edible food
             ker.log('inedible: eating aborted')
             ker.send('n')
@@ -257,8 +261,17 @@ class Senses:
                     item.is_food = False
             return
 
-        if 'corpse' in message and not bool([it.is_food for it in lev.items[x, y] if it.corpse]):
+        corpses = [it.is_food and not it.is_tainted() for it in lev.items[x, y] if it.corpse]
+        if 'corpse' in message and (not corpses or not all(corpses)):
             ker.log('unknown / inedible corpse: eating aborted')
+            ker.send('n')
+            for it in lev.items[x, y]:
+                if it.char == '%':
+                    it.is_food = False
+            return
+
+        if 'glob of' in message:
+            ker.log('glob: eating aborted')
             ker.send('n')
             for it in lev.items[x, y]:
                 if it.char == '%':
@@ -348,7 +361,35 @@ class Senses:
                     lev.tiles[x, y].in_shop = True
 
     def food_is_eaten(self, *, match=None, message=None):
-        pass
+        ker = self.kernel()
+        items = ker.curLevel().items[ker.hero.coords()]
+
+        if ker.hero.lastAction == 'eat_from_inventory':
+            return
+
+        if 'corpse' in message:
+            corpse_count = len([it for it in items if it.corpse])
+            if corpse_count > 0:
+                # delete eaten corpse
+                idx = next((i for i, it in enumerate(items) if it.corpse), None)
+                items.pop(idx)
+
+            # mark all others as unedible
+            for item in ker.curLevel().items[ker.hero.coords()]:
+                if item.corpse:
+                    item.is_food = False
+
+            return
+
+        if len([it for it in items if it.is_food]) > 0:
+            # delete one is_food item
+            idx = next((i for i, it in enumerate(items) if it.is_food), None)
+            items.pop(idx)
+            return
+
+        # probably ate something wrong
+        ker.log('not edible: eating aborted')
+        ker.send('n')
 
     def no_food(self, *, match=None, message=None):
         ker = self.kernel()
@@ -455,6 +496,9 @@ class Senses:
 
     def picked_up(self, *, match=None, message=None):
         ker = self.kernel()
+        if ker.hero.lastAction != 'pick':
+            return
+
         ker.curLevel().clear_items(*ker.hero.coords())
 
     def dressed(self, *, match=None, message=None):

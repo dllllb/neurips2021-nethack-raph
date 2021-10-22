@@ -100,7 +100,8 @@ class Kernel:
         self.steps += 1
 
         if self.steps == 1:  # parsing agent's attributes at the start
-            self.send('\x18') # ctrl + x = player info
+            # self.send('@')    # autopickup off
+            self.send('\x18')  # ctrl + x = player info
             return self.action
 
         self.state = np.zeros((2, TTY_HEIGHT, TTY_WIDTH), dtype=np.uint8)
@@ -132,7 +133,7 @@ class Kernel:
         self.hero.update(obs['blstats'], self.top, self.bot)
         assert len(self.action) == 0
 
-        if self.hero.score > 1500:
+        if self.hero.score > 2000:
             self.die(f'score = {self.hero.score}')
             return self.action
 
@@ -157,6 +158,14 @@ class Kernel:
         self.senses.parse_messages()
 
         # self.log("\n\nUpdates ended.")
+        return self.action
+
+    def step(self, obs):
+        self.update(obs)
+        if self.action:
+            return self.action
+
+        self.curBrain.execute_next(self.curLevel())
         return self.action
 
     def send(self, line):

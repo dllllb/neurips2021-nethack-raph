@@ -51,7 +51,7 @@ class Inventory:
         inv_glyphs = obs['inv_glyphs'][index]
 
         to_update = set()
-        for i_class in ['WEAPON_CLASS', 'ARMOR_CLASS', 'POTION_CLASS', 'TOOL_CLASS']:
+        for i_class in ['WEAPON_CLASS', 'ARMOR_CLASS', 'POTION_CLASS', 'TOOL_CLASS', 'FOOD_CLASS']:
             if (self.inv_oclasses == OCLASSES[i_class]).sum() < (inv_oclasses == OCLASSES[i_class]).sum():
                 to_update.add(i_class)
 
@@ -89,7 +89,7 @@ class Inventory:
             query = 'healing'
             potion_mask = inv_oclasses == OCLASSES['POTION_CLASS']
             if potion_mask.any():
-                query_mask = np.char.find(inv_strs[potion_mask], query) > 0
+                query_mask = np.char.find(inv_strs[potion_mask], query) >= 0
                 self.healing_potions = inv_letters[potion_mask][query_mask].tolist()
             else:
                 self.healing_potions = []
@@ -97,7 +97,7 @@ class Inventory:
         # tools
         if 'TOOL_CLASS' in to_update:
             query = 'camera'
-            query_mask = np.char.find(inv_strs, query) > 0
+            query_mask = np.char.find(inv_strs, query) >= 0
 
             if query_mask.any():
                 camera_str = inv_strs[query_mask][0]
@@ -114,8 +114,17 @@ class Inventory:
                 self.kernel().log(f'camera is not found')
                 self.camera_charges = 0
 
+        # food
+        if 'FOOD_CLASS' in to_update:
+            food_mask = inv_oclasses == OCLASSES['FOOD_CLASS']
+            if food_mask.any():
+                query_mask = np.char.find(inv_strs[food_mask], 'corpse') >= 0
+                # drop accidentally picked up corpse
+                self.items_to_drop.extend(inv_letters[food_mask][query_mask].tolist())
+
     def have_food(self):
-        return bool((self.inv_oclasses == OCLASSES['FOOD_CLASS']).sum())
+        food_mask = self.inv_oclasses == OCLASSES['FOOD_CLASS']
+        return bool([x for x in self.inv_letters[food_mask] if x not in self.items_to_drop])
 
     def range_weapon(self):
         range_weapons = [(l, g, s) for l, g, s in zip(self.inv_letters, self.inv_glyphs, self.inv_strs) \

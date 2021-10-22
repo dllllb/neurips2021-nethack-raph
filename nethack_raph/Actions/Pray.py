@@ -16,7 +16,8 @@ class Pray(BaseAction):
             hero.isLycanthropy or \
             hero.curhp <= 5 or \
             hero.curhp <= hero.maxhp / 7 or \
-            hero.levitating_curse
+            hero.levitating_curse or \
+            hero.foodPoisoned
         return cond, None
 
     def execute(self, path=None):
