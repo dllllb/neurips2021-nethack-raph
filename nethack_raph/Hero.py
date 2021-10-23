@@ -1,5 +1,7 @@
 import re
 
+from collections import defaultdict
+
 
 class Hero:
     def __init__(self, kernel):
@@ -42,6 +44,7 @@ class Hero:
         self.inPit = False
         self.isEngulfed = False
         self.isLycanthropy = False
+        self.foodPoisoned = False
 
         self.hunger = None
         self.god_is_angry = False
@@ -57,12 +60,15 @@ class Hero:
 
         self.armor_class_before = None
 
+        self.pick_up_weapon = True
         self.pick_up_armor = True
         self.pick_up_projectives = True
         self.use_range_attack = True
         self.prefer_melee_attack = True
 
         self.spells = {}
+        self.skills = defaultdict(int)
+        self.can_enhance = False
 
     def coords(self):
         return self.x, self.y
@@ -82,6 +88,7 @@ class Hero:
         self.confused = bool(re.search("Conf", bot_line))
         self.stun = bool(re.search("Stun", bot_line))
         self.hallu = bool(re.search("Hallu", bot_line))
+        self.foodPoisoned = bool(re.search("FoodPois", bot_line))
 
         self.y, self.x, strength_percentage, self.strength, self.dexterity, self.constitution, \
             self.intelligence, self.wisdom, self.charisma, self.score, self.curhp, self.maxhp, \
@@ -213,10 +220,20 @@ class Hero:
         self.kernel().send(f'w*{weapon_letter}')
         self.lastAction = 'wield'
 
+    def drop_item(self, item_letter):
+        self.kernel().log("Hero::drop item")
+        self.kernel().send(f'd{item_letter}')
+        self.kernel().curTile().dropped_here = True
+        self.lastAction = 'drop_item'
+
     def quaff(self, potion_letter):
         self.kernel().log("Hero::quaff")
         self.kernel().send(f'q{potion_letter}')
         self.lastAction = 'quaff'
+
+    def enhance(self):
+        """Advance or check weapons skills."""
+        self.kernel().send('#enh\r')
 
     def _get_direction(self, source, target):
         source_x, source_y = source
@@ -312,26 +329,50 @@ class Hero:
         if self.role == 'hea':
             self.spells['healing'] = 'a'
 
-
     def pick_up_choice(self, rows):
         # choose all armors to inventory
         projectives = [" spear", " dagger", " dart", " shuriken", " throwing star",
                        " knife", " stiletto", " scalpel", " crysknife"]
         choice = []
-        is_armor = False
+        current_type = None
         for row in rows:
-            if self.pick_up_armor:
-                if 'Armor' in row:
-                    is_armor = True
-                    continue
+            if 'Weapon' in row:
+                current_type = 'weapon'
+                continue
+            elif 'Armor' in row:
+                current_type = 'armor'
+                continue
 
-                if is_armor:
-                    if row[0].islower():
-                        choice.append(row[0])
-                    else:
-                        is_armor = False
+            if self.pick_up_weapon and current_type == 'weapon':
+                if row[0].islower():
+                    choice.append(row[0])
+                else:
+                    current_type = None
 
-            if self.pick_up_projectives and any(x in row for x in projectives):
+            elif self.pick_up_armor and current_type == 'armor':
+                if row[0].islower():
+                    choice.append(row[0])
+                else:
+                    current_type = None
+
+            elif self.pick_up_projectives and any(x in row for x in projectives):
                 choice.append(row[0])
 
+            if 'gold piece' in row:
+                choice.append('$')
+
         return choice
+
+    def parse_current_skills(self, rows):
+        skill_levels = ["Unskilled", "Basic",  "Skilled", "Expert", "Master", "Grand Master"]
+        for row in rows:
+            start = row.find('[')
+            if start > 0:
+                end = row.find(']')
+                skill_level = row[start+1: end]
+                skill = row[:start].strip()
+
+                if skill_level in skill_levels and skill_levels.index(skill_level) > 0:
+                    self.skills[skill] = skill_levels.index(skill_level)
+
+        self.kernel().log(f'current skills: {self.skills}')
