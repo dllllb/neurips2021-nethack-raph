@@ -17,6 +17,7 @@ class TestBrain(Brain):
             'Pray': Pray(kernel),
             'FollowGuard': FollowGuard(kernel),
             'UseItem': UseItem(kernel),
+            'Enhance': Enhance(kernel),
             'ForceBolt': ForceBolt(kernel),
             'Flash': Flash(kernel),
             'RangeAttackMonster': RangeAttackMonster(kernel),

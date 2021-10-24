@@ -83,6 +83,11 @@ class Item(Findable):
             else:
                 self.kernel().log("%s is an edible corpse." % self)
                 return True
+
+        elif 2152 <= self.glyph <= 2155:  # glob (acidic)
+            self.kernel().log("%s is glob (inedible)" % self)
+            return False
+
         else:
             self.kernel().log("%s is food" % self)
             return True

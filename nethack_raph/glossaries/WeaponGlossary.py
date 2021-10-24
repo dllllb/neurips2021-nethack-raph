@@ -566,5 +566,3 @@ WEAPON_GLOSSARY = {
            'damage_L': 'd2',
            'material': 'wood'}
 }
-
-ITEMS_TO_THROW = {k for k, v in WEAPON_GLOSSARY.items() if v['skill'] in ('dart', 'shuriken', 'spear', 'dagger', 'knife')}
