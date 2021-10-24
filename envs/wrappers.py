@@ -29,6 +29,12 @@ def addtimelimitwrapper_fn_rl(character='@', verbose=False):
     env = RLWrapper(env, verbose=verbose)
     return env
 
+def minihack_task(task='MiniHack-CorridorBattle-v0', character='@'):
+    import minihack
+    from nle.env.base import FULL_ACTIONS
+    env = gym.make(task, character=character, actions=FULL_ACTIONS)
+    env = InfoWrapper(env)
+    return env
 
 class InfoWrapper(gym.Wrapper):
     def __init__(self, env):
