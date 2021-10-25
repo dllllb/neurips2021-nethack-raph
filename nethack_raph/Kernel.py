@@ -215,3 +215,11 @@ class Kernel:
     def __del__(self):
         hero = self.hero
         self.log(f"Episode stats: {hero.role}-{hero.race}-{hero.moral}-{hero.gender} {hero.score}\n")
+
+    def step(self, obs):
+        self.update(obs)
+        if self.action:
+            return self.action
+
+        self.curBrain.execute_next(self.curLevel())
+        return self.action

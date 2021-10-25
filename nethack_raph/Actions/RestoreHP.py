@@ -5,8 +5,7 @@ from nethack_raph.Actions.base import BaseAction
 
 class RestoreHP(BaseAction):
     def can(self, level):
-        # hp is at an acceptable level
-        if self.hero.curhp >= self.hero.maxhp / 2:
+        if self.hero.curhp >= self.hero.maxhp * .5: # hp is at an acceptable level
             return False, None
 
         # monsters nearby
@@ -31,5 +30,5 @@ class RestoreHP(BaseAction):
     def execute(self, path=None):
         assert path is None
 
-        self.log("Searching for 1 turns because my HP is low")
+        self.log("Searching for 10 turns because my HP is low")
         self.hero.search(10)

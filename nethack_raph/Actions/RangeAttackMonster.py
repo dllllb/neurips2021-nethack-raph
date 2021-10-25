@@ -121,7 +121,7 @@ class RangeAttackMonster(BaseAction):
         closest_dist = 2^16
         attack_dir = None
         for monster, dir, distance in monsters:
-            if self.hero.prefer_melee_attack and distance == 1:
+            if self.hero.prefer_melee_attack and distance == 1 and (not monster.passive):
                 continue
 
             if distance > max_range:

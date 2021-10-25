@@ -10,15 +10,28 @@ import numpy as np
 from submission_config import SubmissionConfig, TestEvaluationConfig
 
 from rollout import run_batched_rollout
+from envs.wrappers import addtimelimitwrapper_fn
 from envs.batched_env import BatchedEnv
 
 
 def evaluate():
-    env_make_fn = SubmissionConfig.MAKE_ENV_FN
-    num_envs = SubmissionConfig.NUM_ENVIRONMENTS
-    Agent = SubmissionConfig.AGENT
+    import argparse
 
-    num_episodes = TestEvaluationConfig.NUM_EPISODES
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--character', default='@')
+    parser.add_argument('--num-environments', default=SubmissionConfig.NUM_ENVIRONMENTS, type=int)
+    parser.add_argument('--num-episodes', default=TestEvaluationConfig.NUM_EPISODES, type=int)
+
+    args = parser.parse_args()
+
+    num_envs = args.num_environments
+    num_episodes = args.num_episodes
+
+    env_make_fn = SubmissionConfig.MAKE_ENV_FN
+    if args.character != '@':
+        env_make_fn = lambda: SubmissionConfig.MAKE_ENV_FN(args.character)
+
+    Agent = SubmissionConfig.AGENT
 
     batched_env = BatchedEnv(env_make_fn=env_make_fn, num_envs=num_envs)
 

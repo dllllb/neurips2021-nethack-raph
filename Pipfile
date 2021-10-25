@@ -16,6 +16,7 @@ nle = ">=0.7.2"
 tqdm = "*"
 wandb = "*"
 nle-toolbox = {git = "https://github.com/ivannz/nle_toolbox.git"}
+minihack = "*"
 
 [dev-packages]
 ipykernel = "*"

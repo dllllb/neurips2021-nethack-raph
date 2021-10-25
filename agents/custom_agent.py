@@ -97,12 +97,37 @@ class SubprocVecEnv:
         self.waiting = False
         return results
 
+class SubprocVecEnvSimple:
+    def __init__(self, n_processes, verbose=False):
+        assert n_processes == 1
+        self.agent = Agent(verbose=verbose)
+        self.maxtime = 0
+
+    def step(self, states, dones):
+        assert len(dones) == 1
+
+        if int(dones[0]):
+            self.agent.reset()
+
+        before = time.time()
+        action = self.agent.step(states[0])
+        after = time.time()
+
+        self.maxtime = max(self.maxtime, after - before)
+        self.agent.kernel.log(f'action full: {self.agent.kernel.action}')
+        self.agent.kernel.log(f'action time: {after - before}, maxtime: {self.maxtime}')
+        return [action]
+
 
 class CustomAgentMP(BatchedAgent):
-    def __init__(self, num_envs, num_actions):
+    def __init__(self, num_envs, num_actions, verbose=False):
         """Set up and load you model here"""
         super().__init__(num_envs, num_actions)
         self.agents = SubprocVecEnv(num_envs)
+        if num_envs > 1:
+            self.agents = SubprocVecEnv(num_envs)
+        else:
+            self.agents = SubprocVecEnvSimple(num_envs, verbose)
 
     def batched_step(self, observations, rewards, dones, infos):
         """

@@ -9,6 +9,9 @@ class Descend(BaseAction):
         if self.hero.levitating:  # cant descend while levitating
             return False, np.zeros(level.shape, dtype=bool)
 
+        if self.hero.xp < self.hero.level_number*5:
+            return False, np.zeros(level.shape, dtype=bool)
+
         stairs = level.tiles.char == '>'
         self.log(f"Found {stairs.sum()} stairs")
         return stairs.any(), stairs

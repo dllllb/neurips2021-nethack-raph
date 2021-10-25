@@ -13,7 +13,7 @@ class TorchBeastAgent(BatchedAgent):
     A BatchedAgent using the TorchBeast Model
     """
 
-    def __init__(self, num_envs, num_actions):
+    def __init__(self, num_envs, num_actions, verbose=False):
         super().__init__(num_envs, num_actions)
         self.model_dir = MODEL_DIR
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
