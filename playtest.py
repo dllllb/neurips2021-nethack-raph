@@ -12,7 +12,7 @@ from nle_toolbox.wrappers.replay import ReplayToFile
 
 def evaluate(seed, character):
     with ReplayToFile(
-        SubmissionConfig.MAKE_ENV_FN(character=character),
+        SubmissionConfig.MAKE_ENV_FN(character=character, verbose=True),
         folder='./replays',
         save_on='close,done',
     ) as env:
