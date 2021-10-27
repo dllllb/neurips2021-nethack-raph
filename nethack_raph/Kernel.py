@@ -129,7 +129,7 @@ class Kernel:
         self.hero.update(obs['blstats'], self.top, self.bot)
         assert len(self.action) == 0
 
-        if self.hero.score > 2000:
+        if self.hero.score > 1500:
             self.die(f'score = {self.hero.score}')
             return self.action
 
