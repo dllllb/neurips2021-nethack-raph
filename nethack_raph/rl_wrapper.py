@@ -14,7 +14,7 @@ class RLWrapper(gym.Wrapper):
         self.verbose = verbose
         self.kernel = Kernel(verbose=self.verbose)
 
-        self.action_space = gym.spaces.Discrete(16)
+        self.action_space = gym.spaces.Discrete(17)
         self.action2id = {
             chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
         }
@@ -29,18 +29,22 @@ class RLWrapper(gym.Wrapper):
         self.last_obs = None
         self.reward = 0
 
-        self.actionid2name = dict()
+        self.actionid2name = {-1: 'Continue'}
         for i in range(8):
             self.actionid2name[i] = 'AttackMonster'
         for i in range(8, 16):
             self.actionid2name[i] = 'RangeAttackMonster'
-        self.actionid2name[16] = 'Continue'
+        self.actionid2name[16] = 'Wait'
 
     def reset(self):
         self.reward = 0
         del self.kernel
         self.kernel = Kernel(verbose=self.verbose)
         self.last_obs = self.env.reset()
+        self.kernel.update(self.last_obs)
+        _, _, done, _ = self._step()
+        if done:
+            return self.reset()
         return self._process_obs(self.last_obs, rl_triggered=False)
 
     def step(self, action_id):
@@ -53,35 +57,30 @@ class RLWrapper(gym.Wrapper):
             tile_x, tile_y = self.offsets[action_id % 8]
             tile = (tile_x + x, tile_y + y)
             self.kernel.brain.rl_actions[action_name].execute(tile)
-            assert len(self.kernel.action) > 0
+        elif action_name in ('Wait',):
+            self.kernel.brain.rl_actions[action_name].execute()
         else:
-            assert len(self.kernel.action) == 0
-
-        self.last_obs, _, done, info = self._step()
-        if done:
-            return self._process_obs(self.last_obs, rl_triggered=False), self.reward, done, info
-
-        self.kernel.update(self.last_obs)
-        if self.kernel.action:
-            self.last_obs, _, done, info = self._step()
-            return self._process_obs(self.last_obs, rl_triggered=False), self.reward, done, info
-
-        action, path = self.kernel.brain.execute_next(self.kernel.curLevel())
-        if not isinstance(action, RLTriggerAction):
+            action, path = self.kernel.brain.execute_next(self.kernel.curLevel())
+            if isinstance(action, RLTriggerAction):
+                return self._process_obs(self.last_obs, rl_triggered=True), self.reward, False, {}
             action.execute(path)
-            self.last_obs, _, done, info = self._step()
-            return self._process_obs(self.last_obs, rl_triggered=False), self.reward, done, info
 
-        return self._process_obs(self.last_obs, rl_triggered=True), self.reward, done, info
+        assert len(self.kernel.action) > 0
+        self.last_obs, _, done, info = self._step()
+        return self._process_obs(self.last_obs, rl_triggered=False), self.reward, done, info
 
     def _step(self):
-        obs, done, info = self.last_obs, False, {}
+        done, info = False, {}
         while not done and self.kernel.action:
-            obs, rew, done, info = self.env.step(self.action2id.get(self.kernel.action[0]))
+            self.last_obs, rew, done, info = self.env.step(self.action2id.get(self.kernel.action[0]))
             self.reward += rew
             self.kernel.action = self.kernel.action[1:]
+            if self.kernel.action:
+                continue
+            self.kernel.update(self.last_obs)
+
         info['role'] = self.kernel.hero.role
-        return obs, self.reward, done, info
+        return self.last_obs, self.reward, done, info
 
     def _process_obs(self, obs, rl_triggered):
         state = np.zeros((16, DUNGEON_HEIGHT, DUNGEON_WIDTH), dtype=np.int32)
@@ -138,6 +137,8 @@ class RLWrapper(gym.Wrapper):
 
         if self.kernel.brain.rl_actions['RangeAttackMonster'].can(lvl)[0]:
             action_mask[8:16] = 1.0
+        if True:  # can wait
+            action_mask[16] = 1.0
 
         hero_stat = np.concatenate([
             self.kernel.hero.role == self.roles,

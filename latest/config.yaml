@@ -16,7 +16,7 @@ state_counter: none
 character: '@'
 mode: train
 env: challenge
-num_actors: 256
+num_actors: 128
 total_steps: 1000000000.0
 batch_size: 32
 unroll_length: 80

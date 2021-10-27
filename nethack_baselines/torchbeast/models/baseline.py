@@ -110,7 +110,7 @@ class BaselineNet(NetHackNet):
         self.flags = flags
 
         self.observation_shape = observation_shape
-        self.num_actions = 16 #len(action_space)
+        self.num_actions = 17 #len(action_space)
 
         self.H = observation_shape[0]
         self.W = observation_shape[1]

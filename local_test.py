@@ -26,6 +26,9 @@ class RandomAgent:
         actions = []
         for obs in observations:
             self.log.write(bytes(obs["message"][obs['message'].nonzero()]).decode('ascii') + '\n')
+            if not obs['rl_triggered']:
+                actions.append(-1)
+                continue
             actions.append(np.random.choice(
                 list(range(self.n_actions)), 1,
                 p=obs['action_mask'] / np.sum(obs['action_mask'])
@@ -60,7 +63,7 @@ def evaluate():
     num_envs = 8
     Agent = SubmissionConfig.AGENT
 
-    num_episodes = 512
+    num_episodes = 4096
 
     batched_env = BatchedEnv(env_make_fn=env_make_fn, num_envs=num_envs)
 
