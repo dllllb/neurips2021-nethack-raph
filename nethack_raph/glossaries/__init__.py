@@ -11,6 +11,8 @@ melee_skills = {
     'lance', 'pick-axe', 'mace', 'polearms', 'quarterstaff', 'saber', 'scimitar'
 }
 
-exclude = {'boomerang', 'bow', 'dart', 'shuriken', 'sling', 'crossbow'}
-
 MELEE_WEAPON = {k for k, v in WEAPON_GLOSSARY.items() if v['skill'] in melee_skills}
+
+LAUNCHERS = {'bow', 'runed bow', 'runed bow', 'long bow', 'crossbow', 'sling'}
+LAUNCHERS = [k for k, v in WEAPON_GLOSSARY.items() if v['name'] in LAUNCHERS]
+MISSILES = [k for k, v in WEAPON_GLOSSARY.items() if v['skill'] in {'bow', 'crossbow', 'sling'} and k not in LAUNCHERS]

@@ -1,5 +1,5 @@
 from nethack_raph.myconstants import OBJECT_CLASSES as OCLASSES
-from nethack_raph.glossaries import WEAPON_GLOSSARY, ITEMS_TO_THROW, MELEE_WEAPON
+from nethack_raph.glossaries import WEAPON_GLOSSARY, ITEMS_TO_THROW, MELEE_WEAPON, LAUNCHERS, MISSILES
 
 import numpy as np
 import re
@@ -25,6 +25,7 @@ class Inventory:
         self.camera = None
         self.camera_charges = 0
         self.camera_letter = None
+        self.launchers = {}
 
         self.skill_bonus = {
             0: -2,  # unskilled
@@ -51,7 +52,7 @@ class Inventory:
         inv_glyphs = obs['inv_glyphs'][index]
 
         to_update = set()
-        for i_class in ['WEAPON_CLASS', 'ARMOR_CLASS', 'POTION_CLASS', 'TOOL_CLASS', 'FOOD_CLASS']:
+        for i_class in ['WEAPON_CLASS', 'ARMOR_CLASS', 'POTION_CLASS', 'TOOL_CLASS', 'FOOD_CLASS', 'GEM_CLASS']:
             if (self.inv_oclasses == OCLASSES[i_class]).sum() < (inv_oclasses == OCLASSES[i_class]).sum():
                 to_update.add(i_class)
 
@@ -65,15 +66,44 @@ class Inventory:
 
         # weapons
         if 'WEAPON_CLASS' in to_update:
+            launchers = np.isin(self.inv_glyphs, LAUNCHERS)
+            launch_skills = [WEAPON_GLOSSARY[g]['skill'] for g in self.inv_glyphs[launchers].tolist()]
+            self.launchers = {}
+            if launchers.sum() > 0:
+                for glyph, inv_str, letter in zip(inv_glyphs[launchers], inv_strs[launchers], inv_letters[launchers]):
+                    skill = WEAPON_GLOSSARY[glyph]['skill']
+                    current_letter,  current_attack = self.launchers.get(skill, ('', -np.inf))
+                    attack = self.weapon_exp_attack(glyph, inv_str)
+                    if attack > current_attack:
+                        self.launchers[skill] = letter, attack
+
             for oc, glyph, inv_str, letter in zip(inv_oclasses, inv_glyphs, inv_strs, inv_letters):
                 if oc == OCLASSES['WEAPON_CLASS'] and 'weapon in hand' not in inv_str:
                     if glyph in ITEMS_TO_THROW:
                         continue
                     elif glyph in MELEE_WEAPON:
-                        current_attack = self.current_exp_attack()
+                        current_attack = self.current_exp_melee_attack()
                         if self.weapon_exp_attack(glyph, inv_str) > current_attack + 1:
                             self.new_weapons.append(letter)
                         else:
+                            self.items_to_drop.append(letter)
+
+                    elif glyph in LAUNCHERS:
+                        if self.launchers[WEAPON_GLOSSARY[glyph]['skill']][0] != letter:
+                            self.items_to_drop.append(letter)
+
+                    elif glyph in MISSILES:
+                        if WEAPON_GLOSSARY[glyph]['skill'] not in launch_skills:
+                            self.items_to_drop.append(letter)
+                    else:
+                        self.items_to_drop.append(letter)
+
+        # gems
+        if 'GEM_CLASS' in to_update:
+            for oc, glyph, inv_str, letter in zip(inv_oclasses, inv_glyphs, inv_strs, inv_letters):
+                if oc == OCLASSES['GEM_CLASS']:
+                    if glyph in MISSILES:  # gray stone / rocks
+                        if np.isin(self.inv_glyphs, 1975).sum() == 0:  # we don't have a sling to launch that missile
                             self.items_to_drop.append(letter)
                     else:
                         self.items_to_drop.append(letter)
@@ -126,17 +156,40 @@ class Inventory:
         food_mask = self.inv_oclasses == OCLASSES['FOOD_CLASS']
         return bool([x for x in self.inv_letters[food_mask] if x not in self.items_to_drop])
 
-    def range_weapon(self):
+    def item_to_throw(self):
         range_weapons = [(l, g, s) for l, g, s in zip(self.inv_letters, self.inv_glyphs, self.inv_strs) \
                          if g in ITEMS_TO_THROW and 'weapon in hand' not in s]
         if range_weapons:
-            range_weapon_letter, max_attack = max(
+            range_weapon_letter, exp_damage = max(
                 [(l, self.weapon_exp_attack(g, s)) for l, g, s in range_weapons],
                 key=lambda x: x[1]
             )
-            return range_weapon_letter
+            return range_weapon_letter, exp_damage
 
-    def current_exp_attack(self):
+        else:
+            return None, None
+
+    def launcher_missile_pair(self):
+        launchers = np.isin(self.inv_glyphs, LAUNCHERS)
+        if launchers.sum() == 0:
+            return None, None, None
+
+        launch_skills = [WEAPON_GLOSSARY[g]['skill'] for g in self.inv_glyphs[launchers].tolist()]
+        missiles = np.isin(self.inv_glyphs, MISSILES)
+        missiles = zip(self.inv_letters[missiles], self.inv_glyphs[missiles], self.inv_strs[missiles])
+        missiles = [(l, g, s) for l, g, s in missiles if WEAPON_GLOSSARY[g]['skill'] in launch_skills]
+
+        if not missiles:
+            return None, None, None
+
+        missile_letter, glyph, exp_damage = max(
+            [(l, g, self.weapon_exp_attack(g, s)) for l, g, s in missiles],
+            key=lambda x: x[2]
+        )
+        launcher_letter = self.launchers[WEAPON_GLOSSARY[glyph]['skill']][0]
+        return launcher_letter, missile_letter, exp_damage
+
+    def current_exp_melee_attack(self):
         hero = self.kernel().hero
         wielded = (np.char.find(self.inv_strs, 'weapon in hand') > 0).nonzero()[0]
         if wielded.size > 0:
@@ -198,3 +251,12 @@ class Inventory:
             return res
         else:
             return int(damage_str)
+
+    def wielded(self):
+        wielded = (np.char.find(self.inv_strs, 'weapon in hand') > 0).nonzero()[0]
+        if wielded.size > 0:
+            ind = wielded[0]
+            return self.inv_letters[ind]
+
+        else:
+            return '-'

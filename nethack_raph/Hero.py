@@ -65,6 +65,7 @@ class Hero:
         self.pick_up_armor = True
         self.pick_up_projectives = True
         self.use_range_attack = True
+        self.use_launchers = False
         self.prefer_melee_attack = True
 
         self.spells = {}
@@ -108,10 +109,26 @@ class Hero:
 
     def throw(self, tile, weapon_letter):
         dir = self._get_direction(self.coords(), tile)
-        self.kernel().drawString(f"Range attacking -> {dir} ({tile}) {weapon_letter}")
+        self.kernel().drawString(f"Range attacking (throw) -> {dir} ({tile}) {weapon_letter}")
         self.kernel().send("t" + weapon_letter + dir)
         self.lastActionedTile = tile
-        self.lastAction = 'range_attack'
+        self.lastAction = 'throw'
+
+    def launch(self, tile, launcher, missle):
+        dir = self._get_direction(self.coords(), tile)
+        self.kernel().drawString(f"Range attacking (launch) -> {dir} ({tile} {launcher} {missle})")
+        wielded = self.kernel().inventory.wielded()
+
+        if wielded != launcher:
+            self.kernel().send("w" + launcher + ' ')  # wield launcher
+        self.kernel().send("t" + missle + dir)  # fire from launcher
+        if self.prefer_melee_attack and wielded != launcher:
+            self.kernel().inventory.new_weapons.append(wielded)   # wield back
+
+        self.kernel().log(f'{self.kernel().action}')
+
+        self.lastActionedTile = tile
+        self.lastAction = 'launch'
 
     def cast_dir_spell(self, tile, spell_letter):
         dir = self._get_direction(self.coords(), tile)
@@ -221,6 +238,11 @@ class Hero:
         self.kernel().send(f'w*{weapon_letter}')
         self.lastAction = 'wield'
 
+    def quiver(self, weapon_letter):
+        self.kernel().log("Hero::quiver")
+        self.kernel().send(f'Q*{weapon_letter}')
+        self.lastAction = 'quiver'
+
     def drop_item(self, item_letter):
         self.kernel().log("Hero::drop item")
         self.kernel().send(f'd{item_letter}')
@@ -321,7 +343,7 @@ class Hero:
 
         self.kernel().log(f"Hero is {self.role}-{self.race}-{self.moral}-{self.gender}")
 
-        if self.role in {'tou', 'wiz'}:
+        if self.role in {'ran', 'tou', 'wiz'}:
             self.prefer_melee_attack = False
 
         if self.role == 'wiz':
@@ -330,10 +352,16 @@ class Hero:
         if self.role == 'hea':
             self.spells['healing'] = 'a'
 
+        if self.role in {'ran'}:
+            self.use_launchers = True
+
     def pick_up_choice(self, rows):
         # choose all armors to inventory
         projectives = [" spear", " dagger", " dart", " shuriken", " throwing star",
                        " knife", " stiletto", " scalpel", " crysknife"]
+
+        stones = ['rock', 'stone']
+
         choice = []
         current_type = None
         for row in rows:
@@ -343,6 +371,8 @@ class Hero:
             elif 'Armor' in row:
                 current_type = 'armor'
                 continue
+            elif 'Gems/Stones' in row:
+                current_type = 'stones'
 
             if self.pick_up_weapon and current_type == 'weapon':
                 if row[0].islower():
@@ -358,6 +388,12 @@ class Hero:
 
             elif self.pick_up_projectives and any(x in row for x in projectives):
                 choice.append(row[0])
+
+            elif self.use_launchers and current_type == 'stones' and any(x in row for x in stones):
+                if row[0].islower():
+                    choice.append(row[0])
+                else:
+                    current_type = None
 
             if 'gold piece' in row:
                 choice.append('$')

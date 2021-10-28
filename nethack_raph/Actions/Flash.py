@@ -1,7 +1,7 @@
 import numpy as np
 
 from nethack_raph.Actions.base import BaseAction
-from nethack_raph.Actions.RangeAttackMonster import range_attack_candidates
+from nethack_raph.Actions.ThrowAttack import range_attack_candidates
 
 
 class Flash(BaseAction):

@@ -1,6 +1,5 @@
 from nethack_raph.Actions.base import BaseAction
-from nethack_raph.Hero import Hero
-from nethack_raph.myconstants import COLOR_BG_RED
+from nethack_raph.myconstants import RL_VIEW_DISTANCE
 
 import numpy as np
 
@@ -74,8 +73,8 @@ def range_attack_candidates(hero, level):
             continue  # not on the same row, file or diagonal
 
         distance = max(abs(c - h) for c, h in zip(xy, hero.coords()))
-        if monster.passive and distance == 1:
-            continue  # don't attack passive monster nearby
+        # if monster.passive and distance == 1:
+        #    continue  # don't attack passive monster nearby
 
         if distance == 0:
             continue
@@ -95,26 +94,26 @@ def range_attack_candidates(hero, level):
 
         dir = tuple(way[1].xy)
         monsters.append((monster, dir, distance))
-    
+
     return monsters
 
 
-class RangeAttackMonster(BaseAction):
+class ThrowAttack(BaseAction):
     def __init__(self, kernel):
         self.weapon_letter = None
         self.attack_direction = None
-        self.cast = False
+        self.exp_damage = None
         super().__init__(kernel)
 
     def can(self, level):
         if not self.kernel().hero.use_range_attack:
             return False, None
 
-        self.weapon_letter = self.kernel().inventory.range_weapon()
+        self.weapon_letter, self.exp_damage = self.kernel().inventory.item_to_throw()
         if self.weapon_letter is None:
             return False, None
 
-        max_range = min(self.hero.strength // 2, 5)
+        max_range = min(self.hero.strength // 2, RL_VIEW_DISTANCE)
 
         monsters = range_attack_candidates(self.hero, level)
 

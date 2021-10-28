@@ -38,17 +38,23 @@ class PickUpStuff(BaseAction):
             # if xy in level.monsters:
             #     continue
 
-            if self.hero.pick_up_weapon and [it for it in items if it.item_type == 'weapon']:
-                stuff_tiles[xy] = True
-                self.action_to_do = 'pick_up'
-                self.log(f"Found weapon {xy}: {list(map(lambda t: str(t), items))}")
+            stuff = []
+            for it in items:
+                if it.item_type == 'gold_piece':
+                    stuff.append(it)
 
-            if self.hero.pick_up_projectives and any([item.projective for item in items]):
-                stuff_tiles[xy] = True
-                self.action_to_do = 'pick_up'
-                self.log(f"Found projective {xy}: {list(map(lambda t: str(t), items))}")
+                elif self.hero.pick_up_weapon and it.item_type == 'weapon':
+                    stuff.append(it)
 
-            stuff = [it for it in items if it.item_type in ('armor', 'gold_piece')]
+                elif self.hero.pick_up_armor and it.item_type == 'armor':
+                    stuff.append(it)
+
+                elif self.hero.pick_up_projectives and it.item_type == 'projective':
+                    stuff.append(it)
+
+                elif self.hero.use_launchers and it.item_type in {'launcher', 'missile'}:
+                    stuff.append(it)
+
             if stuff:
                 stuff_tiles[xy] = True
                 self.action_to_do = 'pick_up'

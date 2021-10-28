@@ -3,9 +3,14 @@ import numpy as np
 from nethack_raph.Actions.base import BaseAction
 
 
-class AttackMonster(BaseAction):
+class Attack(BaseAction):
+    def __init__(self, kernel):
+        self.exp_damage = 0
+        super().__init__(kernel)
+
     def can(self, level):
         monsters = np.zeros(level.shape, dtype=bool)
+        self.exp_damage = self.kernel().inventory.current_exp_melee_attack()
         currx, curry = self.kernel().hero.coords()
 
         if self.hero.isEngulfed:
