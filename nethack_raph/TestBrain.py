@@ -30,12 +30,12 @@ class TestBrain:
         self.rl_actions = {
             'RangeAttackMonster': RangeAttackMonster(kernel),
             'AttackMonster': AttackMonster(kernel),
-            'Wait': Wait(kernel)
+            'Wait': Wait(kernel),
+            'Elbereth': Elbereth(kernel),
         }
 
         self.actions = {
             'EmergencyHeal': EmergencyHeal(kernel),
-            'Elbereth': Elbereth(kernel),
             'Eat': Eat(kernel),
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),

@@ -14,7 +14,7 @@ class RLWrapper(gym.Wrapper):
         self.verbose = verbose
         self.kernel = Kernel(verbose=self.verbose)
 
-        self.action_space = gym.spaces.Discrete(17)
+        self.action_space = gym.spaces.Discrete(18)
         self.action2id = {
             chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
         }
@@ -35,6 +35,7 @@ class RLWrapper(gym.Wrapper):
         for i in range(8, 16):
             self.actionid2name[i] = 'RangeAttackMonster'
         self.actionid2name[16] = 'Wait'
+        self.actionid2name[17] = 'Elbereth'
 
     def reset(self):
         self.reward = 0
@@ -57,7 +58,7 @@ class RLWrapper(gym.Wrapper):
             tile_x, tile_y = self.offsets[action_id % 8]
             tile = (tile_x + x, tile_y + y)
             self.kernel.brain.rl_actions[action_name].execute(tile)
-        elif action_name in ('Wait',):
+        elif action_name in ('Wait', 'Elbereth'):
             self.kernel.brain.rl_actions[action_name].execute()
         else:
             action, path = self.kernel.brain.execute_next(self.kernel.curLevel())
@@ -139,6 +140,8 @@ class RLWrapper(gym.Wrapper):
             action_mask[8:16] = 1.0
         if True:  # can wait
             action_mask[16] = 1.0
+        if self.kernel.brain.rl_actions['Elbereth'].can(lvl)[0]:
+            action_mask[17] = 1.0
 
         hero_stat = np.concatenate([
             self.kernel.hero.role == self.roles,

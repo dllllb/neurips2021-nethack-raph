@@ -66,7 +66,7 @@ env: challenge               # Name of Gym environment to create.
                              #     eat, gold, score, scout, oracle
 
 # TRAINING settings.
-num_actors: 256              # Number of actors.
+num_actors: 128              # Number of actors.
 total_steps: 1e9             # Total environment steps to train for. Will be cast to int.
 batch_size: 32               # Learner batch size.
 unroll_length: 80            # The unroll length (time dimension).
@@ -86,7 +86,7 @@ epsilon: 0.000001            # RMSProp epsilon.
 # LOSS settings.
 entropy_cost: 0.001          # Entropy cost/multiplier.
 baseline_cost: 0.5           # Baseline cost/multiplier.
-discounting: 0.9             # Discounting factor.
+discounting: 0.99            # Discounting factor.
 normalize_reward: true       # Normalizes reward by dividing by running stdev from mean.
 
 # MODEL settings.
