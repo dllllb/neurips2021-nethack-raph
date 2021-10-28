@@ -1,8 +1,5 @@
 from nethack_raph.Actions.base import BaseAction
-from nethack_raph.Hero import Hero
 from nethack_raph.Actions.ThrowAttack import range_attack_candidates
-
-import numpy as np
 
 
 class ForceBolt(BaseAction):
@@ -19,7 +16,7 @@ class ForceBolt(BaseAction):
 
         if self.hero.curpw < 5:
             return False, None
-            
+
         if self.hero.curhp > self.hero.maxhp * .6 and self.hero.xp > 1:
             return False, None
 

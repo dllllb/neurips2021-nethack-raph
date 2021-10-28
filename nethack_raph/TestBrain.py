@@ -43,7 +43,7 @@ class TestBrain:
             'UseItem': UseItem(kernel),
             'Enhance': Enhance(kernel),
             'ForceBolt': ForceBolt(kernel),
-            'Flash': Flash(kernel),
+            # 'Flash': Flash(kernel),
             'RLTriggerAction': RLTriggerAction(kernel),
             'PickUpStuff': PickUpStuff(kernel),
             'FixStatus': FixStatus(kernel),
