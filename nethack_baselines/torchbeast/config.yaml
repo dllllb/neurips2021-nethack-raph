@@ -93,7 +93,7 @@ normalize_reward: true       # Normalizes reward by dividing by running stdev fr
 model: baseline              # Name of model to build (see models/__init__.py).
 use_lstm: false              # Use LSTM in agent model.
 hidden_dim: 256              # Size of hidden representations.
-embedding_dim: 16            # Size of glyph embeddings.
+embedding_dim: 24            # Size of glyph embeddings.
 layers: 2                    # Number of ConvNet Layers for Glyph Model
 crop_dim: 9                  # Size of crop (c x c)
 use_index_select: true       # Whether to use index_select instead of embedding lookup (for speed reasons).

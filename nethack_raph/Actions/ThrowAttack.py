@@ -113,7 +113,7 @@ class ThrowAttack(BaseAction):
         if self.weapon_letter is None:
             return False, None
 
-        max_range = min(self.hero.strength // 2, RL_VIEW_DISTANCE)
+        max_range = self.hero.strength // 2
 
         monsters = range_attack_candidates(self.hero, level)
 

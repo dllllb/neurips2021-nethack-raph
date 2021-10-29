@@ -19,7 +19,7 @@ class LaunchAttack(BaseAction):
         if self.launcher_letter is None:
             return False, None
 
-        max_range = min(self.hero.strength // 4 + 1, RL_VIEW_DISTANCE)
+        max_range = self.hero.strength // 2 + 1
 
         monsters = range_attack_candidates(self.hero, level)
 

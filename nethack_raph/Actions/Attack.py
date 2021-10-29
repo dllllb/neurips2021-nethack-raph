@@ -19,12 +19,8 @@ class Attack(BaseAction):
             self.log("Attacking while engulfed..")
             return True, monsters
 
-        def dist_form_current(xy):
-            tx, ty = xy
-            return abs(tx - currx) + abs(ty - curry)
-
         for xy, m in level.monsters.items():
-            if m.is_attackable and dist_form_current(xy) < 5:
+            if m.is_attackable or m.passive:
                 monsters[xy] = True
                 self.log(f"Found monster {xy}: {str(m)}")
 
@@ -40,7 +36,7 @@ class Attack(BaseAction):
             return
 
         monster = lvl.monsters.get(tile)
-        if monster and monster.is_attackable:
+        if monster and (monster.is_attackable or monster.passive):
             self.hero.attack(tile)
         else:
             self.hero.move(tile)

@@ -12,7 +12,7 @@ class RLTriggerAction(BaseAction):
 
         def dist_form_current(xy):
             tx, ty = xy
-            return abs(tx - currx) + abs(ty - curry)
+            return max(abs(tx - currx), abs(ty - curry))
 
         for xy, m in level.monsters.items():
             if (m.is_attackable or m.passive) and dist_form_current(xy) <= RL_VIEW_DISTANCE:
