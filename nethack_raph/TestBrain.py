@@ -35,7 +35,6 @@ class TestBrain:
 
         self.actions = {
             'EmergencyHeal': EmergencyHeal(kernel),
-            'Elbereth': Elbereth(kernel),
             'Eat': Eat(kernel),
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),

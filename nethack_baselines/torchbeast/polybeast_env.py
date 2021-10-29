@@ -42,8 +42,11 @@ class RLTrainWrapper(gym.Wrapper):
     def __init__(self, env):
         super(RLTrainWrapper, self).__init__(env)
         self.continue_action = -1
+        self.prev_reward = 0
+        self.beta = 0.1
 
     def reset(self):
+        self.prev_reward = 0
         obs, done = self.env.reset(), False
         while not obs['rl_triggered'] and not done:
             obs, reward, done, info = self.env.step(self.continue_action)
@@ -54,10 +57,12 @@ class RLTrainWrapper(gym.Wrapper):
 
     def step(self, action):
         obs, rl_reward, done, info = self.env.step(action)
+        smooth_reward = rl_reward * self.beta + self.prev_reward * (1 - self.beta)
+        self.prev_reward = rl_reward
         while not obs['rl_triggered'] and not done:
             obs, reward, done, info = self.env.step(self.continue_action)
         del obs['rl_triggered']
-        return obs, rl_reward, done, info
+        return obs, smooth_reward, done, info
 
 
 # Helper functions for NethackEnv.

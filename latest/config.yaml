@@ -32,7 +32,7 @@ momentum: 0
 epsilon: 1.0e-06
 entropy_cost: 0.001
 baseline_cost: 0.5
-discounting: 0.9
+discounting: 0.99
 normalize_reward: true
 model: baseline
 use_lstm: false

@@ -1,5 +1,3 @@
-import numpy as np
-
 from nethack_raph.Actions.base import BaseAction
 
 
@@ -45,10 +43,4 @@ class Elbereth(BaseAction):
 
     def execute(self, path=None):
         assert path is None
-
-        hero = self.hero
-        if hero.lastAction != 'read':
-            hero.read()
-
-        else:
-            hero.write()
+        self.hero.write()

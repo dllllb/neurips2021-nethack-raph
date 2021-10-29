@@ -99,7 +99,7 @@ class Senses:
             "[a-zA-Z] - ":                                                   ['picked_up'],
             "You finish your dressing maneuver.":                            ['dressed'],
             "You finish taking off your mail.":                              ['took_off'],
-            r".*rop .*gold.*":                                               ['drop_gold'],
+            r".*rop .*(gold|money).*":                                       ['drop_gold'],
             "They are cursed.":                                              ['cursed_boots'],
         }
 
@@ -128,6 +128,7 @@ class Senses:
 
         elif ker.searchTop(r"What do you want to write in the dust here\?"):
             ker.send('Elbereth\r')
+            ker.hero.read()
             return
 
         elif ker.searchTop(r"Do you want to add to the current engraving\? \[ynq\] \(y\)"):
