@@ -28,8 +28,8 @@ class TestBrain:
         self.kernel = kernel
 
         self.rl_actions = {
-            'RangeAttackMonster': RangeAttackMonster(kernel),
-            'AttackMonster': AttackMonster(kernel),
+            'RangeAttackM': RangeAttack(kernel),
+            'Attack': Attack(kernel),
             'Wait': Wait(kernel)
         }
 
