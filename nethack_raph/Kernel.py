@@ -123,13 +123,11 @@ class Kernel:
             self.action = '\x1b10s'  # ESC + waiting 10 turns
             return self.action
 
-        self.log("Updates starting: \n\n")
-
         self.log("--------- HERO ---------")
         self.hero.update(obs['blstats'], self.top, self.bot)
         assert len(self.action) == 0
 
-        if self.hero.score > 1500:
+        if self.hero.score > 1700:
             self.die(f'score = {self.hero.score}')
             return self.action
 
@@ -153,7 +151,6 @@ class Kernel:
         self.log("-------- MESSAGES -------- ")
         self.senses.parse_messages()
 
-        # self.log("\n\nUpdates ended.")
         return self.action
 
     def step(self, obs):

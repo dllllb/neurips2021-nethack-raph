@@ -20,7 +20,6 @@ def evaluate(seed, character):
         if seed is not None:
             env.seed(seed=tuple(seed))
 
-
         Agent = SubmissionConfig.AGENT
         batched_env = BatchedEnv(env_make_fn=lambda: env, num_envs=1)
         agent = Agent(1, batched_env.num_actions, verbose=True)

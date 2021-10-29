@@ -31,9 +31,9 @@ class RLWrapper(gym.Wrapper):
 
         self.actionid2name = {-1: 'Continue'}
         for i in range(8):
-            self.actionid2name[i] = 'AttackMonster'
+            self.actionid2name[i] = 'Attack'
         for i in range(8, 16):
-            self.actionid2name[i] = 'RangeAttackMonster'
+            self.actionid2name[i] = 'RangeAttack'
         self.actionid2name[16] = 'Wait'
         self.actionid2name[17] = 'Elbereth'
 
@@ -53,7 +53,7 @@ class RLWrapper(gym.Wrapper):
 
         action_id = int(action_id)
         action_name = self.actionid2name[action_id]
-        if action_name in ('AttackMonster', 'RangeAttackMonster'):
+        if action_name in ('Attack', 'RangeAttack'):
             x, y = self.kernel.hero.coords()
             tile_x, tile_y = self.offsets[action_id % 8]
             tile = (tile_x + x, tile_y + y)
@@ -136,7 +136,7 @@ class RLWrapper(gym.Wrapper):
             if tiles[tile].walkable_tile:
                 action_mask[i] = 1.0
 
-        if self.kernel.brain.rl_actions['RangeAttackMonster'].can(lvl)[0]:
+        if self.kernel.brain.rl_actions['RangeAttack'].can(lvl)[0]:
             action_mask[8:16] = 1.0
         if True:  # can wait
             action_mask[16] = 1.0
@@ -150,6 +150,9 @@ class RLWrapper(gym.Wrapper):
             self.kernel.hero.moral == self.morals
         ]).astype(np.float32)
 
+        range_inventory = self.kernel.inventory.item_to_throw()[0] is not None
+        range_inventory |= self.kernel.inventory.launcher_missile_pair()[0] is not None
+
         return {
             'map': state,
             'message': obs['message'],
@@ -157,5 +160,5 @@ class RLWrapper(gym.Wrapper):
             'action_mask': action_mask,
             'hero_stat': hero_stat,
             'rl_triggered': rl_triggered,
-            'inventory': np.array([self.kernel.inventory.range_weapon() is not None])
+            'inventory': np.array([range_inventory])
         }

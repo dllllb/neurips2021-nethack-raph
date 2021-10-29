@@ -1,7 +1,7 @@
 from nethack_raph.Actions.Wait import Wait
 from nethack_raph.Actions.Explore import Explore
-from nethack_raph.Actions.AttackMonster import AttackMonster
-from nethack_raph.Actions.RangeAttackMonster import RangeAttackMonster
+from nethack_raph.Actions.Attack import Attack
+from nethack_raph.Actions.RangeAttack import RangeAttack
 from nethack_raph.Actions.OpenDoors import OpenDoors
 from nethack_raph.Actions.Descend import Descend
 from nethack_raph.Actions.Search import Search
@@ -28,8 +28,8 @@ class TestBrain:
         self.kernel = kernel
 
         self.rl_actions = {
-            'RangeAttackMonster': RangeAttackMonster(kernel),
-            'AttackMonster': AttackMonster(kernel),
+            'RangeAttack': RangeAttack(kernel),
+            'Attack': Attack(kernel),
             'Wait': Wait(kernel),
             'Elbereth': Elbereth(kernel),
         }
@@ -44,7 +44,7 @@ class TestBrain:
             'UseItem': UseItem(kernel),
             'Enhance': Enhance(kernel),
             'ForceBolt': ForceBolt(kernel),
-            'Flash': Flash(kernel),
+            # 'Flash': Flash(kernel),
             'RLTriggerAction': RLTriggerAction(kernel),
             'PickUpStuff': PickUpStuff(kernel),
             'FixStatus': FixStatus(kernel),

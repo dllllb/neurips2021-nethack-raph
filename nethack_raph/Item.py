@@ -1,5 +1,5 @@
 from nethack_raph.Findable import *
-from nethack_raph.glossaries import MONSTERS_GLOSSARY, ITEMS_TO_THROW
+from nethack_raph.glossaries import MONSTERS_GLOSSARY, ITEMS_TO_THROW, LAUNCHERS, MISSILES
 
 
 class Item(Findable):
@@ -52,12 +52,17 @@ class Item(Findable):
         self.turn_of_death = -1000
         self.is_food = self.check_if_food()
 
-        self.projective = self.glyph in ITEMS_TO_THROW
         self.item_type = None
         for k, v in Item.item_glyp_ranges.items():
             if v[0] <= self.glyph <= v[1]:
                 self.item_type = k
                 break
+        if glyph in ITEMS_TO_THROW:
+            self.item_type = 'projective'
+        if glyph in LAUNCHERS:
+            self.item_type = 'missile'
+        if glyph in MISSILES:
+            self.item_type = 'missile'
 
     def __str__(self):
         return "?:%s, ch:%s, g:%s" % tuple(map(str, (self.name, self.char, self.glyph)))
