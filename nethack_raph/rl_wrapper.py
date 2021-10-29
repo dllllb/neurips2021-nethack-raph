@@ -137,9 +137,6 @@ class RLWrapper(gym.Wrapper):
 
         if self.kernel.brain.rl_actions['RangeAttack'].can(lvl)[0]:
             action_mask[8:16] = 1.0
-            if not self.kernel.hero.prefer_melee_attack:
-                # TODO: make as a feature, not as a restriction
-                action_mask[:8] = 0.0
         if True:  # can wait
             action_mask[16] = 1.0
 
