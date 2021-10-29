@@ -1,11 +1,9 @@
-import numpy as np
-
 from nethack_raph.Actions.base import BaseAction
 
 
-class RandomWalk(BaseAction):
+class Wait(BaseAction):
     def can(self, level):
         return True, None
 
-    def execute(self, path):
+    def execute(self, path=None):
         self.kernel().hero.search(1)

@@ -19,7 +19,7 @@ class TorchBeastAgent(BatchedAgent):
         self.model_dir = MODEL_DIR
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.model = load_model(MODEL_DIR, self.device)
-        self.continue_action = num_actions
+        self.continue_action = -1
         print(f'Using Model In: {self.model_dir}, Device: {self.device}')
 
         self.core_state = [

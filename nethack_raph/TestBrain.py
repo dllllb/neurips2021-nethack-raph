@@ -1,4 +1,4 @@
-from nethack_raph.Actions.RandomWalk import RandomWalk
+from nethack_raph.Actions.Wait import Wait
 from nethack_raph.Actions.Explore import Explore
 from nethack_raph.Actions.Attack import Attack
 from nethack_raph.Actions.RangeAttack import RangeAttack
@@ -28,8 +28,9 @@ class TestBrain:
         self.kernel = kernel
 
         self.rl_actions = {
-            'RangeAttack': RangeAttack(kernel),
-            'Attack': Attack(kernel),
+            'RangeAttackMonster': RangeAttackMonster(kernel),
+            'AttackMonster': AttackMonster(kernel),
+            'Wait': Wait(kernel)
         }
 
         self.actions = {
@@ -52,7 +53,7 @@ class TestBrain:
             'OpenDoors': OpenDoors(kernel),
             # 'Descend': Descend(kernel),
             'Search': Search(kernel),
-            'RandomWalk': RandomWalk(kernel),
+            'Wait': Wait(kernel),
         }
         self.prev_action = -1
         self.prev_path = []

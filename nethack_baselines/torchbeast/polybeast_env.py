@@ -19,13 +19,14 @@ import threading
 import time
 
 import torch
+import gym
 
 import libtorchbeast
 
 from models import ENVS
 
 import sys
-sys.path.append('/home/sorokin/dev/neurips-2021-the-nethack-challenge/')
+sys.path.append('../../')
 from nethack_raph.rl_wrapper import RLWrapper
 
 
@@ -35,6 +36,28 @@ logging.basicConfig(
     ),
     level=0,
 )
+
+
+class RLTrainWrapper(gym.Wrapper):
+    def __init__(self, env):
+        super(RLTrainWrapper, self).__init__(env)
+        self.continue_action = -1
+
+    def reset(self):
+        obs, done = self.env.reset(), False
+        while not obs['rl_triggered'] and not done:
+            obs, reward, done, info = self.env.step(self.continue_action)
+        if done:
+            return self.reset()
+        del obs['rl_triggered']
+        return obs
+
+    def step(self, action):
+        obs, rl_reward, done, info = self.env.step(action)
+        while not obs['rl_triggered'] and not done:
+            obs, reward, done, info = self.env.step(self.continue_action)
+        del obs['rl_triggered']
+        return obs, rl_reward, done, info
 
 
 # Helper functions for NethackEnv.
@@ -95,6 +118,7 @@ def create_env(flags, env_id=0, lock=threading.Lock()):
         if flags.state_counter != "none":
             kwargs.update(state_counter=flags.state_counter)
         env = RLWrapper(env_class(**kwargs))
+        env = RLTrainWrapper(env)
         if flags.seedspath is not None and len(flags.seedspath) > 0:
             raise NotImplementedError("seedspath > 0 not implemented yet.")
 
