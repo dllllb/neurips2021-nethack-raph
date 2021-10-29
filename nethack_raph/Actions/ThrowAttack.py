@@ -73,7 +73,7 @@ def range_attack_candidates(hero, level):
             continue  # not on the same row, file or diagonal
 
         distance = max(abs(c - h) for c, h in zip(xy, hero.coords()))
-        if monster.explosion and distance == 1:
+        if monster.explosive and distance == 1:
             continue  # don't attack explosion monster nearby
 
         if distance == 0:
