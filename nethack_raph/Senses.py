@@ -134,9 +134,13 @@ class Senses:
             ker.send('n')
             return
 
-        elif ker.searchTop("You have a little trouble lifting .* corpse .*"):
+        elif ker.searchTop("You have .* trouble lifting .* corpse .*"):
             ker.curLevel().clear_items(*ker.hero.coords())
             ker.send('n')
+        elif ker.searchTop("You have much trouble lifting .*"):
+            ker.curLevel().clear_items(*ker.hero.coords())
+            ker.send('n')
+            return
         elif ker.searchTop("You have a little trouble lifting .*"):
             ker.send('y')
             return
@@ -144,8 +148,12 @@ class Senses:
         elif ker.searchTop("Really attack the guard\? \[yn\] \(n\)"):
             ker.send('n')
             return
-        if ker.searchTop("Really attack"):
+        elif ker.searchTop("Really attack"):
             ker.log("Asked if I really want to attack.")
+            ker.send("y")
+            return
+
+        elif ker.searchTop("Eat it? [yn]"):  # opened tin prompt
             ker.send("y")
             return
 
