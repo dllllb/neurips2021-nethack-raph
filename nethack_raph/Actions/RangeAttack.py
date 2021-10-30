@@ -29,7 +29,7 @@ class RangeAttack(BaseAction):
         if not any([can for can, exp_damage, name in actions]):
             return False, None
 
-        _, _, self.action_to_do = max(
+        _, self.exp_damage, self.action_to_do = max(
             actions,
             key=lambda x: x[1] if x[0] else -np.inf    # exp_damage if can else -inf
         )
