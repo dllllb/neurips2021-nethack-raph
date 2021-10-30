@@ -20,11 +20,11 @@ class Attack(BaseAction):
             return True, monsters
 
         neighbours = level.neighbours[self.hero.x, self.hero.y].xy.flat
-        monsters = [
+        neib_monsters = [
             level.monsters[xy] for xy in map(tuple, neighbours)
             if xy in level.monsters and (level.monsters[xy].is_attackable or level.monsters[xy].passive)
         ]
-        if not monsters:
+        if not neib_monsters:
             self.exp_damage *= 0
 
         for xy, m in level.monsters.items():
