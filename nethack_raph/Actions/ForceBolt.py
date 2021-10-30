@@ -5,6 +5,7 @@ from nethack_raph.Actions.ThrowAttack import range_attack_candidates
 class ForceBolt(BaseAction):
     def __init__(self, kernel):
         self.attack_direction = None
+        self.exp_damage = 13
         super().__init__(kernel)
 
     def can(self, level):
@@ -39,6 +40,4 @@ class ForceBolt(BaseAction):
             return False, None
 
     def execute(self, path=None):
-        assert path is None
-        self.log(f'Force bolt: {self.attack_direction}')
         self.hero.cast_dir_spell(self.attack_direction, self.hero.spells['force_bolt'])

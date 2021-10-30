@@ -17,7 +17,7 @@ import logging
 import os
 import threading
 import time
-
+import numpy as np
 import torch
 import gym
 
@@ -122,7 +122,7 @@ def create_env(flags, env_id=0, lock=threading.Lock()):
             print("Ignoring flags.reward_win and flags.reward_lose")
         if flags.state_counter != "none":
             kwargs.update(state_counter=flags.state_counter)
-        env = RLWrapper(env_class(**kwargs))
+        env = RLWrapper(env_class(**kwargs), early_stop=np.inf)
         env = RLTrainWrapper(env)
         if flags.seedspath is not None and len(flags.seedspath) > 0:
             raise NotImplementedError("seedspath > 0 not implemented yet.")

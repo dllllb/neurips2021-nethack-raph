@@ -9,10 +9,11 @@ from nle.nethack.actions import ACTIONS
 
 
 class RLWrapper(gym.Wrapper):
-    def __init__(self, env, verbose=False):
+    def __init__(self, env, verbose=False, early_stop=1900):
         super().__init__(env)
         self.verbose = verbose
-        self.kernel = Kernel(verbose=self.verbose, early_stop=np.inf)
+        self.early_stop = early_stop
+        self.kernel = Kernel(verbose=self.verbose, early_stop=early_stop)
 
         self.action_space = gym.spaces.Discrete(19)
         self.action2id = {
@@ -41,7 +42,7 @@ class RLWrapper(gym.Wrapper):
     def reset(self):
         self.reward = 0
         del self.kernel
-        self.kernel = Kernel(verbose=self.verbose)
+        self.kernel = Kernel(verbose=self.verbose, early_stop=self.early_stop)
         self.last_obs = self.env.reset()
         self.kernel.update(self.last_obs)
         _, _, done, _ = self._step()

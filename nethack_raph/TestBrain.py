@@ -43,7 +43,6 @@ class TestBrain:
             'FollowGuard': FollowGuard(kernel),
             'UseItem': UseItem(kernel),
             'Enhance': Enhance(kernel),
-            'ForceBolt': ForceBolt(kernel),
             # 'Flash': Flash(kernel),
             'RLTriggerAction': RLTriggerAction(kernel),
             'Pray': Pray(kernel),
