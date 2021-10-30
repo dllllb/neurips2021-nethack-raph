@@ -19,6 +19,14 @@ class Attack(BaseAction):
             self.log("Attacking while engulfed..")
             return True, monsters
 
+        neighbours = level.neighbours[self.hero.x, self.hero.y].xy.flat
+        monsters = [
+            level.monsters[xy] for xy in map(tuple, neighbours)
+            if xy in level.monsters and (level.monsters[xy].is_attackable or level.monsters[xy].passive)
+        ]
+        if not monsters:
+            self.exp_damage *= 0
+
         for xy, m in level.monsters.items():
             if m.is_attackable or m.passive:
                 monsters[xy] = True

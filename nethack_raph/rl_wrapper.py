@@ -12,7 +12,7 @@ class RLWrapper(gym.Wrapper):
     def __init__(self, env, verbose=False):
         super().__init__(env)
         self.verbose = verbose
-        self.kernel = Kernel(verbose=self.verbose)
+        self.kernel = Kernel(verbose=self.verbose, early_stop=np.inf)
 
         self.action_space = gym.spaces.Discrete(19)
         self.action2id = {
@@ -94,7 +94,7 @@ class RLWrapper(gym.Wrapper):
                 'message': obs['message'],
                 'blstats': obs['blstats'],
                 'action_mask': action_mask,
-                'hero_stat': np.zeros(23),
+                'hero_stat': np.zeros(26),
                 'rl_triggered': rl_triggered,
             }
 
@@ -155,7 +155,12 @@ class RLWrapper(gym.Wrapper):
             self.kernel.hero.role == self.roles,
             self.kernel.hero.race == self.races,
             self.kernel.hero.gender == self.genders,
-            self.kernel.hero.moral == self.morals
+            self.kernel.hero.moral == self.morals,
+            [
+                self.kernel.hero.prefer_melee_attack,
+                self.kernel.brain.rl_actions['Attack'].exp_damage / 10.,
+                self.kernel.brain.rl_actions['RangeAttack'].exp_damage / 10.
+            ]
         ]).astype(np.float32)
 
         range_inventory = self.kernel.inventory.item_to_throw()[0] is not None

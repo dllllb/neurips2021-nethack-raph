@@ -89,7 +89,8 @@ class Inventory:
                             self.items_to_drop.append(letter)
 
                     elif glyph in LAUNCHERS:
-                        if self.launchers[WEAPON_GLOSSARY[glyph]['skill']][0] != letter:
+                        skill = WEAPON_GLOSSARY[glyph]['skill']
+                        if skill in self.launchers and self.launchers[skill][0] != letter:
                             self.items_to_drop.append(letter)
 
                     elif glyph in MISSILES:

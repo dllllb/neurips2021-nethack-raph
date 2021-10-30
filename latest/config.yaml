@@ -37,7 +37,7 @@ normalize_reward: true
 model: baseline
 use_lstm: false
 hidden_dim: 256
-embedding_dim: 16
+embedding_dim: 24
 layers: 2
 crop_dim: 9
 use_index_select: true
