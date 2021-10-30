@@ -33,10 +33,11 @@ def render(chrs, cols, offset=(1, 1)):
 
 
 class Kernel:
-    def __init__(self, verbose):
+    def __init__(self, verbose, early_stop=1900):
         self._file = None
         self._frames_log = None
         self.verbose = False
+        self.early_stop = early_stop
         self.set_verbose(verbose)
 
         # Stuff
@@ -127,7 +128,7 @@ class Kernel:
         self.hero.update(obs['blstats'], self.top, self.bot)
         assert len(self.action) == 0
 
-        if self.hero.score > 1700:
+        if self.hero.score > self.early_stop:
             self.die(f'score = {self.hero.score}')
             return self.action
 

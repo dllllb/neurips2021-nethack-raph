@@ -12,9 +12,9 @@ class RLWrapper(gym.Wrapper):
     def __init__(self, env, verbose=False):
         super().__init__(env)
         self.verbose = verbose
-        self.kernel = Kernel(verbose=self.verbose)
+        self.kernel = Kernel(verbose=self.verbose, early_stop=np.inf)
 
-        self.action_space = gym.spaces.Discrete(18)
+        self.action_space = gym.spaces.Discrete(19)
         self.action2id = {
             chr(action.value): action_id for action_id, action in enumerate(ACTIONS)
         }
@@ -36,6 +36,7 @@ class RLWrapper(gym.Wrapper):
             self.actionid2name[i] = 'RangeAttack'
         self.actionid2name[16] = 'Wait'
         self.actionid2name[17] = 'Elbereth'
+        self.actionid2name[18] = 'Pray'
 
     def reset(self):
         self.reward = 0
@@ -58,7 +59,7 @@ class RLWrapper(gym.Wrapper):
             tile_x, tile_y = self.offsets[action_id % 8]
             tile = (tile_x + x, tile_y + y)
             self.kernel.brain.rl_actions[action_name].execute(tile)
-        elif action_name in ('Wait', 'Elbereth'):
+        elif action_name in ('Wait', 'Elbereth', 'Pray'):
             self.kernel.brain.rl_actions[action_name].execute()
         else:
             action, path = self.kernel.brain.execute_next(self.kernel.curLevel())
@@ -84,7 +85,7 @@ class RLWrapper(gym.Wrapper):
         return self.last_obs, self.reward, done, info
 
     def _process_obs(self, obs, rl_triggered):
-        state = np.zeros((16, DUNGEON_HEIGHT, DUNGEON_WIDTH), dtype=np.int32)
+        state = np.zeros((24, DUNGEON_HEIGHT, DUNGEON_WIDTH), dtype=np.int32)
         action_mask = np.zeros(self.action_space.n, dtype=np.float32)
 
         if not rl_triggered:
@@ -93,7 +94,7 @@ class RLWrapper(gym.Wrapper):
                 'message': obs['message'],
                 'blstats': obs['blstats'],
                 'action_mask': action_mask,
-                'hero_stat': np.zeros(23),
+                'hero_stat': np.zeros(26),
                 'rl_triggered': rl_triggered,
             }
 
@@ -113,11 +114,16 @@ class RLWrapper(gym.Wrapper):
         for (x, y), monster in lvl.monsters.items():
             state[10, x, y] = True
             state[11, x, y] = monster.is_attackable
+            state[12, x, y] = monster.passive
+            state[13, x, y] = monster.explosive
+            state[14, x, y] = monster.respect_elbereth
+            state[15, x, y] = monster.peaceful
+            state[16, x, y] = monster.range_attack
             if monster.glyph < 381:
                 mon_info = nh.permonst(nh.glyph_to_mon(monster.glyph))
-                state[12, x, y] = mon_info.ac
-                state[13, x, y] = mon_info.mlevel
-                state[14, x, y] = mon_info.mmove
+                state[17, x, y] = mon_info.ac
+                state[18, x, y] = mon_info.mlevel
+                state[19, x, y] = mon_info.mmove
 
         x, y = self.kernel.hero.coords()
         doors = lvl.tiles.is_opened_door
@@ -138,16 +144,23 @@ class RLWrapper(gym.Wrapper):
 
         if self.kernel.brain.rl_actions['RangeAttack'].can(lvl)[0]:
             action_mask[8:16] = 1.0
-        if True:  # can wait
+        if self.kernel.brain.rl_actions['Wait'].can(lvl)[0]:
             action_mask[16] = 1.0
         if self.kernel.brain.rl_actions['Elbereth'].can(lvl)[0]:
             action_mask[17] = 1.0
+        if self.kernel.brain.rl_actions['Pray'].can(lvl)[0]:
+            action_mask[18] = 1.0
 
         hero_stat = np.concatenate([
             self.kernel.hero.role == self.roles,
             self.kernel.hero.race == self.races,
             self.kernel.hero.gender == self.genders,
-            self.kernel.hero.moral == self.morals
+            self.kernel.hero.moral == self.morals,
+            [
+                self.kernel.hero.prefer_melee_attack,
+                self.kernel.brain.rl_actions['Attack'].exp_damage / 10.,
+                self.kernel.brain.rl_actions['RangeAttack'].exp_damage / 10.
+            ]
         ]).astype(np.float32)
 
         range_inventory = self.kernel.inventory.item_to_throw()[0] is not None

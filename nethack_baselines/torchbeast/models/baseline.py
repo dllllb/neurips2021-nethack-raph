@@ -110,7 +110,7 @@ class BaselineNet(NetHackNet):
         self.flags = flags
 
         self.observation_shape = observation_shape
-        self.num_actions = 18 #len(action_space)
+        self.num_actions = 19 #len(action_space)
 
         self.H = observation_shape[0]
         self.W = observation_shape[1]
@@ -333,7 +333,7 @@ class HeroEncoder(nn.Module):
         self.device = device
 
         self.mlp = nn.Sequential(
-            nn.Linear(23, 2 * self.hidden_dim),
+            nn.Linear(26, 2 * self.hidden_dim),
             nn.ReLU(),
             nn.Linear(2 * self.hidden_dim, self.hidden_dim),
         )  # final output -- [ B x h_dim x 5 ]

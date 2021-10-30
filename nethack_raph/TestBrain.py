@@ -32,6 +32,7 @@ class TestBrain:
             'Attack': Attack(kernel),
             'Wait': Wait(kernel),
             'Elbereth': Elbereth(kernel),
+            'Pray': Pray(kernel),
         }
 
         self.actions = {
@@ -39,13 +40,13 @@ class TestBrain:
             'Eat': Eat(kernel),
             'RestoreHP': RestoreHP(kernel),
             'EatFromInventory': EatFromInventory(kernel),
-            'Pray': Pray(kernel),
             'FollowGuard': FollowGuard(kernel),
             'UseItem': UseItem(kernel),
             'Enhance': Enhance(kernel),
             'ForceBolt': ForceBolt(kernel),
             # 'Flash': Flash(kernel),
             'RLTriggerAction': RLTriggerAction(kernel),
+            'Pray': Pray(kernel),
             'PickUpStuff': PickUpStuff(kernel),
             'FixStatus': FixStatus(kernel),
             # 'CheckTraps': CheckTraps(kernel),

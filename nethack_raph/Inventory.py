@@ -89,7 +89,8 @@ class Inventory:
                             self.items_to_drop.append(letter)
 
                     elif glyph in LAUNCHERS:
-                        if self.launchers[WEAPON_GLOSSARY[glyph]['skill']][0] != letter:
+                        skill = WEAPON_GLOSSARY[glyph]['skill']
+                        if skill in self.launchers and self.launchers[skill][0] != letter:
                             self.items_to_drop.append(letter)
 
                     elif glyph in MISSILES:
@@ -174,10 +175,9 @@ class Inventory:
         if launchers.sum() == 0:
             return None, None, None
 
-        launch_skills = [WEAPON_GLOSSARY[g]['skill'] for g in self.inv_glyphs[launchers].tolist()]
         missiles = np.isin(self.inv_glyphs, MISSILES)
         missiles = zip(self.inv_letters[missiles], self.inv_glyphs[missiles], self.inv_strs[missiles])
-        missiles = [(l, g, s) for l, g, s in missiles if WEAPON_GLOSSARY[g]['skill'] in launch_skills]
+        missiles = [(l, g, s) for l, g, s in missiles if WEAPON_GLOSSARY[g]['skill'] in self.launchers.keys()]
 
         if not missiles:
             return None, None, None
