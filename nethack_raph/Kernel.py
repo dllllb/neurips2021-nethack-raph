@@ -33,7 +33,7 @@ def render(chrs, cols, offset=(1, 1)):
 
 
 class Kernel:
-    def __init__(self, verbose, early_stop=2000):
+    def __init__(self, verbose, early_stop=1900):
         self._file = None
         self._frames_log = None
         self.verbose = False
