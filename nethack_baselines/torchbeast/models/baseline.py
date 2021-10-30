@@ -333,7 +333,7 @@ class HeroEncoder(nn.Module):
         self.device = device
 
         self.mlp = nn.Sequential(
-            nn.Linear(23, 2 * self.hidden_dim),
+            nn.Linear(26, 2 * self.hidden_dim),
             nn.ReLU(),
             nn.Linear(2 * self.hidden_dim, self.hidden_dim),
         )  # final output -- [ B x h_dim x 5 ]
