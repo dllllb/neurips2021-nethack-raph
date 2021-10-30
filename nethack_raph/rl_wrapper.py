@@ -152,6 +152,7 @@ class RLWrapper(gym.Wrapper):
         if self.kernel.brain.rl_actions['Pray'].can(lvl)[0]:
             action_mask[18] = 1.0
 
+        self.kernel.brain.rl_actions['Attack'].can(lvl)  # exp_damage update
         hero_stat = np.concatenate([
             self.kernel.hero.role == self.roles,
             self.kernel.hero.race == self.races,
