@@ -1,8 +1,8 @@
-from agents.custom_agent import CustomAgent, CustomAgentMP
 from agents.torchbeast_agent import TorchBeastAgent
-from nethack_raph.rl_wrapper import RLWrapper
+from agents.rulebased_agent import RuleBasedAgent
+from agents.random_agent import RandomAgent
 
-from envs.wrappers import addtimelimitwrapper_fn_custom, addtimelimitwrapper_fn_rl
+from envs.wrappers import addtimelimitwrapper_fn_rl
 
 ################################################
 #         Import your own agent code           #
@@ -15,7 +15,7 @@ from envs.wrappers import addtimelimitwrapper_fn_custom, addtimelimitwrapper_fn_
 
 class SubmissionConfig:
     ## Add your own agent class
-    #AGENT = CustomAgentMP
+    # AGENT = RuleBasedAgent
     AGENT = TorchBeastAgent
 
 
