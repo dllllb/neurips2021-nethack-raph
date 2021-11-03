@@ -38,13 +38,13 @@ class RuleBasedAgent(BatchedAgent):
         return min(directions_with_dist, key=lambda item: item[1])[0]
 
     def mellee_attack(self, dungeon, monsters, hero_x, hero_y):
-        # We are adjacent to monster. So we can attack through doorway
+        # We are adjacent to monster. So we can attack diagonally through doorway
         for (x, y) in zip(*np.where(monsters)):
             dir_id = _get_direction_id(x - hero_x, y - hero_y)
             if dir_id is not None:
                 return dir_id
 
-        # Find path through walkable tiles. It wont go through doorways
+        # Find path through walkable tiles. It wont go diagonally through doorways
         walk_costs = dungeon[StateValues.WALKABLE_TILE].astype(np.float)
         walk_costs[walk_costs == 0] = np.inf
         doors = dungeon[StateValues.IS_OPENED_DOOR]
