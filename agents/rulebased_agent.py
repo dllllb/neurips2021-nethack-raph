@@ -37,7 +37,7 @@ class RuleBasedAgent(BatchedAgent):
             return None
         return min(directions_with_dist, key=lambda item: item[1])[0]
 
-    def milli_attack(self, dungeon, monsters, hero_x, hero_y):
+    def mellee_attack(self, dungeon, monsters, hero_x, hero_y):
         # We are adjacent to monster. So we can attack through doorway
         for (x, y) in zip(*np.where(monsters)):
             dir_id = _get_direction_id(x - hero_x, y - hero_y)
@@ -77,9 +77,9 @@ class RuleBasedAgent(BatchedAgent):
         if range_dir is not None and action_mask[RLActions.RANGE_ATTACK_BEGIN + range_dir]:
             return RLActions.RANGE_ATTACK_BEGIN + range_dir
 
-        milli_dir = self.milli_attack(dungeon, monsters, hero_x, hero_y)
-        if milli_dir is not None and action_mask[RLActions.MILLI_ATTACK_BEGIN + milli_dir]:
-            return RLActions.MILLI_ATTACK_BEGIN + milli_dir
+        mellee_dir = self.mellee_attack(dungeon, monsters, hero_x, hero_y)
+        if mellee_dir is not None and action_mask[RLActions.MELLEE_ATTACK_BEGIN + mellee_dir]:
+            return RLActions.MELLEE_ATTACK_BEGIN + mellee_dir
 
         assert action_mask[RLActions.WAIT]
         return RLActions.WAIT

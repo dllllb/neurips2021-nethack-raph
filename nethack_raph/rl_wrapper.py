@@ -40,8 +40,8 @@ class RLActions(enum.IntEnum):
     PRAY = 18
     RANGE_ATTACK_BEGIN = 8
     RANGE_ATTACK_END = 16
-    MILLI_ATTACK_BEGIN = 0
-    MILLI_ATTACK_END = 8
+    MELLEE_ATTACK_BEGIN = 0
+    MELLEE_ATTACK_END = 8
 
 
 DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
@@ -69,7 +69,7 @@ class RLWrapper(gym.Wrapper):
         self.reward = 0
 
         self.actionid2name = {RLActions.CONTINUE: 'Continue'}
-        for i in range(RLActions.MILLI_ATTACK_BEGIN, RLActions.MILLI_ATTACK_END):
+        for i in range(RLActions.MELLEE_ATTACK_BEGIN, RLActions.MELLEE_ATTACK_END):
             self.actionid2name[i] = 'Attack'
         for i in range(RLActions.RANGE_ATTACK_BEGIN, RLActions.RANGE_ATTACK_END):
             self.actionid2name[i] = 'RangeAttack'
