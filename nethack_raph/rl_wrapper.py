@@ -1,3 +1,5 @@
+import enum
+
 from nethack_raph.Kernel import Kernel
 from nethack_raph.myconstants import DUNGEON_HEIGHT, DUNGEON_WIDTH
 from nethack_raph.Actions.RLTriggerAction import RLTriggerAction
@@ -6,6 +8,43 @@ import gym
 import numpy as np
 from nle import nethack as nh
 from nle.nethack.actions import ACTIONS
+
+
+class StateValues(enum.IntEnum):
+    EXPLORED = 0
+    WALKABLE_TILE = 1
+    WALKABLE_GLYPH = 2
+    IS_HERO = 3
+    IS_OPENED_DOOR = 4
+    IS_CLOSED_DOOR = 5
+    IN_SHOP = 6
+    SHOP_ENTRANCE = 7
+    LOCKED = 8
+    HAS_ELBERETH = 9
+    IS_MONSTER = 10
+    IS_ATTACKABLE = 11
+    PASSIVE = 12
+    EXPLOSIVE = 13
+    RESPECT_ELBERETH = 14
+    PEACEFUL = 15
+    RANGE_ATTACK = 16
+    ARMOR_CLASS = 17
+    M_LEVEL = 18
+    M_MOVE = 19
+
+
+class RLActions(enum.IntEnum):
+    CONTINUE = -1
+    WAIT = 16,
+    ELBERETH = 17,
+    PRAY = 18
+    RANGE_ATTACK_BEGIN = 8
+    RANGE_ATTACK_END = 16
+    MILLI_ATTACK_BEGIN = 0
+    MILLI_ATTACK_END = 8
+
+
+DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
 
 class RLWrapper(gym.Wrapper):
@@ -21,7 +60,6 @@ class RLWrapper(gym.Wrapper):
         }
 
         self.episode_reward = 0
-        self.offsets = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
         self.is_corner = [False, False, False, False, True, True, True, True]
         self.roles = np.array(['arc', 'bar', 'cav', 'hea', 'kni', 'mon', 'pri', 'ran', 'rog', 'sam', 'tou', 'val', 'wiz'])
         self.races = np.array(['dwa', 'elf', 'gno', 'hum', 'orc'])
@@ -30,14 +68,14 @@ class RLWrapper(gym.Wrapper):
         self.last_obs = None
         self.reward = 0
 
-        self.actionid2name = {-1: 'Continue'}
-        for i in range(8):
+        self.actionid2name = {RLActions.CONTINUE: 'Continue'}
+        for i in range(RLActions.MILLI_ATTACK_BEGIN, RLActions.MILLI_ATTACK_END):
             self.actionid2name[i] = 'Attack'
-        for i in range(8, 16):
+        for i in range(RLActions.RANGE_ATTACK_BEGIN, RLActions.RANGE_ATTACK_END):
             self.actionid2name[i] = 'RangeAttack'
-        self.actionid2name[16] = 'Wait'
-        self.actionid2name[17] = 'Elbereth'
-        self.actionid2name[18] = 'Pray'
+        self.actionid2name[RLActions.WAIT] = 'Wait'
+        self.actionid2name[RLActions.ELBERETH] = 'Elbereth'
+        self.actionid2name[RLActions.PRAY] = 'Pray'
 
     def reset(self):
         self.reward = 0
@@ -57,7 +95,7 @@ class RLWrapper(gym.Wrapper):
         action_name = self.actionid2name[action_id]
         if action_name in ('Attack', 'RangeAttack'):
             x, y = self.kernel.hero.coords()
-            tile_x, tile_y = self.offsets[action_id % 8]
+            tile_x, tile_y = DIRECTIONS[action_id % 8]
             tile = (tile_x + x, tile_y + y)
             self.kernel.brain.rl_actions[action_name].execute(tile)
         elif action_name in ('Wait', 'Elbereth', 'Pray'):
@@ -101,35 +139,35 @@ class RLWrapper(gym.Wrapper):
 
         lvl = self.kernel.curLevel()
         tiles = lvl.tiles
-        state[0] = tiles.explored
-        state[1] = tiles.walkable_tile
-        state[2] = tiles.walkable_glyph
-        state[3] = tiles.is_hero
-        state[4] = tiles.is_opened_door
-        state[5] = tiles.is_closed_door
-        state[6] = tiles.in_shop
-        state[7] = tiles.shop_entrance
-        state[8] = tiles.locked
-        state[9] = tiles.has_elbereth
+        state[StateValues.EXPLORED] = tiles.explored
+        state[StateValues.WALKABLE_TILE] = tiles.walkable_tile
+        state[StateValues.WALKABLE_GLYPH] = tiles.walkable_glyph
+        state[StateValues.IS_HERO] = tiles.is_hero
+        state[StateValues.IS_OPENED_DOOR] = tiles.is_opened_door
+        state[StateValues.IS_CLOSED_DOOR] = tiles.is_closed_door
+        state[StateValues.IN_SHOP] = tiles.in_shop
+        state[StateValues.SHOP_ENTRANCE] = tiles.shop_entrance
+        state[StateValues.LOCKED] = tiles.locked
+        state[StateValues.HAS_ELBERETH] = tiles.has_elbereth
 
         for (x, y), monster in lvl.monsters.items():
-            state[10, x, y] = True
-            state[11, x, y] = monster.is_attackable
-            state[12, x, y] = monster.passive
-            state[13, x, y] = monster.explosive
-            state[14, x, y] = monster.respect_elbereth
-            state[15, x, y] = monster.peaceful
-            state[16, x, y] = monster.range_attack
+            state[StateValues.IS_MONSTER, x, y] = True
+            state[StateValues.IS_ATTACKABLE, x, y] = monster.is_attackable
+            state[StateValues.PASSIVE, x, y] = monster.passive
+            state[StateValues.EXPLOSIVE, x, y] = monster.explosive
+            state[StateValues.RESPECT_ELBERETH, x, y] = monster.respect_elbereth
+            state[StateValues.PEACEFUL, x, y] = monster.peaceful
+            state[StateValues.RANGE_ATTACK, x, y] = monster.range_attack
             if monster.glyph < 381:
                 mon_info = nh.permonst(nh.glyph_to_mon(monster.glyph))
-                state[17, x, y] = mon_info.ac
-                state[18, x, y] = mon_info.mlevel
-                state[19, x, y] = mon_info.mmove
+                state[StateValues.ARMOR_CLASS, x, y] = mon_info.ac
+                state[StateValues.M_LEVEL, x, y] = mon_info.mlevel
+                state[StateValues.M_MOVE, x, y] = mon_info.mmove
 
         x, y = self.kernel.hero.coords()
         doors = lvl.tiles.is_opened_door
 
-        for i, off in enumerate(self.offsets):
+        for i, off in enumerate(DIRECTIONS):
             tile = (x + off[0], y + off[1])
             if tile[0] < 0 or tile[0] >= DUNGEON_HEIGHT or tile[1] < 0 or tile[1] >= DUNGEON_WIDTH:
                 continue
@@ -144,13 +182,13 @@ class RLWrapper(gym.Wrapper):
                 action_mask[i] = 1.0
 
         if self.kernel.brain.rl_actions['RangeAttack'].can(lvl)[0]:
-            action_mask[8:16] = 1.0
+            action_mask[RLActions.RANGE_ATTACK_BEGIN:RLActions.RANGE_ATTACK_END] = 1.0
         if self.kernel.brain.rl_actions['Wait'].can(lvl)[0]:
-            action_mask[16] = 1.0
+            action_mask[RLActions.WAIT] = 1.0
         if self.kernel.brain.rl_actions['Elbereth'].can(lvl)[0]:
-            action_mask[17] = 1.0
+            action_mask[RLActions.ELBERETH] = 1.0
         if self.kernel.brain.rl_actions['Pray'].can(lvl)[0]:
-            action_mask[18] = 1.0
+            action_mask[RLActions.PRAY] = 1.0
 
         self.kernel.brain.rl_actions['Attack'].can(lvl)  # exp_damage update
         hero_stat = np.concatenate([

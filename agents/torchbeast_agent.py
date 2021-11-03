@@ -5,6 +5,7 @@ from collections import defaultdict
 from agents.base import BatchedAgent
 
 from nethack_baselines.torchbeast.models import load_model
+from nethack_raph.rl_wrapper import RLActions
 
 MODEL_DIR = "./latest/"
 
@@ -19,7 +20,6 @@ class TorchBeastAgent(BatchedAgent):
         self.model_dir = MODEL_DIR
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.model = load_model(MODEL_DIR, self.device)
-        self.continue_action = -1
         print(f'Using Model In: {self.model_dir}, Device: {self.device}')
 
         self.core_state = [
@@ -43,7 +43,7 @@ class TorchBeastAgent(BatchedAgent):
 
         for i, obs in enumerate(observations):
             if not obs['rl_triggered']:
-                actions[i] = self.continue_action
+                actions[i] = RLActions.CONTINUE
                 continue
             rl_action_ids.append(i)
             for key, value in obs.items():

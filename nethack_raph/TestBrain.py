@@ -108,6 +108,6 @@ class TestBrain:
             self.kernel().log(f'Use previous path')
             return self.prev_path[:-1]
 
-        path = dijkstra_cpp(level.tiles, xy, coords, level.tiles.is_opened_door)
+        path = dijkstra_cpp(level.tiles.walk_cost, xy, coords, level.tiles.is_opened_door)
 
         return path

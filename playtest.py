@@ -1,6 +1,8 @@
 import numpy as np
 
 from agents.torchbeast_agent import TorchBeastAgent
+from agents.random_agent import RandomAgent
+from agents.rulebased_agent import RuleBasedAgent
 from submission_config import SubmissionConfig
 
 
@@ -22,7 +24,7 @@ def evaluate(seed, character):
 
         Agent = SubmissionConfig.AGENT
         batched_env = BatchedEnv(env_make_fn=lambda: env, num_envs=1)
-        agent = Agent(1, batched_env.num_actions, verbose=True)
+        agent = Agent(1, batched_env.num_actions)
 
         ascensions, scores = run_batched_rollout(1, batched_env, agent)
 

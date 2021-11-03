@@ -68,8 +68,8 @@ def reconstruct_path(prev, goal):
     return result
 
 
-def dijkstra_py(tiles, start, mask, doors):
-    walk_costs = tiles.walk_cost.reshape(-1)
+def dijkstra_py(walk_costs, start, mask, doors):
+    walk_costs = walk_costs.reshape(-1)
     coords = mask.reshape(-1)
     doors = doors.reshape(-1)
     start = int(start[0] * DUNGEON_WIDTH + start[1])
@@ -146,12 +146,12 @@ libc.dijkstra.argtypes = [
 ]
 
 
-def dijkstra_cpp(tiles, start, targets_mask, doors):
+def dijkstra_cpp(walk_costs, start, targets_mask, doors):
 
     def to_pointer(nparray, dtype):
         return nparray.ctypes.data_as(POINTER(dtype))
 
-    walk_costs = tiles.walk_cost.reshape(-1)
+    walk_costs = walk_costs.reshape(-1)
     targets_mask = targets_mask.reshape(-1).astype(np.bool)
     doors = doors.reshape(-1).astype(np.bool)
     start = int(start[0] * DUNGEON_WIDTH + start[1])
