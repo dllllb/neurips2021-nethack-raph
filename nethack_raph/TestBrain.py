@@ -41,7 +41,7 @@ class TestBrain:
             'EatFromInventory': EatFromInventory(kernel),
             'FollowGuard': FollowGuard(kernel),
             'UseItem': UseItem(kernel),
-            'Enhance': Enhance(kernel),
+            'Enhance': Enhance(kernel),  # comment-out for minihack
             # 'Flash': Flash(kernel),
             'RLTriggerAction': RLTriggerAction(kernel),
             'Pray': Pray(kernel),

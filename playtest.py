@@ -1,3 +1,4 @@
+import gym
 import numpy as np
 
 from agents.torchbeast_agent import TorchBeastAgent
@@ -8,25 +9,29 @@ from submission_config import SubmissionConfig
 
 from rollout import run_batched_rollout
 from envs.batched_env import BatchedEnv
+from envs.wrappers import RLWrapper, MinihackWrapper, ACTIONS
+import minihack
 
 from nle_toolbox.wrappers.replay import ReplayToFile
 
 
 def evaluate(seed, character):
-    with ReplayToFile(
-        SubmissionConfig.MAKE_ENV_FN(character=character, verbose=True),
-        folder='./replays',
-        save_on='close,done',
-    ) as env:
-        # ensure seed prior to making a lambda factory
-        if seed is not None:
-            env.seed(seed=tuple(seed))
+    # env = gym.make('MiniHack-CorridorBattle-v0', character=character, actions=ACTIONS)
+    # env = MinihackWrapper(env)
 
-        Agent = SubmissionConfig.AGENT
-        batched_env = BatchedEnv(env_make_fn=lambda: env, num_envs=1)
-        agent = Agent(1, batched_env.num_actions)
+    env = SubmissionConfig.MAKE_ENV_FN(character=character, verbose=True),
+    env = ReplayToFile(env, folder='./replays', save_on='close,done')
+    env = RLWrapper(env, verbose=True)
 
-        ascensions, scores = run_batched_rollout(1, batched_env, agent)
+    # ensure seed prior to making a lambda factory
+    if seed is not None:
+        env.seed(seed=tuple(seed))
+
+    Agent = SubmissionConfig.AGENT
+    batched_env = BatchedEnv(env_make_fn=lambda: env, num_envs=1)
+    agent = Agent(1, batched_env.num_actions)
+
+    ascensions, scores = run_batched_rollout(1, batched_env, agent)
 
     print(
         f"Ascensions: {ascensions} "
