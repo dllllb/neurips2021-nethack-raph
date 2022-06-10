@@ -19,9 +19,8 @@ def evaluate(seed, character):
     # env = gym.make('MiniHack-CorridorBattle-v0', character=character, actions=ACTIONS)
     # env = MinihackWrapper(env)
 
-    env = SubmissionConfig.MAKE_ENV_FN(character=character, verbose=True),
+    env = SubmissionConfig.MAKE_ENV_FN(character=character, verbose=True)
     env = ReplayToFile(env, folder='./replays', save_on='close,done')
-    env = RLWrapper(env, verbose=True)
 
     # ensure seed prior to making a lambda factory
     if seed is not None:
