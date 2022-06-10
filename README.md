@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="gif/nethack_eval.gif" />
+  <img src="img/nethack_eval.gif" />
 </p>
 
 This repository contains [RAPH](https://www.aicrowd.com/challenges/neurips-2021-the-nethack-challenge/teams/raph) team solution for the [NetHack Challenge](https://nethackchallenge.com/), organized on NeurIPS 2021 competition track. This solution won the **first place** among neural net based solutions.
@@ -26,4 +26,4 @@ python3 local_test.py
 - out agent: ```agents/torchbeast_agent.py```  
 - game state preprocessing, algorithms: ```nethack_raph/``` 
 
-![Nethack Banner](https://aicrowd-production.s3.eu-central-1.amazonaws.com/misc/neurips-2021-nethack-challenge-media/nethack_final_link+preview_starter_kit.jpg)
+![Nethack Banner](img/nethack-challenge.jpeg)
