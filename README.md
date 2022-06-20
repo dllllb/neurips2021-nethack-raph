@@ -7,6 +7,7 @@ This repository contains [RAPH](https://www.aicrowd.com/challenges/neurips-2021-
 ## Setup
 ```
 pipenv install
+pipenv shell
 ```
 
 ## Run
