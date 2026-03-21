@@ -12,7 +12,7 @@ from envs.batched_env import BatchedEnv
 from envs.wrappers import RLWrapper, MinihackWrapper, ACTIONS
 import minihack
 
-from nle_toolbox.wrappers.replay import ReplayToFile
+#from nle_toolbox.wrappers.replay import ReplayToFile
 
 
 def evaluate(seed, character):
@@ -20,7 +20,7 @@ def evaluate(seed, character):
     # env = MinihackWrapper(env)
 
     env = SubmissionConfig.MAKE_ENV_FN(character=character, verbose=True)
-    env = ReplayToFile(env, folder='./replays', save_on='close,done')
+    #env = ReplayToFile(env, folder='./replays', save_on='close,done')
 
     # ensure seed prior to making a lambda factory
     if seed is not None:

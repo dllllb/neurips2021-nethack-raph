@@ -136,14 +136,14 @@ def lib_path():
     return os.path.join(dirname, 'libs/' + lib_name)
 
 
-libc = cdll.LoadLibrary(lib_path())
-libc.dijkstra.argtypes = [
+""" libc = cdll.LoadLibrary(lib_path())
+ libc.dijkstra.argtypes = [
     POINTER(c_double),
     c_int32,
     POINTER(c_bool),
     POINTER(c_int32),
     POINTER(c_bool)
-]
+] """
 
 
 def dijkstra_cpp(walk_costs, start, targets_mask, doors):

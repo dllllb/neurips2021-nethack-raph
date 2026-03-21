@@ -26,7 +26,7 @@ from .util import id_pairs_table
 import numpy as np
 
 NUM_GLYPHS = nethack.MAX_GLYPH
-NUM_FEATURES = nethack.BLSTATS_SHAPE[0] #25
+NUM_FEATURES = 26  # hardcoded to match checkpoint (NLE now has 27 but checkpoint has 26)
 PAD_CHAR = 0
 NUM_CHARS = 256
 

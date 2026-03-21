@@ -1,5 +1,5 @@
 from agents.base import BatchedAgent
-from nethack_raph.Pathing import dijkstra_cpp
+from nethack_raph.Pathing import dijkstra_py
 from nethack_raph.rl_wrapper import StateValues, RLActions, DIRECTIONS
 import numpy as np
 
@@ -48,7 +48,7 @@ class RuleBasedAgent(BatchedAgent):
         walk_costs = dungeon[StateValues.WALKABLE_TILE].astype(np.float)
         walk_costs[walk_costs == 0] = np.inf
         doors = dungeon[StateValues.IS_OPENED_DOOR]
-        path = dijkstra_cpp(walk_costs, (hero_x, hero_y), monsters, doors)
+        path = dijkstra_py(walk_costs, (hero_x, hero_y), monsters, doors)
         if path is None:
             return None
 

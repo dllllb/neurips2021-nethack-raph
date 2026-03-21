@@ -5,12 +5,12 @@ from envs.batched_env import BatchedEnv
 from envs.wrappers import create_env, TimeLimit
 from nethack_raph.rl_wrapper import RLWrapper
 
-from nle_toolbox.wrappers.replay import ReplayToFile
+#from nle_toolbox.wrappers.replay import ReplayToFile
 
 
 def env_make_fn(verbose=False):
     env = create_env()
-    env = ReplayToFile(env, folder='test_rule', sticky=False)  # should be before RLWrapper
+    #env = ReplayToFile(env, folder='test_rule', sticky=False)  # should be before RLWrapper
     env = TimeLimit(env, max_episode_steps=10_000_000)
     env = RLWrapper(env, verbose=verbose)
     return env

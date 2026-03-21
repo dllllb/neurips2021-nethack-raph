@@ -40,7 +40,7 @@ def create_model(flags, device):
     else:
         raise NotImplementedError("model=%s" % model_string)
 
-    action_space = ENVS[flags.env](savedir=None, archivefile=None)._actions
+    action_space = ENVS[flags.env](savedir=None).actions
 
     model = model_cls(DUNGEON_SHAPE, action_space, flags, device)
     model.to(device=device)

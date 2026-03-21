@@ -96,7 +96,7 @@ class Hero:
             self.intelligence, self.wisdom, self.charisma, self.score, self.curhp, self.maxhp, \
             _, self.gold, self.curpw, self.maxpw, self.armor_class, monster_level, \
             self.xp, self.xp_next, self.turns, self.hunger, self.encumbered_status, dungeon_number, \
-            self.level_number, condition = blstats
+            self.level_number, condition, *_ = blstats
 
         self.kernel().log(f'Hero hp: {self.curhp}/{self.maxhp}, hero coords: {self.coords()}')
 

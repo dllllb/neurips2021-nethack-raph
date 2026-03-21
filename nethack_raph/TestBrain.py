@@ -18,7 +18,7 @@ from nethack_raph.Actions.FollowGuard import FollowGuard
 from nethack_raph.Actions.Enhance import Enhance
 from nethack_raph.Actions.RLTriggerAction import RLTriggerAction
 
-from nethack_raph.Pathing import dijkstra_cpp, check_neighbours
+from nethack_raph.Pathing import dijkstra_py, check_neighbours
 from nethack_raph.myconstants import DUNGEON_WIDTH
 
 
@@ -107,6 +107,6 @@ class TestBrain:
             self.kernel().log(f'Use previous path')
             return self.prev_path[:-1]
 
-        path = dijkstra_cpp(level.tiles.walk_cost, xy, coords, level.tiles.is_opened_door)
+        path = dijkstra_py(level.tiles.walk_cost, xy, coords, level.tiles.is_opened_door)
 
         return path
